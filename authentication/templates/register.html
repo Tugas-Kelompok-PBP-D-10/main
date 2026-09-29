@@ -1,0 +1,164 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Register | Olahrasa</title>
+
+    <link rel="stylesheet" href="{% static 'css/login.css' %}">
+</head>
+
+<body>
+
+    <main class="auth-card">
+
+        <a href="{% url 'authentication:welcome' %}" class="back-link">
+            ← Kembali
+        </a>
+
+        <div class="brand-header">
+
+            <div class="logo-icon">🍴</div>
+
+            <h1>OlahRasa.</h1>
+
+            <p>Olah bahan sisa, jadi suatu rasa.</p>
+
+        </div>
+
+        <hr class="divider">
+
+        <h2>Buat Akun Baru</h2>
+
+        <p class="description">
+            Bergabung dan mulailah mengolah bahan
+            sisa menjadi hidangan lezat dan bergizi!
+        </p>
+
+        <form method="POST" action="{% url 'authentication:register' %}" class="auth-form">
+
+            {% csrf_token %}
+
+            {% if form.non_field_errors %}
+
+                <div class="alert-error">
+                    {{ form.non_field_errors }}
+                </div>
+
+            {% endif %}
+
+            <!-- Username -->
+
+            <div class="form-field">
+
+                <label for="{{ form.username.id_for_label }}">
+                    Username
+                </label>
+
+                {{ form.username }}
+
+                {% for error in form.username.errors %}
+
+                    <small class="field-error">
+                        {{ error }}
+                    </small>
+                {% endfor %}
+
+            </div>
+
+            <!-- Email -->
+
+            <div class="form-field">
+
+                <label for="{{ form.email.id_for_label }}">
+                    Email
+                </label>
+
+                {{ form.email }}
+
+                {% for error in form.email.errors %}
+
+                    <small class="field-error">
+                        {{ error }}
+                    </small>
+
+                {% endfor %}
+
+            </div>
+
+            <!-- Password -->
+
+            <div class="form-field">
+
+                <label for="{{ form.password1.id_for_label }}">
+                    Password
+                </label>
+
+                {{ form.password1 }}
+
+                {% for error in form.password1.errors %}
+
+                    <small class="field-error">
+                        {{ error }}
+                    </small>
+
+                {% endfor %}
+
+            </div>
+
+            <!-- Konfirmasi password -->
+
+            <div class="form-field">
+
+                <label for="{{ form.password2.id_for_label }}">
+                    Konfirmasi Password
+                </label>
+
+                {{ form.password2 }}
+
+                {% for error in form.password2.errors %}
+
+                    <small class="field-error">
+                        {{ error }}
+                    </small>
+                {% endfor %}
+
+            </div>
+
+            <button type="submit" class="primary-button">
+                Daftar Akun
+            </button>
+
+        </form>
+
+        <div class="auth-divider">
+            <span>atau</span>
+        </div>
+
+        <button type="button" class="google-button" disabled>
+
+            <span class="google-icon">G</span>
+
+            Daftar dengan Google (Segera Hadir)
+
+        </button>
+
+        <p class="bottom-link">
+
+            Sudah punya akun?
+
+            <a href="{% url 'authentication:login' %}">
+                Masuk di sini
+            </a>
+
+        </p>
+
+    </main>
+
+</body>
+</html>

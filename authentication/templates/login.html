@@ -1,0 +1,126 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | OlahRasa</title>
+    <link rel="stylesheet" href="{% static 'css/login.css' %}">
+</head>
+
+<body>
+    <main class="auth-card">
+        <a href="{% url 'authentication:welcome' %}" class="back-link">
+            ← Kembali
+        </a>
+
+        <div class="brand-header">
+            <div class="logo-icon">🍴</div>
+            <h1>OlahRasa.</h1>
+            <p>Olah bahan sisa, jadi suatu rasa.</p>
+        </div>
+
+        <hr class="divider">
+
+        <h2>Masuk ke Akun</h2>
+
+        <p class="description">
+            Selamat datang kembali!
+            Yuk, lanjut eksplor resep favoritmu.
+        </p>
+
+        <!-- Pesan sukses setelah registrasi -->
+
+        {% if messages %}
+            {% for message in messages %}
+
+                <div class="alert-succes">
+                    {{ message }}
+                </div>
+
+            {% endfor %}
+        {% endif %}
+
+        <!-- Form login -->
+
+        <form method="POST" action="{% url 'authentication:login' %}" class="auth-form">
+
+            {% csrf_token %}
+            {% if form.non_field_errors %}
+
+                <div class="alert-error">
+                    {{ form.non_field_errors }}
+                </div>
+
+            {% endif %}
+
+            <!-- Username -->
+
+            <div class="form-field">
+
+                <label for="{{ form.username.id_for_label }}">
+                    Username
+                </label>
+
+                {{ form.username }}
+
+                {% for error in form.username.errors %}
+
+                    <small class="field-error">
+                        {{ error }}
+                    </small>
+
+                {% endfor %}
+            </div>
+
+            <!-- Password -->
+
+            <div class="form-field">
+
+                <label for="{{ form.password.id_for_label }}">
+                    Password
+                </label>
+
+                {{ form.password }}
+                {% for error in form.password.errors %}
+
+                    <small class="field-error">
+                        {{ error }}
+                    </small>
+
+                {% endfor %}
+            </div>
+
+            <button type="submit" class="primary-button">
+                Masuk
+            </button>
+
+        </form>
+
+        <div class="auth-divider">
+            <span>atau</span>
+        </div>
+
+        <!-- Akan dihubungkan ke Google OAuth -->
+        <button class="google-button" type="button" disabled>
+
+            <span class="google-icon">G</span>
+
+            Masuk dengan Google (Segera Hadir)
+
+        </button>
+
+        <p class="button-link">
+            Belum punya akun?
+
+            <a href="{% url 'authentication:register' %}">
+                Daftar di sini
+            </a>
+
+        </p>
+
+    </main>
+
+</body>
+</html>
