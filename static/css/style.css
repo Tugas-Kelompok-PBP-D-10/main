@@ -1,0 +1,37 @@
+/* static/css/style.css */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Poppins', sans-serif, system-ui;
+}
+
+body {
+    background-color: #f8f9fa;
+    color: #333;
+}
+
+navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #2e7d32; /* Warna hijau khas OlahRasa */
+    padding: 1rem 2rem;
+}
+
+navbar a {
+    color: white;
+    text-decoration: none;
+    margin-left: 1.5rem;
+    font-weight: 500;
+}
+
+navbar a:hover {
+    text-decoration: underline;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+}

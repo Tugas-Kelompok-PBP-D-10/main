@@ -1,0 +1,37 @@
+<!-- templates/base.html -->
+{% load static %}
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}OlahRasa{% endblock %}</title>
+    <!-- CSS Utama -->
+    <link rel="stylesheet" href="/static/css/style.css">
+    {% block meta %}{% endblock %}
+</head>
+<body>
+
+    <!-- Navbar Utama Kelompok -->
+    <navbar>
+        <div class="logo">
+            <a href="#" style="font-size: 1.2rem; font-weight: bold;">🌱 OlahRasa</a>
+        </div>
+        <div class="nav-links">
+            <a href="#">Dashboard</a>
+            <a href="#">Resep</a>
+            <a href="#">Inventory</a>
+            <a href="#">Tracker</a>
+            <a href="#">Profile</a>
+            <a href="#">Login</a>
+        </div>
+    </navbar>
+
+    <!-- Tempat Konten Tiap Halaman Ditumpuk -->
+    <div class="container">
+        {% block content %}
+        {% endblock content %}
+    </div>
+
+</body>
+</html>
