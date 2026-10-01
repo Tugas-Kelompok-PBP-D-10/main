@@ -5,10 +5,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>{% block title %}OlahRasa{% endblock %}</title>
+
     <!-- CSS Utama -->
-    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+
     {% block meta %}{% endblock %}
+
+    <!-- CSS khusus halaman -->
+    {% block extra_css %}{% endblock %}
 </head>
 <body>
 

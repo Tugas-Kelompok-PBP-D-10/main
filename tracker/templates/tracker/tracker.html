@@ -1,0 +1,151 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block meta %}
+<title>Tracker | OlahRasa</title>
+{% endblock meta %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'tracker/tracker-style.css' %}">
+{% endblock extra_css %}
+
+{% block content %}
+
+<main class="tracker">
+
+  {% if coming_soon %}
+  <div class="soon-banner" role="status">
+    <span class="soon-pill">Coming Soon</span>
+    <p>
+      Fitur Tracker masih dalam pengembangan. Streak, nutrisi, dan badge
+      akan aktif setelah fitur "Selesai Memasak" di modul Resep tersambung.
+    </p>
+  </div>
+  {% endif %}
+
+  {# ===== Greeting ===== #}
+  <section class="tracker-greeting">
+    <div class="avatar">
+      {% if user.profile.photo %}
+        <img src="{{ user.profile.photo.url }}" alt="Foto {{ user.username }}">
+      {% else %}
+        <span class="avatar-placeholder" aria-hidden="true"></span>
+      {% endif %}
+    </div>
+
+    <div>
+      <h1 class="greeting-title">
+        Hi, {{ user.first_name|default:user.username|default:"Chef" }}!
+      </h1>
+      <p class="greeting-sub">Lets see your weekly progress</p>
+    </div>
+  </section>
+
+  <div class="tracker-grid">
+
+    {# ===== Kolom kiri: streak + nutrisi ===== #}
+    <div class="tracker-main">
+
+      <section
+        class="card streak-card{% if coming_soon %} is-soon{% endif %}"
+        aria-labelledby="streak-title"
+      >
+
+        {% if coming_soon %}
+          <span class="soon-pill soon-pill--corner">Coming Soon</span>
+        {% endif %}
+
+        <div class="streak-info">
+          <h2 id="streak-title" class="section-title section-title--orange">
+            Your Upcycling Impact
+          </h2>
+
+          <p class="streak-count">
+            <span class="streak-number">{{ streak.current }}</span>
+            hari memasak berturut-turut
+          </p>
+
+          {% if streak.is_record %}
+            <p class="streak-note">
+              New Record! This is your highest rescue streak this month. 🎉
+            </p>
+          {% else %}
+            <p class="streak-note">
+              Rekor terbaikmu {{ streak.longest }} hari.
+              Terus masak untuk mengalahkannya!
+            </p>
+          {% endif %}
+
+          <button
+            type="button"
+            class="btn btn-orange btn-sm"
+            {% if coming_soon %}disabled{% endif %}
+          >
+            Post
+          </button>
+        </div>
+
+        <div
+          class="week-chart"
+          role="img"
+          aria-label="Aktivitas memasak 7 hari terakhir"
+        >
+          {% for day in week %}
+            <div class="week-col">
+              <div class="week-track">
+                <div
+                  class="week-bar{% if not day.cooked %} week-bar--empty{% endif %}"
+                  style="--h: {{ day.percent }}%"
+                ></div>
+              </div>
+              <span class="week-label">{{ day.label }}</span>
+            </div>
+          {% endfor %}
+        </div>
+
+      </section>
+
+          {# ===== Nutrient cards ===== #}
+          <section class="nutrient-row nutrient-coming-soon">
+
+        <article class="card coming-soon-card">
+            <span class="soon-pill">Coming Soon</span>
+
+            <h3>Nutrition Tracking</h3>
+
+            <p>
+                Track your protein, carbs, and fat intake
+                from the meals you cook.
+            </p>
+        </article>
+
+    </section>
+
+    </div>
+
+<aside class="tracker-side">
+
+    <div class="side-head">
+        <h2 class="section-title section-title--orange">
+            Your Badges
+        </h2>
+    </div>
+
+    <div class="card coming-soon-card">
+        <span class="soon-pill">Coming Soon</span>
+
+        <h3>Badges</h3>
+
+        <p>
+            Complete cooking challenges and earn badges
+            for your progress.
+        </p>
+    </div>
+
+</aside>
+
+  </div>
+
+</main>
+
+{% endblock content %}
