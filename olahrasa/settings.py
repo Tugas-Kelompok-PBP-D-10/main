@@ -44,6 +44,7 @@ INSTALLED_APPS = [
 
     'inventori',
     'tracker',
+    'recipe',
     'authentication',
 
     'allauth',
