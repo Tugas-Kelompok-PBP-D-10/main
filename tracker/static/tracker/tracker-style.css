@@ -1,0 +1,773 @@
+/* =========================================================
+   OlahRasa – Tracker
+   Cooking Streak + Coming Soon Features
+   ========================================================= */
+
+:root {
+  --green-dark: #03695e;
+  --green: #80b088;
+  --green-bar: #5db176;
+
+  --orange: #ee8252;
+  --orange-dark: #c8643a;
+  --orange-light: #fff0e8;
+
+  --yellow: #f9e58b;
+
+  --surface: #f5f4f2;
+  --card: #f5f5f5;
+  --white: #ffffff;
+
+  --track: #e9e9e9;
+
+  --ink: #2a2a2a;
+  --muted: #6d6d6d;
+
+  --font:
+    "Montserrat",
+    "Sen",
+    Arial,
+    sans-serif;
+}
+
+
+/* =========================================================
+   BASE
+   ========================================================= */
+
+.tracker {
+  width: min(1280px, 92%);
+  margin: 0 auto;
+  padding: 38px 0 70px;
+
+  font-family: var(--font);
+  color: var(--ink);
+
+  box-sizing: border-box;
+}
+
+.tracker *,
+.tracker *::before,
+.tracker *::after {
+  box-sizing: border-box;
+}
+
+.tracker h1,
+.tracker h2,
+.tracker h3,
+.tracker p {
+  margin: 0;
+  font-family: var(--font);
+}
+
+
+/* =========================================================
+   GENERIC
+   ========================================================= */
+
+.card {
+  background: var(--card);
+  border-radius: 16px;
+}
+
+.btn {
+  font-family: var(--font);
+  border: 0;
+  cursor: pointer;
+}
+
+.btn-orange {
+  background: var(--orange);
+  color: #fff;
+  border-radius: 999px;
+  font-weight: 700;
+  box-shadow: 0 3px 7px rgba(0, 0, 0, 0.14);
+}
+
+.btn-sm {
+  padding: 9px 26px;
+  font-size: 0.75rem;
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+
+/* =========================================================
+   COMING SOON
+   ========================================================= */
+
+.soon-pill {
+  display: inline-flex;
+  align-items: center;
+
+  width: fit-content;
+
+  padding: 5px 12px;
+
+  background: var(--yellow);
+  color: var(--green-dark);
+
+  border-radius: 999px;
+
+  font-size: 0.68rem;
+  font-weight: 700;
+
+  white-space: nowrap;
+}
+
+.soon-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  padding: 12px 16px;
+  margin-bottom: 28px;
+
+  background: #fff8dc;
+  border: 1px dashed var(--orange);
+  border-radius: 12px;
+}
+
+.soon-banner p {
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+
+
+/* =========================================================
+   GREETING
+   ========================================================= */
+
+.tracker-greeting {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+
+  margin: 0 8px 48px;
+}
+
+.avatar {
+  width: 100px;
+  height: 100px;
+
+  flex: 0 0 100px;
+
+  border-radius: 50%;
+
+  background: linear-gradient(
+    145deg,
+    #bdbdbd,
+    #eeeeee
+  );
+
+  display: grid;
+  place-items: center;
+
+  overflow: hidden;
+}
+
+.avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.avatar-placeholder {
+  width: 100%;
+  height: 100%;
+}
+
+.greeting-title {
+  color: var(--orange);
+
+  font-size: clamp(2rem, 3.2vw, 3rem);
+  font-weight: 800;
+
+  line-height: 1.05;
+}
+
+.greeting-sub {
+  margin-top: 7px !important;
+
+  color: var(--orange);
+
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+
+/* =========================================================
+   MAIN LAYOUT
+   ========================================================= */
+
+.tracker-grid {
+  display: grid;
+
+  grid-template-columns:
+    minmax(0, 2.2fr)
+    minmax(280px, 1fr);
+
+  gap: 36px;
+
+  align-items: start;
+}
+
+.tracker-main {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+
+/* =========================================================
+   SECTION TITLES
+   ========================================================= */
+
+.section-title {
+  margin: 0;
+
+  font-size: clamp(1.65rem, 2.8vw, 2.4rem);
+  font-weight: 700;
+
+  line-height: 1.15;
+}
+
+.section-title--orange {
+  color: var(--orange);
+}
+
+
+/* =========================================================
+   STREAK CARD
+   ========================================================= */
+
+.streak-card {
+  position: relative;
+
+  display: grid;
+
+  grid-template-columns:
+    minmax(0, 1.35fr)
+    minmax(240px, 0.85fr);
+
+  gap: 30px;
+
+  align-items: center;
+
+  min-height: 205px;
+
+  padding: 26px 28px;
+
+  background: var(--card);
+  border-radius: 17px;
+}
+
+.streak-info {
+  min-width: 0;
+}
+
+.streak-count {
+  margin-top: 10px !important;
+
+  color: var(--green-dark);
+
+  font-size: 0.9rem;
+  font-weight: 600;
+
+  line-height: 1.4;
+}
+
+.streak-number {
+  font-size: 1.05rem;
+  font-weight: 800;
+}
+
+.streak-note {
+  max-width: 430px;
+
+  margin: 3px 0 17px 0 !important;
+
+  color: var(--green-dark);
+
+  font-size: 0.86rem;
+  font-weight: 600;
+
+  line-height: 1.4;
+}
+
+.streak-info .btn {
+  margin-top: 0;
+}
+
+
+/* =========================================================
+   WEEKLY CHART
+   ========================================================= */
+
+.week-chart {
+  display: flex;
+
+  justify-content: space-between;
+  align-items: stretch;
+
+  gap: 8px;
+
+  height: 155px;
+
+  padding: 14px 14px 10px;
+
+  background: var(--white);
+
+  border: 1px solid #e7e7e7;
+
+  border-radius: 15px;
+}
+
+.week-col {
+  flex: 1;
+
+  display: flex;
+  flex-direction: column;
+
+  align-items: center;
+  justify-content: flex-end;
+
+  min-width: 0;
+}
+
+.week-track {
+  position: relative;
+
+  width: 13px;
+  height: 112px;
+
+  background: #ededed;
+
+  border-radius: 999px;
+
+  overflow: hidden;
+}
+
+.week-bar {
+  position: absolute;
+
+  left: 0;
+  right: 0;
+  bottom: 0;
+
+  height: var(--h, 0%);
+
+  background: var(--green-bar);
+
+  border-radius: 999px;
+}
+
+.week-bar--empty {
+  background: #ededed;
+}
+
+.week-label {
+  margin-top: 9px;
+
+  height: 24px;
+
+  font-size: 0.52rem;
+  color: var(--muted);
+
+  transform: rotate(-48deg);
+  transform-origin: top center;
+
+  white-space: nowrap;
+}
+
+
+/* =========================================================
+   NUTRIENT SECTION
+   ========================================================= */
+
+.nutrient-row {
+  display: block;
+}
+
+.nutrient-card {
+  position: relative;
+
+  min-height: 228px;
+
+  padding: 18px 16px 20px;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.nutrient-icon {
+  width: 68px;
+  height: 68px;
+
+  border-radius: 14px;
+
+  display: grid;
+  place-items: center;
+}
+
+.nutrient-icon--green {
+  background: var(--green);
+  color: var(--green-dark);
+}
+
+.nutrient-icon--yellow {
+  background: var(--yellow);
+  color: var(--orange);
+}
+
+.nutrient-pct {
+  position: absolute;
+
+  top: 14px;
+  right: 14px;
+
+  padding: 6px 14px;
+
+  background: var(--ink);
+  color: #fff;
+
+  border-radius: 999px;
+
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.nutrient-name {
+  color: var(--green-dark);
+
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.nutrient-amount {
+  margin-top: 4px !important;
+
+  color: var(--muted);
+
+  font-size: 0.78rem;
+}
+
+.ring {
+  --pct: 0;
+
+  position: absolute;
+
+  right: 14px;
+  bottom: 14px;
+
+  width: 116px;
+  height: 116px;
+
+  border-radius: 50%;
+
+  background:
+    conic-gradient(
+      var(--orange) calc(var(--pct) * 1%),
+      var(--yellow) 0
+    );
+
+  -webkit-mask:
+    radial-gradient(
+      farthest-side,
+      transparent calc(100% - 13px),
+      #000 calc(100% - 12px)
+    );
+
+  mask:
+    radial-gradient(
+      farthest-side,
+      transparent calc(100% - 13px),
+      #000 calc(100% - 12px)
+    );
+}
+
+
+/* =========================================================
+   COMING SOON CARD
+   ========================================================= */
+
+.coming-soon-card {
+  min-height: 155px;
+
+  padding: 26px 28px;
+
+  background: var(--card);
+
+  border-radius: 16px;
+
+  display: flex;
+  flex-direction: column;
+
+  justify-content: center;
+}
+
+.coming-soon-card h3 {
+  margin-top: 12px !important;
+
+  color: var(--green-dark);
+
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.coming-soon-card p {
+  max-width: 560px;
+
+  margin-top: 6px !important;
+
+  color: var(--muted);
+
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
+
+/* =========================================================
+   SIDEBAR
+   ========================================================= */
+
+.tracker-side {
+  min-width: 0;
+}
+
+.side-head {
+  display: flex;
+
+  align-items: baseline;
+  justify-content: space-between;
+
+  gap: 15px;
+
+  margin-bottom: 15px;
+
+  padding: 0 2px;
+}
+
+.side-head .section-title {
+  font-size: clamp(1.55rem, 2.3vw, 2rem);
+}
+
+.side-link {
+  color: var(--green-dark);
+
+  font-size: 0.82rem;
+  font-weight: 500;
+}
+
+
+/* =========================================================
+   BADGE CARDS
+   ========================================================= */
+
+.badge-list {
+  padding: 0;
+  margin: 0;
+
+  list-style: none;
+
+  display: flex;
+  flex-direction: column;
+
+  gap: 16px;
+}
+
+.badge-item {
+  position: relative;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 14px;
+
+  padding: 16px;
+
+  min-height: 90px;
+}
+
+.badge-img {
+  width: 55px;
+  height: 55px;
+
+  flex: 0 0 55px;
+
+  display: grid;
+  place-items: center;
+
+  background: #e9f2e9;
+
+  border-radius: 14px;
+}
+
+.badge-img img {
+  width: 100%;
+  height: 100%;
+
+  object-fit: contain;
+}
+
+.badge-text {
+  min-width: 0;
+}
+
+.badge-name {
+  color: var(--green-dark);
+
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.badge-desc {
+  margin-top: 4px !important;
+
+  color: var(--muted);
+
+  font-size: 0.76rem;
+  line-height: 1.4;
+}
+
+.badge-state {
+  margin-left: auto;
+
+  white-space: nowrap;
+}
+
+
+/* =========================================================
+   EMPTY BADGE
+   ========================================================= */
+
+.badge-empty {
+  padding: 20px;
+
+  color: var(--muted);
+
+  font-size: 0.82rem;
+  line-height: 1.4;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 1024px) {
+
+  .tracker-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .tracker-side {
+    width: 100%;
+  }
+
+}
+
+
+@media (max-width: 720px) {
+
+  .tracker {
+    width: 90%;
+    padding: 28px 0 50px;
+  }
+
+  .tracker-greeting {
+    margin-bottom: 30px;
+  }
+
+  .avatar {
+    width: 72px;
+    height: 72px;
+
+    flex-basis: 72px;
+  }
+
+  .greeting-title {
+    font-size: 2rem;
+  }
+
+  .greeting-sub {
+    font-size: 0.78rem;
+  }
+
+  .streak-card {
+    grid-template-columns: 1fr;
+
+    padding: 22px;
+
+    gap: 22px;
+  }
+
+  .week-chart {
+    width: 100%;
+  }
+
+  .nutrient-row {
+    grid-template-columns: 1fr;
+  }
+
+  .soon-banner {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+}
+
+
+@media (max-width: 480px) {
+
+  .tracker-greeting {
+    gap: 14px;
+  }
+
+  .avatar {
+    width: 62px;
+    height: 62px;
+
+    flex-basis: 62px;
+  }
+
+  .greeting-title {
+    font-size: 1.65rem;
+  }
+
+  .streak-card {
+    padding: 20px;
+  }
+
+  .section-title {
+    font-size: 1.5rem;
+  }
+
+  .week-chart {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+
+  .week-track {
+    width: 11px;
+  }
+
+}
+
+
+/* =========================================================
+   ACCESSIBILITY / MOTION
+   ========================================================= */
+
+@media (prefers-reduced-motion: no-preference) {
+
+  .week-bar {
+    transition: height 0.5s ease;
+  }
+
+}
