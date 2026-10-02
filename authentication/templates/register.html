@@ -1,4 +1,5 @@
 {% load static %}
+{% load socialaccount %}
 
 <!DOCTYPE html>
 <html lang="id">
@@ -140,16 +141,24 @@
             <span>atau</span>
         </div>
 
-        <button type="button" class="google-button" disabled>
+        <form method="POST"
+            action="{% provider_login_url 'google' process='login' %}"
+            class="google-login-form">
+            {% csrf_token %}
 
-            <span class="google-icon">G</span>
-
-            Daftar dengan Google (Segera Hadir)
-
-        </button>
+            <button class="google-button" type="submit">
+                <img
+                    src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
+                    alt="Google"
+                    class="google-logo"
+                    width="20"
+                    height="20"
+                >
+                Daftar dengan Google
+            </button>
+        </form>
 
         <p class="bottom-link">
-
             Sudah punya akun?
 
             <a href="{% url 'authentication:login' %}">

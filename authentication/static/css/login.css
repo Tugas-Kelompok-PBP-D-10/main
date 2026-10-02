@@ -501,3 +501,54 @@ body {
 .auth-card {
     margin-block: 12px;
 }
+
+.google-login-form {
+    width: 100%;
+    margin: 0;
+    cursor: pointer;
+}
+
+.google-login-form .google-button {
+    width: 100%;
+    min-height: 46px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+
+    padding: 11px 16px;
+
+    border: 1px solid var(--sage);
+    border-radius: 9px;
+
+    background: var(--surface);
+    color: var(--text);
+
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 700;
+
+    cursor: pointer !important;
+}
+
+.google-login-form .google-button:hover {
+    background: #FFF4E5;
+    cursor: pointer !important;
+}
+
+.google-login-form .google-button * {
+    cursor: pointer !important;
+}
+
+.google-login-form .google-logo {
+    display: block;
+
+    width: 20px !important;
+    height: 20px !important;
+    min-width: 20px;
+    max-width: 20px;
+
+    object-fit: contain;
+    flex: 0 0 20px;
+}

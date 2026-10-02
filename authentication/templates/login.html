@@ -1,4 +1,5 @@
 {% load static %}
+{% load socialaccount %}
 
 <!DOCTYPE html>
 <html lang="id">
@@ -35,7 +36,7 @@
         {% if messages %}
             {% for message in messages %}
 
-                <div class="alert-succes">
+                <div class="alert-success">
                     {{ message }}
                 </div>
 
@@ -102,16 +103,25 @@
             <span>atau</span>
         </div>
 
-        <!-- Akan dihubungkan ke Google OAuth -->
-        <button class="google-button" type="button" disabled>
+        <!-- dihubungkan ke Google OAuth -->
+        <form method="POST"
+                action="{% provider_login_url 'google' process='login' %}"
+                class="google-login-form">
+            {% csrf_token %}
 
-            <span class="google-icon">G</span>
+            <button class="google-button" type="submit">
+                <img
+                    src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
+                    alt="Google"
+                    class="google-logo"
+                    width="20"
+                    height="20"
+                >
+                <span>Masuk dengan Google</span>
+            </button>
+        </form>
 
-            Masuk dengan Google (Segera Hadir)
-
-        </button>
-
-        <p class="button-link">
+        <p class="bottom-link">
             Belum punya akun?
 
             <a href="{% url 'authentication:register' %}">
