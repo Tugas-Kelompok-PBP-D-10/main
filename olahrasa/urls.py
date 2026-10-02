@@ -11,4 +11,6 @@ urlpatterns = [
     path('', lambda request: redirect('/tracker/')),
     # Path untuk modul Inventori
     path("", include("inventori.urls")),
+    # Path Recipe
+    path('recipe/', include('recipe.urls')),
 ]

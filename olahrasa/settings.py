@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'inventori',
     'tracker',
+    'recipe',
 ]
 
 MIDDLEWARE = [
