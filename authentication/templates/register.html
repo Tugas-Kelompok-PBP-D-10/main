@@ -1,171 +1,144 @@
 {% load static %}
-{% load socialaccount %}
 
 <!DOCTYPE html>
 <html lang="id">
-
 <head>
     <meta charset="UTF-8">
-
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Register | Olahrasa</title>
+    <title>Register | OlahRasa</title>
 
-    <link rel="stylesheet" href="{% static 'css/login.css' %}">
+    <link rel="stylesheet" href="{% static 'css/login.css' %}?v=5">
 </head>
 
 <body>
 
-    <main class="auth-card">
+    <main class="auth-layout">
 
-        <a href="{% url 'authentication:welcome' %}" class="back-link">
-            ← Kembali
-        </a>
+        <!-- PANEL KIRI -->
+        <section class="auth-brand-panel">
 
-        <div class="brand-header">
+            <h1>Welcome To OlahRasa</h1>
 
-            <div class="logo-icon">🍴</div>
+            <div class="brand-illustration">
+                <img
+                    src="{% static 'image/olahrasa-logo.png' %}"
+                    alt="OlahRasa"
+                    class="brand-logo"
+                >
+            </div>
 
-            <h1>OlahRasa.</h1>
+            <p class="brand-tagline">
+                Track what you <strong>eat</strong>,
+                feel what you <strong>gain.</strong>
+            </p>
 
-            <p>Olah bahan sisa, jadi suatu rasa.</p>
+        </section>
 
-        </div>
+        <!-- PANEL KANAN -->
+        <section class="auth-form-panel">
 
-        <hr class="divider">
+            <div class="auth-form-wrapper">
 
-        <h2>Buat Akun Baru</h2>
-
-        <p class="description">
-            Bergabung dan mulailah mengolah bahan
-            sisa menjadi hidangan lezat dan bergizi!
-        </p>
-
-        <form method="POST" action="{% url 'authentication:register' %}" class="auth-form">
-
-            {% csrf_token %}
-
-            {% if form.non_field_errors %}
-
-                <div class="alert-error">
-                    {{ form.non_field_errors }}
+                <div class="register-heading">
+                    <h2>Sign-Up</h2>
+                    <p>Start your diet journey with OlahRasa</p>
                 </div>
 
-            {% endif %}
-
-            <!-- Username -->
-
-            <div class="form-field">
-
-                <label for="{{ form.username.id_for_label }}">
-                    Username
-                </label>
-
-                {{ form.username }}
-
-                {% for error in form.username.errors %}
-
-                    <small class="field-error">
-                        {{ error }}
-                    </small>
-                {% endfor %}
-
-            </div>
-
-            <!-- Email -->
-
-            <div class="form-field">
-
-                <label for="{{ form.email.id_for_label }}">
-                    Email
-                </label>
-
-                {{ form.email }}
-
-                {% for error in form.email.errors %}
-
-                    <small class="field-error">
-                        {{ error }}
-                    </small>
-
-                {% endfor %}
-
-            </div>
-
-            <!-- Password -->
-
-            <div class="form-field">
-
-                <label for="{{ form.password1.id_for_label }}">
-                    Password
-                </label>
-
-                {{ form.password1 }}
-
-                {% for error in form.password1.errors %}
-
-                    <small class="field-error">
-                        {{ error }}
-                    </small>
-
-                {% endfor %}
-
-            </div>
-
-            <!-- Konfirmasi password -->
-
-            <div class="form-field">
-
-                <label for="{{ form.password2.id_for_label }}">
-                    Konfirmasi Password
-                </label>
-
-                {{ form.password2 }}
-
-                {% for error in form.password2.errors %}
-
-                    <small class="field-error">
-                        {{ error }}
-                    </small>
-                {% endfor %}
-
-            </div>
-
-            <button type="submit" class="primary-button">
-                Daftar Akun
-            </button>
-
-        </form>
-
-        <div class="auth-divider">
-            <span>atau</span>
-        </div>
-
-        <form method="POST"
-            action="{% provider_login_url 'google' process='login' %}"
-            class="google-login-form">
-            {% csrf_token %}
-
-            <button class="google-button" type="submit">
-                <img
-                    src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
-                    alt="Google"
-                    class="google-logo"
-                    width="20"
-                    height="20"
+                <form
+                    method="POST"
+                    action="{% url 'authentication:register' %}"
+                    class="auth-form"
                 >
-                Daftar dengan Google
-            </button>
-        </form>
 
-        <p class="bottom-link">
-            Sudah punya akun?
+                    {% csrf_token %}
 
-            <a href="{% url 'authentication:login' %}">
-                Masuk di sini
-            </a>
+                    {% if form.non_field_errors %}
+                        <div class="alert-error">
+                            {{ form.non_field_errors }}
+                        </div>
+                    {% endif %}
 
-        </p>
+                    <div class="form-field">
+
+                        <label for="{{ form.username.id_for_label }}">
+                            NAME
+                        </label>
+
+                        {{ form.username }}
+
+                        {% for error in form.username.errors %}
+                            <small class="field-error">
+                                {{ error }}
+                            </small>
+                        {% endfor %}
+
+                    </div>
+
+                    <div class="form-field">
+
+                        <label for="{{ form.email.id_for_label }}">
+                            EMAIL
+                        </label>
+
+                        {{ form.email }}
+
+                        {% for error in form.email.errors %}
+                            <small class="field-error">
+                                {{ error }}
+                            </small>
+                        {% endfor %}
+
+                    </div>
+
+                    <div class="form-field">
+
+                        <label for="{{ form.password1.id_for_label }}">
+                            PASSWORD
+                        </label>
+
+                        {{ form.password1 }}
+
+                        {% for error in form.password1.errors %}
+                            <small class="field-error">
+                                {{ error }}
+                            </small>
+                        {% endfor %}
+
+                    </div>
+
+                    <div class="form-field">
+
+                        <label for="{{ form.password2.id_for_label }}">
+                            RE-TYPE PASSWORD
+                        </label>
+
+                        {{ form.password2 }}
+
+                        {% for error in form.password2.errors %}
+                            <small class="field-error">
+                                {{ error }}
+                            </small>
+                        {% endfor %}
+
+                    </div>
+
+                    <button type="submit" class="primary-button">
+                        SIGN UP
+                    </button>
+
+                </form>
+
+                <p class="account-link">
+                    Already have an account?
+                    <a href="{% url 'authentication:login' %}">
+                        LOG IN
+                    </a>
+                </p>
+
+            </div>
+
+        </section>
 
     </main>
 

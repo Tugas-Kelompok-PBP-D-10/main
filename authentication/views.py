@@ -80,4 +80,4 @@ def dashboard(request):
 @require_POST
 def logout_page(request):
     auth_logout(request)
-    return redirect("authentication:welcome")
+    return redirect("authentication:login")
