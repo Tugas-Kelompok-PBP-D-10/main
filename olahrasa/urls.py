@@ -1,5 +1,6 @@
 from django.contrib import admin
 from django.urls import path, include
+from django.shortcuts import redirect
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -14,8 +15,6 @@ urlpatterns = [
     path("", include("inventori.urls")),
     # Path Recipe
     path('recipe/', include('recipe.urls')),
-]
-    path('inventory/', include('inventori.urls')),
-
+    path('inventori/', include('inventori.urls')),
     path('', include('authentication.urls')),
 ]
