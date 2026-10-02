@@ -23,13 +23,13 @@
         <div class="logo">
             <a href="#" style="font-size: 1.2rem; font-weight: bold;">🌱 OlahRasa</a>
         </div>
-        <div class="nav-links">
-            <a href="#">Dashboard</a>
-            <a href="{% url 'recipe:home' %}">Resep</a>
-            <a href="#">Inventory</a>
-            <a href="#">Tracker</a>
-            <a href="#">Profile</a>
-            <a href="#">Login</a>
+      <div class="nav-links">
+       <a href="{% url 'authentication:dashboard' %}">Dashboard</a>
+        <a href="{% url 'recipe:home' %}">Resep</a>
+        <a href="{% url 'inventori' %}">Inventory</a>
+        <a href="{% url 'tracker:tracker' %}">Tracker</a>
+        <a href="#">Profile</a>
+      <a href="{% url 'authentication:login' %}">Login</a>
         </div>
     </navbar>
 
