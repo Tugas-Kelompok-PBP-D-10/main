@@ -1,5 +1,5 @@
-asgiref==3.12.1
-Django==6.1.1
-python-dotenv==1.2.3
-sqlparse==0.6.0
-tzdata==2026.4
+django~=5.2
+gunicorn
+psycopg2-binary
+python-dotenv
+whitenoise
