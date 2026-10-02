@@ -1,0 +1,146 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Register | OlahRasa</title>
+
+    <link rel="stylesheet" href="{% static 'css/login.css' %}?v=5">
+</head>
+
+<body>
+
+    <main class="auth-layout">
+
+        <!-- PANEL KIRI -->
+        <section class="auth-brand-panel">
+
+            <h1>Welcome To OlahRasa</h1>
+
+            <div class="brand-illustration">
+                <img
+                    src="{% static 'image/olahrasa-logo.png' %}"
+                    alt="OlahRasa"
+                    class="brand-logo"
+                >
+            </div>
+
+            <p class="brand-tagline">
+                Track what you <strong>eat</strong>,
+                feel what you <strong>gain.</strong>
+            </p>
+
+        </section>
+
+        <!-- PANEL KANAN -->
+        <section class="auth-form-panel">
+
+            <div class="auth-form-wrapper">
+
+                <div class="register-heading">
+                    <h2>Sign-Up</h2>
+                    <p>Start your diet journey with OlahRasa</p>
+                </div>
+
+                <form
+                    method="POST"
+                    action="{% url 'authentication:register' %}"
+                    class="auth-form"
+                >
+
+                    {% csrf_token %}
+
+                    {% if form.non_field_errors %}
+                        <div class="alert-error">
+                            {{ form.non_field_errors }}
+                        </div>
+                    {% endif %}
+
+                    <div class="form-field">
+
+                        <label for="{{ form.username.id_for_label }}">
+                            NAME
+                        </label>
+
+                        {{ form.username }}
+
+                        {% for error in form.username.errors %}
+                            <small class="field-error">
+                                {{ error }}
+                            </small>
+                        {% endfor %}
+
+                    </div>
+
+                    <div class="form-field">
+
+                        <label for="{{ form.email.id_for_label }}">
+                            EMAIL
+                        </label>
+
+                        {{ form.email }}
+
+                        {% for error in form.email.errors %}
+                            <small class="field-error">
+                                {{ error }}
+                            </small>
+                        {% endfor %}
+
+                    </div>
+
+                    <div class="form-field">
+
+                        <label for="{{ form.password1.id_for_label }}">
+                            PASSWORD
+                        </label>
+
+                        {{ form.password1 }}
+
+                        {% for error in form.password1.errors %}
+                            <small class="field-error">
+                                {{ error }}
+                            </small>
+                        {% endfor %}
+
+                    </div>
+
+                    <div class="form-field">
+
+                        <label for="{{ form.password2.id_for_label }}">
+                            RE-TYPE PASSWORD
+                        </label>
+
+                        {{ form.password2 }}
+
+                        {% for error in form.password2.errors %}
+                            <small class="field-error">
+                                {{ error }}
+                            </small>
+                        {% endfor %}
+
+                    </div>
+
+                    <button type="submit" class="primary-button">
+                        SIGN UP
+                    </button>
+
+                </form>
+
+                <p class="account-link">
+                    Already have an account?
+                    <a href="{% url 'authentication:login' %}">
+                        LOG IN
+                    </a>
+                </p>
+
+            </div>
+
+        </section>
+
+    </main>
+
+</body>
+</html>

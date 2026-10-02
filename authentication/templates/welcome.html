@@ -1,0 +1,70 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Welcome | OlahRasa</title>
+
+    <link rel="stylesheet"
+          href="{% static 'css/login.css' %}">
+</head>
+
+<body>
+
+    <main class="auth-card">
+
+        <div class="brand-header">
+
+            <div class="logo-icon">🍴</div>
+
+            <h1>OlahRasa.</h1>
+
+            <p>Olah bahan sisa, jadi suatu rasa.</p>
+
+        </div>
+
+        <hr class="divider">
+
+        <h2>Selamat Datang!</h2>
+
+        <p class="description">
+            Masuk atau daftar untuk mulai menemukan
+            inspirasi resep sesuai bahan yang kamu miliki.
+        </p>
+
+        <div class="choice-list">
+
+            <a href="{% url 'authentication:login' %}"
+               class="choice choice-primary">
+
+                <span>➜</span>
+                Login
+                <span>›</span>
+
+            </a>
+
+            <a href="{% url 'authentication:register' %}"
+               class="choice choice-secondary">
+
+                <span>♙</span>
+                Daftar Akun
+                <span>›</span>
+
+            </a>
+
+        </div>
+
+        <p class="footer-text">
+            Kurangi food waste, mulai dari dapurmu.
+        </p>
+
+    </main>
+
+</body>
+</html>
