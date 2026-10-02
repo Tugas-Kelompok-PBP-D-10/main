@@ -1,0 +1,149 @@
+{% load static %}
+{% load socialaccount %}
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Login | OlahRasa</title>
+
+    <link rel="stylesheet" href="{% static 'css/login.css' %}?v=5">
+</head>
+
+<body>
+
+    <main class="auth-layout">
+
+        <!-- PANEL KIRI -->
+        <section class="auth-brand-panel">
+
+            <h1>Welcome To OlahRasa</h1>
+
+            <div class="brand-illustration">
+                <img
+                    src="{% static 'image/olahrasa-logo.png' %}"
+                    alt="OlahRasa"
+                    class="brand-logo"
+                >
+            </div>
+
+            <p class="brand-tagline">
+                Track what you <strong>eat</strong>,
+                feel what you <strong>gain.</strong>
+            </p>
+
+        </section>
+
+        <!-- PANEL KANAN -->
+        <section class="auth-form-panel">
+
+            <div class="auth-form-wrapper">
+
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert-success">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+
+                <form
+                    method="POST"
+                    action="{% url 'authentication:login' %}"
+                    class="auth-form"
+                >
+
+                    {% csrf_token %}
+
+                    {% if form.non_field_errors %}
+                        <div class="alert-error">
+                            {{ form.non_field_errors }}
+                        </div>
+                    {% endif %}
+
+                    <div class="form-field">
+
+                        <label for="{{ form.username.id_for_label }}">
+                            EMAIL / USERNAME
+                        </label>
+
+                        {{ form.username }}
+
+                        {% for error in form.username.errors %}
+                            <small class="field-error">
+                                {{ error }}
+                            </small>
+                        {% endfor %}
+
+                    </div>
+
+                    <div class="form-field">
+
+                        <label for="{{ form.password.id_for_label }}">
+                            PASSWORD
+                        </label>
+
+                        {{ form.password }}
+
+                        {% for error in form.password.errors %}
+                            <small class="field-error">
+                                {{ error }}
+                            </small>
+                        {% endfor %}
+
+                    </div>
+
+                    <button type="submit" class="primary-button">
+                        LOG IN
+                    </button>
+
+                </form>
+
+                <p class="account-link">
+                    Don’t have an account?
+                    <a href="{% url 'authentication:register' %}">
+                        SIGN UP
+                    </a>
+                </p>
+
+                <div class="social-divider">
+                    <span>or</span>
+                </div>
+
+                <!-- GOOGLE LOGIN -->
+                <form
+                    method="POST"
+                    action="{% provider_login_url 'google' process='login' %}"
+                    class="google-login-form"
+                >
+
+                    {% csrf_token %}
+
+                    <button
+                        type="submit"
+                        class="google-icon-button"
+                        aria-label="Masuk dengan Google"
+                        title="Masuk dengan Google"
+                    >
+
+                        <img
+                            src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
+                            alt="Google"
+                            width="26"
+                            height="26"
+                        >
+
+                    </button>
+
+                </form>
+
+            </div>
+
+        </section>
+
+    </main>
+
+</body>
+</html>

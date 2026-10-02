@@ -1,0 +1,58 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Dashboard | Olahrasa</title>
+
+    <link rel="stylesheet" href="{% static 'css/login.css' %}">
+</head>
+
+<body>
+
+    <main class="auth-card">
+
+        <div class="brand-header">
+
+            <div class="logo-icon">🍴</div>
+
+            <h1>OlahRasa.</h1>
+
+            <p>Olah bahan sisa, jadi suatu rasa.</p>
+
+        </div>
+
+        <hr class="divider">
+
+        <div class="success-icon">✓</div>
+
+        <h2>Berhasil Masuk!</h2>
+
+        <p class="description">
+            Selamat datang, {{ request.user.username }}
+        </p>
+
+        <div class="dashboard-notice">
+
+            Katalog resep sedang dikembangkan.
+
+            Nantinya kamu bisa menemukan inspirasi
+            masakan dari bahan yang tersedia di dapurmu.
+        </div>
+
+        <form method="POST" action="{% url 'authentication:logout' %}">
+
+            {% csrf_token %}
+
+            <button type="submit" class="primary-button">
+                Logout
+            </button>
+        </form>
+    </main>
+</body>
+</html>
