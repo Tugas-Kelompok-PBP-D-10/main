@@ -1,0 +1,27 @@
+.edit {
+    display: none !important;
+}
+
+#content {
+    display: grid;
+    grid-template-areas: "inventori resep";
+    grid-template-columns: 33fr 66fr;
+    column-gap: 5rem;
+}
+
+.bahan-grid {
+    grid-area: inventori;
+}
+
+h2 {
+    grid-area: resep;
+}
+
+.recipe-grid {
+    grid-area: resep;
+}
+
+.bahan-card {
+    display: flex;
+    justify-content: space-between;
+}

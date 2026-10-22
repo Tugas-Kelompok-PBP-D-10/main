@@ -5,7 +5,52 @@
 <title>Inventori | OlahRasa</title>
 {% endblock meta %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'inventori/css/inventori-style.css' %}">
+{% endblock %}
 
 {% block content %}
-<p>Coming Soon</p>
+
+<div id="content">
+    <h1>Inventori</h1>
+    <h2>Rekomendasi Resep</h2>
+    <div id="bahan-grid"></div>
+    <div id="recipe-grid">
+        <p>Coming Soon</p>
+    </div>
+</div>
+
+<script>
+
+    function buildBahanCard(bahan) {
+        const elem = document.createElement('article');
+        elem.innerHTML = '';
+
+        const deleteButton = `<button type="submit" class=delete-button>-</button>`;
+
+        elem.innerHTML = `
+            <div class="bahan-card">
+                <p>${bahan.nama}</p>
+                <p>${bahan.stok}</p>
+            </div>
+        `;
+        return elem;
+    }
+
+    async function fetchBahan() {
+        const url = "{% url 'get_bahan_json' %}";
+        const response = await fetch(url, {
+            headers: {'Accept': 'application/json'},
+        });
+
+        const bahanData = await response.json();
+        document.getElementById('bahan-grid').innerHTML = '';
+        bahanData.forEach(bahan => {
+            document.getElementById('bahan-grid').appendChild(buildBahanCard(bahan));
+        });
+    }
+
+    fetchBahan();
+
+</script>
 {% endblock content %}
