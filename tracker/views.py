@@ -144,3 +144,29 @@ def tracker_dashboard_api(request):
         ),
     })
 
+
+@login_required
+def cooking_history_api(request):
+    logs = CookingLog.objects.filter(
+        user=request.user
+    ).order_by("-cooked_on", "-id")[:10]
+
+    history = []
+
+    for log in logs:
+        history.append({
+            "id": log.id,
+            "recipe_name": log.recipe_name,
+            "cooked_on": log.cooked_on.isoformat(),
+            "protein": log.protein_g,
+            "carbs": log.carbs_g,
+            "fat": log.fat_g,
+            "calories": log.calories,
+        })
+
+    return JsonResponse({
+        "success": True,
+        "history": history
+    })
+
+

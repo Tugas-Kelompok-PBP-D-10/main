@@ -76,9 +76,11 @@ class TrackerTest(TestCase):
 
         self.client.force_login(self.user)
 
+       
         response = self.client.post(
-            reverse("complete_cooking")
+            reverse("tracker:complete_cooking")
         )
+
 
         self.assertEqual(response.status_code, 200)
 
@@ -95,6 +97,35 @@ class TrackerTest(TestCase):
 
         streak = CookingStreak.objects.get(user=self.user)
         self.assertEqual(streak.active_streak, 1)
+
+    
+    def test_cooking_history_api(self):
+        self.client.force_login(self.user)
+
+        record_cook(
+            user=self.user,
+            recipe_name="Nasi Goreng",
+            protein_g=15,
+            carbs_g=40,
+            fat_g=10,
+            calories=310
+        )
+
+        response = self.client.get(
+            "/tracker/api/history/"
+        )
+
+        self.assertEqual(response.status_code, 200)
+
+        data = response.json()
+
+        self.assertTrue(data["success"])
+        self.assertEqual(len(data["history"]), 1)
+
+        self.assertEqual(
+            data["history"][0]["recipe_name"],
+            "Nasi Goreng"
+        )
 
 
 

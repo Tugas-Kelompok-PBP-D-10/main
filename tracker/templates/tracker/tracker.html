@@ -15,6 +15,7 @@
     class="tracker-page"
     id="tracker-dashboard"
     data-api-url="{% url 'tracker:dashboard_api' %}"
+    data-history-url="{% url 'tracker:history_api' %}"
 >
     
     <section class="tracker-hero">
@@ -110,11 +111,17 @@
                     <span>Recent</span>
                 </div>
 
-                <div id="history-container">
-                    <p class="tracker-placeholder-text">
-                        Riwayat memasak akan ditampilkan setelah integrasi selesai.
-                    </p>
-                </div>
+                
+              <div
+                  id="history-container"
+                  class="tracker-history-list"
+                  aria-live="polite"
+              >
+                  <p class="tracker-placeholder-text">
+                      Loading cooking history...
+                  </p>
+              </div>
+
             </div>
         </aside>
     </div>

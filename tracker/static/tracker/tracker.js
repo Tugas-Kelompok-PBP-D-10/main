@@ -1,7 +1,9 @@
 
 document.addEventListener("DOMContentLoaded", () => {
     loadTrackerDashboard();
+    loadCookingHistory();
 });
+
 
 async function loadTrackerDashboard() {
     const dashboard = document.getElementById(
@@ -157,3 +159,120 @@ function renderBadges(badges, earnedCount) {
         container.appendChild(item);
     });
 }
+
+
+async function loadCookingHistory() {
+    const dashboard = document.getElementById(
+        "tracker-dashboard"
+    );
+
+    const container = document.getElementById(
+        "history-container"
+    );
+
+    if (!dashboard || !container) return;
+
+    try {
+        const response = await fetch(
+            dashboard.dataset.historyUrl,
+            {
+                method: "GET",
+                credentials: "same-origin",
+                headers: {
+                    "Accept": "application/json"
+                }
+            }
+        );
+
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        renderCookingHistory(data.history);
+
+    } catch (error) {
+        console.error("History error:", error);
+
+        container.textContent =
+            "Gagal memuat riwayat memasak.";
+    }
+}
+
+
+// Format tanggal
+function formatCookingDate(dateString) {
+    const [year, month, day] = dateString
+        .split("-")
+        .map(Number);
+
+    const date = new Date(year, month - 1, day);
+
+    return new Intl.DateTimeFormat("id-ID", {
+        day: "numeric",
+        month: "short",
+        year: "numeric"
+    }).format(date);
+}
+
+
+// Render Cooking History
+function renderCookingHistory(history) {
+    const container = document.getElementById(
+        "history-container"
+    );
+
+    if (!container) return;
+
+    container.replaceChildren();
+
+    if (!history || history.length === 0) {
+        const empty = document.createElement("p");
+
+        empty.className = "tracker-placeholder-text";
+        empty.textContent =
+            "Belum ada aktivitas memasak. Yuk mulai masak!";
+
+        container.appendChild(empty);
+        return;
+    }
+
+    history.forEach((item) => {
+        const card = document.createElement("article");
+        card.className = "tracker-history-item";
+
+        const icon = document.createElement("div");
+        icon.className = "tracker-history-icon";
+        icon.textContent = "🍳";
+
+        const content = document.createElement("div");
+        content.className = "tracker-history-content";
+
+        const title = document.createElement("h4");
+        title.textContent =
+            item.recipe_name || "Resep tanpa nama";
+
+        const date = document.createElement("p");
+        date.className = "tracker-history-date";
+        date.textContent = formatCookingDate(
+            item.cooked_on
+        );
+
+        const nutrients = document.createElement("p");
+        nutrients.className = "tracker-history-nutrients";
+        nutrients.textContent =
+            `${item.calories} kcal • ` +
+            `${item.protein}g protein`;
+
+        content.append(title, date, nutrients);
+
+        const status = document.createElement("span");
+        status.className = "tracker-history-status";
+        status.textContent = "Done";
+
+        card.append(icon, content, status);
+        container.appendChild(card);
+    });
+}
+

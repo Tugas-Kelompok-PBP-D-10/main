@@ -889,3 +889,104 @@ body {
     flex-direction: column;
   }
 }
+
+
+/* ==================================
+   COOKING HISTORY - FIGMA STYLE
+================================== */
+
+.tracker-history-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    background: transparent;
+    padding: 0;
+}
+
+.tracker-history-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    background: #FFFEFE;
+    border: 1px solid #F0F0ED;
+    border-radius: 11px;
+    padding: 12px;
+
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.tracker-history-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 16px rgba(3, 105, 94, 0.08);
+}
+
+.tracker-history-icon {
+    width: 46px;
+    height: 46px;
+    flex-shrink: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 10px;
+    background: #FFF0E8;
+    font-size: 23px;
+}
+
+.tracker-history-content {
+    min-width: 0;
+    flex: 1;
+}
+
+.tracker-history-content h4 {
+    margin: 0 0 5px;
+
+    font-family: 'Sen', sans-serif;
+    font-size: 14px;
+    font-weight: 800;
+
+    color: #03695E;
+    overflow-wrap: anywhere;
+}
+
+.tracker-history-date {
+    margin: 0 0 5px;
+    color: #858A85;
+    font-size: 11px;
+}
+
+.tracker-history-nutrients {
+    margin: 0;
+    color: #EE8252;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.tracker-history-status {
+    flex-shrink: 0;
+    padding: 5px 9px;
+
+    border-radius: 20px;
+    background: rgba(128, 176, 136, 0.18);
+
+    color: #03695E;
+    font-size: 10px;
+    font-weight: 800;
+}
+
+@media (max-width: 650px) {
+    .tracker-history-item {
+        gap: 9px;
+        padding: 10px;
+    }
+
+    .tracker-history-status {
+        font-size: 9px;
+        padding: 4px 7px;
+    }
+}
+
