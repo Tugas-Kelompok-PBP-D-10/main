@@ -6,6 +6,11 @@ from django.shortcuts import render
 from django.utils import timezone
 from django.contrib.auth.models import User
 
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
+from .services import record_cook
+
+
 from .models import Badge, CookingLog, CookingStreak, UserBadge
 
 # Target nutrisi mingguan (sesuaikan dengan kebutuhan)
@@ -58,16 +63,9 @@ def _badges(user, streak):
     return items
 
 
-# @login_required
+@login_required
 def tracker_view(request):
-    # Jika user belum login, gunakan atau buat user dummy untuk testing
-    if request.user.is_authenticated:
-        user = request.user
-    else:
-        user, created = User.objects.get_or_create(
-            username='testuser',
-            defaults={'email': 'test@example.com'}
-        )
+    user = request.user
 
     today = timezone.localdate()
     monday = today - timedelta(days=today.weekday())
@@ -88,3 +86,61 @@ def tracker_view(request):
         "badges_earned": sum(1 for b in badges if b["earned"]),
     }
     return render(request, "tracker/tracker.html", context)
+
+
+@login_required
+@require_POST
+def complete_cooking(request):
+
+    if not request.user.is_staff:
+        return JsonResponse({
+            "success": False,
+            "message": "Fitur masih dalam tahap pengujian."
+        }, status=403)
+
+    recipe_name = "Test Cooking"
+
+    new_badges = record_cook(
+        user=request.user,
+        recipe_name=recipe_name,
+        protein_g=15,
+        carbs_g=40,
+        fat_g=10,
+        calories=310
+    )
+
+    return JsonResponse({
+        "success": True,
+        "message": "Aktivitas memasak berhasil dicatat!",
+        "new_badges": [
+            badge.name for badge in new_badges
+        ]
+    })
+
+
+@login_required
+def tracker_dashboard_api(request):
+    user = request.user
+
+    today = timezone.localdate()
+    monday = today - timedelta(days=today.weekday())
+
+    streak, _ = CookingStreak.objects.get_or_create(
+        user=user
+    )
+
+    badges = _badges(user, streak)
+
+    return JsonResponse({
+        "streak": {
+            "current": streak.active_streak,
+            "longest": streak.longest_streak,
+        },
+        "week": _week_data(user, monday),
+        "nutrients": _nutrients(user, monday),
+        "badges": badges,
+        "badges_earned": sum(
+            1 for badge in badges if badge["earned"]
+        ),
+    })
+
