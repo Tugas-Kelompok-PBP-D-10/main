@@ -47,20 +47,53 @@ def _nutrients(user, monday):
     return result
 
 
+
 def _badges(user, streak):
-    total = CookingLog.objects.filter(user=user).count()
-    earned_ids = set(UserBadge.objects.filter(user=user).values_list("badge_id", flat=True))
+    total = CookingLog.objects.filter(
+        user=user
+    ).count()
+
+    earned_ids = set(
+        UserBadge.objects.filter(
+            user=user
+        ).values_list("badge_id", flat=True)
+    )
+
     items = []
+
     for b in Badge.objects.all():
-        value = streak.longest_streak if b.kind == Badge.Kind.STREAK else total
+        value = (
+            streak.longest_streak
+            if b.kind == Badge.Kind.STREAK
+            else total
+        )
+
         earned = b.id in earned_ids
+
         items.append({
-            "name": b.name, "description": b.description, "icon": b.icon or None,
+            "name": b.name,
+            "description": b.description,
+
+           
+            "icon": b.icon.url if b.icon else None,
+
             "earned": earned,
-            "progress": 100 if earned else min(99, round(value / b.threshold * 100)),
+
+            "progress": (
+                100 if earned
+                else min(
+                    99,
+                    round(value / b.threshold * 100)
+                )
+            ) if b.threshold > 0 else 0,
         })
-    items.sort(key=lambda x: not x["earned"])  # badge yang sudah didapat di atas
+
+    items.sort(
+        key=lambda x: not x["earned"]
+    )
+
     return items
+
 
 
 @login_required

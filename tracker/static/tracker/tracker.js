@@ -1,3 +1,14 @@
+const badgeIcons = {
+    FIRST_COOK: "chef-hat",
+    STREAK_3: "flame",
+    TOTAL_10: "trophy"
+};
+
+const nutrientIcons = {
+    Protein: "trending-up",
+    Carbs: "chart-no-axes-column-increasing",
+    Fat: "activity"
+};
 
 document.addEventListener("DOMContentLoaded", () => {
     loadTrackerDashboard();
@@ -53,72 +64,113 @@ async function loadTrackerDashboard() {
 // =======================
 
 function renderNutrition(nutrients) {
-    const container = document.getElementById("nutrition-container");
+    const container = document.getElementById(
+        "nutrition-container"
+    );
+
     if (!container) return;
 
     container.replaceChildren();
 
-   
-    const metaMap = {
-        Protein: {
-            icon: "↗",
-            iconClass: "icon-protein",
-            ringColor: "#80B088"
-        },
-        Carbs: {
-            icon: "↗",
-            iconClass: "icon-carbs",
-            ringColor: "#EE8252"
-        },
-        Fat: {
-            icon: "↗",
-            iconClass: "icon-fat",
-            ringColor: "#E8CC63"
-        }
+    const nutrientIcons = {
+        Protein: "trending-up",
+        Carbs: "chart-no-axes-column-increasing",
+        Fat: "activity"
     };
 
+    const nutrientColors = {
+        Protein: "#80B088",
+        Carbs: "#EE8252",
+        Fat: "#E8CC63"
+    };
 
     nutrients.forEach((nutrient) => {
-        const meta = metaMap[nutrient.name] || {
-            icon: "•",
-            iconClass: "",
-            ringColor: "#EE8252"
-        };
-
-        const percent = Math.max(0, Math.min(100, Number(nutrient.percent) || 0));
-
         const card = document.createElement("article");
         card.className = "tracker-card tracker-progress-card";
 
-        card.innerHTML = `
-            <div class="tracker-progress-top">
-                <div class="tracker-progress-icon ${meta.iconClass}">
-                    ${meta.icon}
-                </div>
-                <h4 class="tracker-progress-name">${nutrient.name}</h4>
-            </div>
+        
+        const header = document.createElement("div");
+        header.className = "tracker-progress-top";
 
-            <div class="tracker-progress-ring-wrap">
-                <div class="tracker-progress-ring"
-                     style="--percent:${percent}; --ring-color:${meta.ringColor};">
-                    <span>${percent}%</span>
-                </div>
-            </div>
+        const iconBox = document.createElement("div");
+        iconBox.className = "tracker-progress-icon";
+        iconBox.classList.add(
+            `icon-${nutrient.name.toLowerCase()}`
+        );
 
-            <div class="tracker-progress-meta">
-                <p class="tracker-progress-value">${nutrient.current}${nutrient.unit}</p>
-                <p class="tracker-progress-target">Target: ${nutrient.target}${nutrient.unit}</p>
-            </div>
-        `;
+        const icon = document.createElement("i");
+        icon.setAttribute(
+            "data-lucide",
+            nutrientIcons[nutrient.name] || "activity"
+        );
 
+        iconBox.appendChild(icon);
+
+        const title = document.createElement("h4");
+        title.className = "tracker-progress-name";
+        title.textContent = nutrient.name;
+
+        header.append(iconBox, title);
+
+       
+        const percent = Math.max(
+            0,
+            Math.min(100, Number(nutrient.percent) || 0)
+        );
+
+        const ringWrap = document.createElement("div");
+        ringWrap.className = "tracker-progress-ring-wrap";
+
+        const ring = document.createElement("div");
+        ring.className = "tracker-progress-ring";
+
+        ring.style.setProperty("--percent", percent);
+        ring.style.setProperty(
+            "--ring-color",
+            nutrientColors[nutrient.name] || "#03695E"
+        );
+
+        const ringText = document.createElement("span");
+        ringText.textContent = `${percent}%`;
+
+        ring.appendChild(ringText);
+        ringWrap.appendChild(ring);
+
+       
+        const meta = document.createElement("div");
+        meta.className = "tracker-progress-meta";
+
+        const value = document.createElement("p");
+        value.className = "tracker-progress-value";
+        value.textContent =
+            `${nutrient.current}${nutrient.unit}`;
+
+        const target = document.createElement("p");
+        target.className = "tracker-progress-target";
+        target.textContent =
+            `Target: ${nutrient.target}${nutrient.unit}`;
+
+        meta.append(value, target);
+
+       
+        card.append(header, ringWrap, meta);
         container.appendChild(card);
     });
+
+    
+    if (window.lucide) {
+        window.lucide.createIcons();
+    }
 }
+
+
+
 
 
 // =======================
 // ACHIEVEMENT BADGES
 // =======================
+
 function renderBadges(badges, earnedCount) {
     const container = document.getElementById("badges-container");
     const summary = document.getElementById("badge-summary");
@@ -131,34 +183,73 @@ function renderBadges(badges, earnedCount) {
 
     container.replaceChildren();
 
+    const badgeIcons = {
+        FIRST_COOK: "chef-hat",
+        STREAK_3: "flame",
+        TOTAL_10: "trophy"
+    };
+
     if (!badges || badges.length === 0) {
         const empty = document.createElement("p");
         empty.className = "tracker-placeholder-text";
         empty.textContent = "Belum ada achievement tersedia.";
+
         container.appendChild(empty);
         return;
     }
 
     badges.forEach((badge) => {
-        const item = document.createElement("div");
+
+       
+        const item = document.createElement("article");
         item.className = "tracker-badge-item";
 
-        item.innerHTML = `
-            <div class="tracker-badge-icon">
-                ${badge.icon || "🏆"}
-            </div>
-            <div class="tracker-badge-content">
-                <h4>${badge.name}</h4>
-                <p>${badge.description}</p>
-                <span class="tracker-badge-status ${badge.earned ? "unlocked" : "locked"}">
-                    ${badge.earned ? "Unlocked" : `Progress ${badge.progress}%`}
-                </span>
-            </div>
-        `;
+       
+        const iconBox = document.createElement("div");
+        iconBox.className = "tracker-badge-icon";
 
+        const iconElement = document.createElement("i");
+        iconElement.setAttribute(
+            "data-lucide",
+            badgeIcons[badge.code] || "award"
+        );
+
+        iconBox.appendChild(iconElement);
+
+        
+        const content = document.createElement("div");
+        content.className = "tracker-badge-content";
+
+        const name = document.createElement("h4");
+        name.textContent = badge.name;
+
+        const description = document.createElement("p");
+        description.textContent = badge.description;
+
+        const status = document.createElement("span");
+        status.className = badge.earned
+            ? "tracker-badge-status unlocked"
+            : "tracker-badge-status locked";
+
+        status.textContent = badge.earned
+            ? "Unlocked"
+            : `Progress ${badge.progress}%`;
+
+        content.append(name, description, status);
+
+       
+        item.append(iconBox, content);
+
+       
         container.appendChild(item);
     });
+
+
+    if (window.lucide) {
+        window.lucide.createIcons();
+    }
 }
+
 
 
 async function loadCookingHistory() {
@@ -243,9 +334,19 @@ function renderCookingHistory(history) {
         card.className = "tracker-history-item";
 
         const icon = document.createElement("div");
-        icon.className = "tracker-history-icon";
-        icon.textContent = "🍳";
+        icon.className = "tracker-badge-icon";
 
+        if (badge.icon) {
+            const image = document.createElement("img");
+
+            image.src = badge.icon;
+            image.alt = badge.name;
+            image.loading = "lazy";
+
+            icon.appendChild(image);
+        } else {
+            icon.textContent = "🏆";
+        }
         const content = document.createElement("div");
         content.className = "tracker-history-content";
 

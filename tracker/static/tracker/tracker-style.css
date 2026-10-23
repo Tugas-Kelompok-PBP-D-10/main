@@ -990,3 +990,74 @@ body {
     }
 }
 
+
+.tracker-badge-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    background: #FFF1E9;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.tracker-badge-icon img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+
+/* SVG Icons — OlahRasa Figma Style */
+
+.tracker-progress-icon,
+.tracker-badge-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+}
+
+.tracker-progress-icon svg,
+.tracker-badge-icon svg {
+    width: 22px;
+    height: 22px;
+    stroke-width: 2px;
+}
+
+.tracker-progress-icon {
+    background: #DDEBE0;
+    color: #03695E;
+}
+
+.tracker-badge-icon {
+    background: #FCE8DD;
+    color: #EE8252;
+}
+
+.tracker-badge-item:has(.tracker-badge-status.locked)
+.tracker-badge-icon {
+    background: #F2F2EF;
+    color: #A3A8A3;
+}
+
+.tracker-progress-icon.icon-protein {
+    background: #DDEBE0;
+    color: #03695E;
+}
+
+.tracker-progress-icon.icon-carbs {
+    background: #FCE8DD;
+    color: #EE8252;
+}
+
+.tracker-progress-icon.icon-fat {
+    background: #FBF1CE;
+    color: #C29A35;
+}
+
+
