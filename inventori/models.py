@@ -1,3 +1,4 @@
+import uuid
 from django.conf import settings
 from django.db import models
 
@@ -10,6 +11,7 @@ class Inventori(models.Model):
         return not self.bahans.exist()
 
 class Bahan(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=255)
     stock = models.PositiveIntegerField()
     protein_content = models.FloatField()

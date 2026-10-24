@@ -1,27 +1,69 @@
-.edit {
-    display: none !important;
-}
-
 #content {
     display: grid;
-    grid-template-areas: "inventori resep";
+    grid-template-areas: 
+        "title-i title-r"
+        "inventori resep"
+        "button-i misc";
     grid-template-columns: 33fr 66fr;
     column-gap: 5rem;
 }
+h1 {
+    grid-area: title-i;
+} 
 
-.bahan-grid {
+#bahan-grid {
+    grid-area: inventori;
+    
+}
+
+#bahan-form {
     grid-area: inventori;
 }
 
-h2 {
-    grid-area: resep;
+.bahan-form {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.3rem;
+    gap: 2rem;
 }
 
-.recipe-grid {
+.form-box {
+    width: 1rem;
+}
+
+.buttons {
+    grid-area: button-i;
+    display: grid;
+    place-items: center;
+    align-content: center;
+    gap: 0.5rem;
+}
+
+.button {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+}
+
+h2 {
+    grid-area: title-r;
+}
+
+#recipe-grid {
     grid-area: resep;
 }
 
 .bahan-card {
     display: flex;
     justify-content: space-between;
+    gap: 2rem;
+    margin-bottom: 0.3rem;
+    font-size: large;
+}
+
+.stock {
+    margin-left: auto;
+}
+
+#tambah-bahan-modal {
+    justify-content: center;
 }

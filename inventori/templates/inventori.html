@@ -15,40 +15,167 @@
     <h1>Inventori</h1>
     <h2>Rekomendasi Resep</h2>
     <div id="bahan-grid"></div>
+    <div id="bahan-form-grid">
+        <form method="post" id="bahan-form" action="{% url 'inventori' %}">
+            {% csrf_token %}
+            {{ formset.management_form }}
+            <p style="white-space: pre-wrap;">Nama Bahan                      Stok                  Protein </p>
+            {% for form in formset %}
+                <div class="bahan-form" id="row-{{ forloop.counter0 }}">
+                    {{ form.id }}
+                    <div style="display: none;">
+                        {{ form.DELETE }}
+                    </div>
+                    <button type="button" 
+                            bahan-id="{{ form.instance.id }}"
+                            onclick="deleteBahan('{{ forloop.counter0 }}')">-</button>
+                    {{ form.name }}
+                    {{ form.stock }} 
+                    {{ form.protein_content }}
+                </div>
+            {% endfor %}
+            <button id="save-button" type="submit" class="button">Simpan Perubahan</button>
+        </form>
+    </div>
+
     <div id="recipe-grid">
         <p>Coming Soon</p>
     </div>
+    <div class="buttons">
+        <button type="button"
+                id="add-button"
+                class="button"
+                popovertarget="tambah-bahan-modal">
+            <span aria-hidden="true">+</span>    
+        </button>
+        <button id="edit-button" 
+                type="button" 
+                onclick="editBahan()"
+                class="button">Edit Inventori</button>
+    </div>
 </div>
+
+{% include "components/tambah_bahan_modal.html" %}
 
 <script>
 
+    async function editBahan() {
+        fetch(window.location.href)
+        .then(response => response.text())
+        .then(htmlString => {
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(htmlString, 'text/html');
+            
+            const freshForm = doc.getElementById('bahan-form-grid').innerHTML;
+            
+            const currentContainer = document.getElementById('bahan-form-grid');
+            currentContainer.innerHTML = freshForm;
+        });
+    }
+    
+    async function deleteBahan(rowIndex) {
+        if (!confirm('Apakah Anda yakin ingin menghapus bahan ini?')) return;
+
+        const row = document.getElementById(`row-${rowIndex}`);
+        const deleteCheckbox = document.querySelector(`input[name="form-${rowIndex}-DELETE"]`);
+        if (deleteCheckbox) {
+            deleteCheckbox.checked = true;
+            row.style.display = 'none';
+        }
+    }
+
+    document.getElementById('bahan-form').hidden = true;
     function buildBahanCard(bahan) {
         const elem = document.createElement('article');
         elem.innerHTML = '';
 
-        const deleteButton = `<button type="submit" class=delete-button>-</button>`;
-
         elem.innerHTML = `
-            <div class="bahan-card">
+            <div id="bahan-${bahan.id}" class="bahan-card">
                 <p>${bahan.nama}</p>
                 <p>${bahan.stok}</p>
+                <p>${bahan.kandungan_protein}</p>
             </div>
         `;
         return elem;
     }
 
     async function fetchBahan() {
+        const bahanGrid = document.getElementById('bahan-grid');
         const url = "{% url 'get_bahan_json' %}";
         const response = await fetch(url, {
             headers: {'Accept': 'application/json'},
         });
 
         const bahanData = await response.json();
-        document.getElementById('bahan-grid').innerHTML = '';
-        bahanData.forEach(bahan => {
-            document.getElementById('bahan-grid').appendChild(buildBahanCard(bahan));
-        });
+        bahanGrid.innerHTML = '';
+        if (bahanData.length === 0) {
+            bahanGrid.innerHTML = '<p>Tidak ada bahan dalam inventori</p>';
+        } else {
+            bahanGrid.innerHTML = '<p style="white-space: pre-wrap;">Nama Bahan                 Stok                     Protein</p>';
+            bahanData.forEach(bahan => {
+                bahanGrid.appendChild(buildBahanCard(bahan));
+            });
+        }
     }
+
+    function closeBahanModal() {
+        document.getElementById("tambah-bahan-modal").hidePopover();
+    }
+
+    const TAMBAH_BAHAN_ENDPOINT = "{% url 'add_bahan' %}";
+    const bahanForm = document.getElementById('tambah-bahan-form');
+
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    async function addBahan(event) {
+        event.preventDefault();
+
+        const submitButton = bahanForm.querySelector('button[type="submit"]');
+        submitButton.disabled = true;
+
+        try {
+            const response = await fetch(TAMBAH_BAHAN_ENDPOINT, {
+                method: 'POST',
+                headers: { 'X-CSRFToken': getCookie('csrftoken') },
+                body: new FormData(bahanForm),
+            });
+            const result = await response.json().catch(() => ({}));
+
+            if (response.ok) {
+                bahanForm.reset();
+                closeBahanModal();
+                fetchBahan();
+            } 
+        } catch (error) {
+            console.error('Error menambahkan bahan:', error);
+        } finally {
+            submitButton.disabled = false;
+        }
+    }
+
+    if (bahanForm) {
+        bahanForm.addEventListener('submit', addBahan);
+    }
+
+    document.getElementById('edit-button').addEventListener('click', () => {
+        document.getElementById('edit-button').hidden = true;
+        document.getElementById('bahan-grid').hidden = true;
+        document.getElementById('add-button').hidden = true;
+        document.getElementById('bahan-form').hidden = false;
+    });
 
     fetchBahan();
 
