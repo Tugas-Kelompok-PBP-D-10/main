@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'tracker',
     'recipe',
     'authentication',
+    'voting',
 
     'allauth',
     'allauth.account',
