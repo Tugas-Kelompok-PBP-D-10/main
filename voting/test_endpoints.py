@@ -92,4 +92,4 @@ class VoteReadDeleteTests(TestCase):
         url = reverse("voting:vote_remove", args=[self.recipe.pk])
         self.assertEqual(self.client.post(url).status_code, 401)
         self.client.force_login(self.user)
-        self.assertEqual(self.client.get(url).status_code, 405)
+        self.assertEqual(self.client.get(url).status_code, 405)     
