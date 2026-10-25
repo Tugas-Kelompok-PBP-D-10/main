@@ -10,16 +10,19 @@
 {% endblock %}
 
 {% block content %}
-
 <div id="content">
     <h1>Inventori</h1>
     <h2>Rekomendasi Resep</h2>
-    <div id="bahan-grid"></div>
+    <div id="bahan-grid">
+        <table id="bahan-table">
+
+        </table>
+    </div>
     <div id="bahan-form-grid">
         <form method="post" id="bahan-form" action="{% url 'inventori' %}">
             {% csrf_token %}
             {{ formset.management_form }}
-            <p style="white-space: pre-wrap;">Nama Bahan                      Stok                  Protein </p>
+            <p class="form-title">                   Nama Bahan               Stok            Protein </p>
             {% for form in formset %}
                 <div class="bahan-form" id="row-{{ forloop.counter0 }}">
                     {{ form.id }}
@@ -27,6 +30,7 @@
                         {{ form.DELETE }}
                     </div>
                     <button type="button" 
+                            class="button"
                             bahan-id="{{ form.instance.id }}"
                             onclick="deleteBahan('{{ forloop.counter0 }}')">-</button>
                     {{ form.name }}
@@ -55,10 +59,12 @@
     </div>
 </div>
 
+<div class="blur-backdrop" id="backdrop"></div>
 {% include "components/tambah_bahan_modal.html" %}
 
 <script>
-
+    document.getElementById('backdrop').hidden = true;
+    document.getElementById('bahan-form-grid').hidden = true;
     async function editBahan() {
         fetch(window.location.href)
         .then(response => response.text())
@@ -84,23 +90,21 @@
         }
     }
 
-    document.getElementById('bahan-form').hidden = true;
     function buildBahanCard(bahan) {
-        const elem = document.createElement('article');
+        const elem = document.createElement('tr');
+        elem.className = "bahan-card";
         elem.innerHTML = '';
 
         elem.innerHTML = `
-            <div id="bahan-${bahan.id}" class="bahan-card">
-                <p>${bahan.nama}</p>
-                <p>${bahan.stok}</p>
-                <p>${bahan.kandungan_protein}</p>
-            </div>
+            <td>${bahan.nama}</td>
+            <td>${bahan.stok}</td>
+            <td>${bahan.kandungan_protein}</td>
         `;
         return elem;
     }
 
     async function fetchBahan() {
-        const bahanGrid = document.getElementById('bahan-grid');
+        const bahanGrid = document.getElementById('bahan-table');
         const url = "{% url 'get_bahan_json' %}";
         const response = await fetch(url, {
             headers: {'Accept': 'application/json'},
@@ -111,7 +115,13 @@
         if (bahanData.length === 0) {
             bahanGrid.innerHTML = '<p>Tidak ada bahan dalam inventori</p>';
         } else {
-            bahanGrid.innerHTML = '<p style="white-space: pre-wrap;">Nama Bahan                 Stok                     Protein</p>';
+            bahanGrid.innerHTML = `
+            <tr>
+                <th>Nama Bahan</th>
+                <th>Stok</th>
+                <th>Protein</th>
+            </tr>
+            `;
             bahanData.forEach(bahan => {
                 bahanGrid.appendChild(buildBahanCard(bahan));
             });
@@ -120,6 +130,7 @@
 
     function closeBahanModal() {
         document.getElementById("tambah-bahan-modal").hidePopover();
+        document.getElementById('backdrop').hidden = true;
     }
 
     const TAMBAH_BAHAN_ENDPOINT = "{% url 'add_bahan' %}";
@@ -170,12 +181,31 @@
         bahanForm.addEventListener('submit', addBahan);
     }
 
+    function showPopup() {
+        document.getElementById('backdrop').hidden = false;
+        document.getElementById('tambah-bahan-modal').hidden = false;
+    }
+
+    function hidePopup() {
+        document.getElementById('backdrop').hidden = true;
+        document.getElementById('tambah-bahan-modal').hidden = true;
+    }
+    
+    document.getElementById('add-button').addEventListener('click', () => {
+        showPopup();
+    });
+
+    document.getElementById('backdrop').addEventListener('click', () => {
+        hidePopup();
+    });
+
     document.getElementById('edit-button').addEventListener('click', () => {
         document.getElementById('edit-button').hidden = true;
         document.getElementById('bahan-grid').hidden = true;
         document.getElementById('add-button').hidden = true;
-        document.getElementById('bahan-form').hidden = false;
+        document.getElementById('bahan-form-grid').hidden = false;
     });
+
 
     fetchBahan();
 

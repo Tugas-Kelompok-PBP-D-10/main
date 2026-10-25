@@ -5,10 +5,14 @@
      aria-modal="true">
     
     <div class="form-modal__content">
-        <h3>Tambah Bahan</h3>
-        <button type="button"
-                popovertarget="tambah-bahan-modal"
-                popovertargetaction="hide">×</button>
+        <div class="modal-title">
+            <h3>Tambah Bahan</h3>
+            <button type="button"
+                    id="hide-popup"
+                    class="button"
+                    popovertarget="tambah-bahan-modal"
+                    onclick="hidePopup()">×</button>
+        </div>
         
         <form id="tambah-bahan-form"
               method="post"
@@ -17,6 +21,7 @@
             {% for field in form %}
                 <div class="form-group">
                     <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    <br>
                     {{ field }}
                     {% for error in field.errors %}
                         <p class="form-error">{{ error }}</p>
@@ -25,9 +30,11 @@
             {% endfor %}  
             <div class="form-modal__actions">
                 <button type="button"
+                        class="button"
+                        id="hide-popup"
                         popovertarget="tambah-bahan-modal"
-                        popovertargetaction="hide">Batal</button>
-                <button type="submit">Tambah</button>
+                        onclick="hidePopup()">Batal</button>
+                <button type="submit" class="button">Tambah</button>
             </div>  
         </form>
     </div>

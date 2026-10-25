@@ -20,7 +20,7 @@ class BahanForm(ModelForm):
         widgets = {
             "name": TextInput(
                 attrs={
-                    "placeholder": "nama bahan",
+                    "placeholder": "Nama bahan",
                     "maxlength": 255,
                     "style": 'width: 10rem !important;',
                     "class": "form-box",
@@ -28,6 +28,7 @@ class BahanForm(ModelForm):
             ),
             "stock": NumberInput(
                 attrs={
+                    "placeholder": "Unit",
                     "min": 1,
                     "style": 'width: 5rem !important;',
                     "class": "form-box",
