@@ -2,6 +2,7 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,11 +12,15 @@
     <!-- CSS Utama -->
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
 
+
     {% block meta %}{% endblock %}
 
     <!-- CSS khusus halaman -->
-    {% block extra_css %}{% endblock %}
+    {% block extra_css %}
+    <link rel="stylesheet" href="{% static 'voting/voting.css' %}">
+    {% endblock %}
 </head>
+
 <body>
 
     <!-- Navbar Utama Kelompok -->
@@ -23,13 +28,13 @@
         <div class="logo">
             <a href="#" style="font-size: 1.2rem; font-weight: bold;">🌱 OlahRasa</a>
         </div>
-      <div class="nav-links">
-       <a href="{% url 'authentication:dashboard' %}">Dashboard</a>
-        <a href="{% url 'recipe:home' %}">Resep</a>
-        <a href="{% url 'inventori' %}">Inventory</a>
-        <a href="{% url 'tracker:tracker' %}">Tracker</a>
-        <a href="#">Profile</a>
-      <a href="{% url 'authentication:login' %}">Login</a>
+        <div class="nav-links">
+            <a href="{% url 'authentication:dashboard' %}">Dashboard</a>
+            <a href="{% url 'recipe:home' %}">Resep</a>
+            <a href="{% url 'inventori' %}">Inventory</a>
+            <a href="{% url 'tracker:tracker' %}">Tracker</a>
+            <a href="#">Profile</a>
+            <a href="{% url 'authentication:login' %}">Login</a>
         </div>
     </navbar>
 
@@ -39,5 +44,7 @@
         {% endblock content %}
     </div>
 
+    <script src="{% static 'voting/voting.js' %}" defer></script>
 </body>
+
 </html>
