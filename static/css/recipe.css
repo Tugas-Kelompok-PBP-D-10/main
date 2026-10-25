@@ -1,0 +1,108 @@
+/* Section Hero */
+.recipe-hero-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 64px 16px;
+    background-color: #ffffff;
+}
+
+.recipe-hero-title {
+    font-size: 32px;
+    font-weight: 700;
+    color: #E87A5D;
+    margin-bottom: 12px;
+    letter-spacing: 0.5px;
+}
+
+.recipe-hero-subtitle {
+    color: #6b7280;
+    font-size: 15px;
+    max-width: 550px;
+    margin-bottom: 32px;
+}
+
+/* Form Container */
+.recipe-search-container {
+    width: 100%;
+    max-width: 420px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+}
+
+/* Input Field */
+.recipe-input-field {
+    width: 100%;
+    padding: 10px 16px;
+    border-radius: 8px;
+    border: 1px solid #e5e7eb;
+    font-size: 14px;
+    outline: none;
+    box-sizing: border-box;
+    transition: all 0.2s ease;
+}
+
+.recipe-input-field:focus {
+    border-color: #E87A5D;
+    box-shadow: 0 0 0 3px rgba(232, 122, 93, 0.2);
+}
+
+/* Button Group */
+.recipe-btn-group {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    width: 100%;
+}
+
+.btn-secondary,
+.btn-primary {
+    font-family: inherit;
+    font-size: 14px;
+    outline: none;
+}
+
+.btn-secondary {
+    flex: 1;
+    padding: 10px 24px;
+    border-radius: 8px;
+    border: 1px solid #E87A5D;
+    background-color: transparent;
+    color: #E87A5D;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s, transform 0.1s;
+}
+
+.btn-secondary:hover {
+    background-color: rgba(232, 122, 93, 0.1);
+}
+
+.btn-secondary:active {
+    transform: scale(0.98);
+}
+
+.btn-primary {
+    flex: 1;
+    padding: 10px 24px;
+    border-radius: 8px;
+    border: none;
+    background-color: #E87A5D;
+    color: #ffffff;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s, transform 0.1s;
+}
+
+.btn-primary:hover {
+    background-color: #d6694c;
+}
+
+.btn-primary:active {
+    transform: scale(0.98);
+}

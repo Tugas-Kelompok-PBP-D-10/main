@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<!-- Panggil file CSS khusus recipe -->
+<link rel="stylesheet" href="{% static 'css/recipe.css' %}">
+
+<!-- Section Hero / Header Recipe Catalog -->
+<section class="recipe-hero-section">
+    <!-- Main Title -->
+    <h1 class="recipe-hero-title">
+        OlahRasa • Recipe Catalog & Nutrition
+    </h1>
+
+    <!-- Subtitle -->
+    <p class="recipe-hero-subtitle">
+        Masukkan bahan sisa, lalu pilih resep yang paling cocok untuk nutrisi kamu.
+    </p>
+
+    <!-- Search / Input Form Area -->
+    <form method="POST" action="" class="recipe-search-container">
+        {% csrf_token %}
+        <!-- Input Field -->
+        <input 
+            type="text" 
+            name="ingredient_name"
+            placeholder="Tambah Bahan" 
+            class="recipe-input-field"
+            required
+        />
+
+        <!-- Action Buttons -->
+        <div class="recipe-btn-group">
+            <button type="button" class="btn-secondary">
+                Lihat Favorit
+            </button>
+            <button type="submit" class="btn-primary">
+                Tambah Bahan
+            </button>
+        </div>
+    </form>
+</section>
+{% endblock %}
