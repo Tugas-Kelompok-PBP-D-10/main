@@ -57,9 +57,38 @@
                             {% endif %}
                         </p>
 
-                        <button class="tracker-btn" type="button">
-                            Post
-                        </button>
+                        
+                      {% if user.is_staff %}
+                      <form
+                          id="tracker-test-cooking-form"
+                          data-complete-url="{% url 'tracker:complete_cooking' %}"
+                      >
+                          {% csrf_token %}
+
+                            <input
+                                type="hidden"
+                                name="request_id"
+                                id="tracker-request-id"
+                            >
+
+
+                          <button
+                              type="submit"
+                              class="tracker-btn"
+                              id="tracker-test-cooking-btn"
+                          >
+                              <i data-lucide="chef-hat"></i>
+                              <span>Test Cooking</span>
+                          </button>
+                      </form>
+
+                      <p
+                          id="tracker-test-message"
+                          role="status"
+                          aria-live="polite"
+                      ></p>
+                      {% endif %}
+
                     </div>
 
                     <div class="tracker-week-box">

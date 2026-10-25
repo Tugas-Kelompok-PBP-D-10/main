@@ -25,6 +25,8 @@ async function loadTrackerDashboard() {
 
     const apiUrl = dashboard.dataset.apiUrl;
 
+    let data;
+
     try {
         const response = await fetch(apiUrl, {
             method: "GET",
@@ -36,27 +38,44 @@ async function loadTrackerDashboard() {
 
         if (!response.ok) {
             throw new Error(
-                `HTTP Error: ${response.status}`
+                `Dashboard API: HTTP ${response.status}`
             );
         }
 
-        const data = await response.json();
-
-        renderNutrition(data.nutrients);
-        renderBadges(data.badges, data.badges_earned);
+        data = await response.json();
 
     } catch (error) {
-        console.error("Tracker error:", error);
+        console.error("DASHBOARD API ERROR:", error);
+        return;
+    }
 
-        document.getElementById(
-            "nutrition-container"
-        ).textContent = "Gagal memuat data nutrisi.";
 
-        document.getElementById(
-            "badges-container"
-        ).textContent = "Gagal memuat achievement.";
+    try {
+        renderNutrition(data.nutrients || []);
+    } catch (error) {
+        console.error("NUTRITION ERROR:", error);
+    }
+
+
+    try {
+        renderBadges(
+            data.badges || [],
+            data.badges_earned || 0
+        );
+    } catch (error) {
+        console.error("BADGES ERROR:", error);
+    }
+
+    
+    if (typeof renderStreak === "function") {
+        try {
+            renderStreak(data.streak, data.week);
+        } catch (error) {
+            console.error("STREAK ERROR:", error);
+        }
     }
 }
+
 
 
 // =======================
@@ -250,8 +269,6 @@ function renderBadges(badges, earnedCount) {
     }
 }
 
-
-
 async function loadCookingHistory() {
     const dashboard = document.getElementById(
         "tracker-dashboard"
@@ -276,21 +293,28 @@ async function loadCookingHistory() {
         );
 
         if (!response.ok) {
-            throw new Error(`HTTP ${response.status}`);
+            throw new Error(
+                `History API: HTTP ${response.status}`
+            );
         }
 
         const data = await response.json();
 
-        renderCookingHistory(data.history);
+        console.log("COOKING HISTORY:", data);
+
+        if (!data.success) {
+            throw new Error("Gagal mengambil riwayat.");
+        }
+
+        renderCookingHistory(data.history || []);
 
     } catch (error) {
-        console.error("History error:", error);
+        console.error("COOKING HISTORY ERROR:", error);
 
         container.textContent =
             "Gagal memuat riwayat memasak.";
     }
 }
-
 
 // Format tanggal
 function formatCookingDate(dateString) {
@@ -309,6 +333,7 @@ function formatCookingDate(dateString) {
 
 
 // Render Cooking History
+
 function renderCookingHistory(history) {
     const container = document.getElementById(
         "history-container"
@@ -318,9 +343,8 @@ function renderCookingHistory(history) {
 
     container.replaceChildren();
 
-    if (!history || history.length === 0) {
+    if (history.length === 0) {
         const empty = document.createElement("p");
-
         empty.className = "tracker-placeholder-text";
         empty.textContent =
             "Belum ada aktivitas memasak. Yuk mulai masak!";
@@ -329,51 +353,138 @@ function renderCookingHistory(history) {
         return;
     }
 
-    history.forEach((item) => {
-        const card = document.createElement("article");
-        card.className = "tracker-history-item";
+    history.forEach((log) => {
+        const item = document.createElement("article");
+        item.className = "tracker-history-item";
 
-        const icon = document.createElement("div");
-        icon.className = "tracker-badge-icon";
+        
+        const iconBox = document.createElement("div");
+        iconBox.className = "tracker-history-icon";
 
-        if (badge.icon) {
-            const image = document.createElement("img");
+        const icon = document.createElement("i");
+        icon.setAttribute("data-lucide", "chef-hat");
+        iconBox.appendChild(icon);
 
-            image.src = badge.icon;
-            image.alt = badge.name;
-            image.loading = "lazy";
-
-            icon.appendChild(image);
-        } else {
-            icon.textContent = "🏆";
-        }
+       
         const content = document.createElement("div");
         content.className = "tracker-history-content";
 
         const title = document.createElement("h4");
-        title.textContent =
-            item.recipe_name || "Resep tanpa nama";
+        title.textContent = log.recipe_name || "Cooking";
 
         const date = document.createElement("p");
         date.className = "tracker-history-date";
-        date.textContent = formatCookingDate(
-            item.cooked_on
-        );
+        date.textContent = log.cooked_on;
 
         const nutrients = document.createElement("p");
         nutrients.className = "tracker-history-nutrients";
         nutrients.textContent =
-            `${item.calories} kcal • ` +
-            `${item.protein}g protein`;
+            `${log.calories} kcal · ` +
+            `P ${log.protein}g · ` +
+            `C ${log.carbs}g · ` +
+            `F ${log.fat}g`;
 
         content.append(title, date, nutrients);
 
+      
         const status = document.createElement("span");
         status.className = "tracker-history-status";
-        status.textContent = "Done";
+        status.textContent = "Completed";
 
-        card.append(icon, content, status);
-        container.appendChild(card);
+        item.append(iconBox, content, status);
+        container.appendChild(item);
     });
+
+    
+    if (window.lucide) {
+        window.lucide.createIcons();
+    }
 }
+
+
+async function submitTestCooking(event) {
+    event.preventDefault();
+
+    const form = event.currentTarget;
+
+    const requestIdInput = form.querySelector(
+        'input[name="request_id"]'
+    );
+
+    if (!requestIdInput.value) {
+        requestIdInput.value = crypto.randomUUID();
+    }
+
+    requestIdInput.value = "";
+
+    const button = form.querySelector("button");
+    const buttonLabel = button.querySelector("span");
+    const message = document.getElementById(
+        "tracker-test-message"
+    );
+
+    if (button.disabled) return;
+
+    button.disabled = true;
+    buttonLabel.textContent = "Menyimpan...";
+
+    try {
+        const response = await fetch(
+            form.dataset.completeUrl,
+            {
+                method: "POST",
+                credentials: "same-origin",
+                body: new FormData(form),
+                headers: {
+                    "Accept": "application/json"
+                }
+            }
+        );
+
+        if (!response.ok) {
+            throw new Error(
+                `Gagal menyimpan: HTTP ${response.status}`
+            );
+        }
+
+        const result = await response.json();
+
+        if (!result.success) {
+            throw new Error(
+                result.message || "Gagal mencatat aktivitas."
+            );
+        }
+
+        message.textContent =
+            result.message || "Aktivitas memasak berhasil dicatat.";
+
+        // Update data tanpa reload halaman
+        await Promise.all([
+            loadTrackerDashboard(),
+            loadCookingHistory()
+        ]);
+
+    } catch (error) {
+        console.error("Test Cooking error:", error);
+
+        message.textContent = error.message;
+
+    } finally {
+        button.disabled = false;
+        buttonLabel.textContent = "Test Cooking";
+    }
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    const form = document.getElementById(
+        "tracker-test-cooking-form"
+    );
+
+    if (form) {
+        form.addEventListener(
+            "submit",
+            submitTestCooking
+        );
+    }
+});
 

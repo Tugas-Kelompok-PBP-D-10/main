@@ -3,13 +3,11 @@ from django.test import TestCase
 from django.contrib.auth import get_user_model
 from django.urls import reverse
 from django.test import override_settings
-
-
-
-
-
-from tracker.models import CookingLog, CookingStreak
+from tracker.models import CookingLog, CookingStreak, Badge, UserBadge
 from tracker.services import record_cook
+from django.contrib.auth.models import User
+
+import uuid
 
 
 
@@ -77,10 +75,13 @@ class TrackerTest(TestCase):
         self.client.force_login(self.user)
 
        
+            
         response = self.client.post(
-            reverse("tracker:complete_cooking")
+            reverse("tracker:complete_cooking"),
+            {
+                "request_id": str(uuid.uuid4())
+            }
         )
-
 
         self.assertEqual(response.status_code, 200)
 
@@ -126,6 +127,135 @@ class TrackerTest(TestCase):
             data["history"][0]["recipe_name"],
             "Nasi Goreng"
         )
+
+
+    def test_duplicate_cooking_request(self):
+        self.client.force_login(self.user)
+
+        
+        self.user.is_staff = True
+        self.user.save(update_fields=["is_staff"])
+
+        request_id = str(uuid.uuid4())
+        url = reverse("tracker:complete_cooking")
+
+        response1 = self.client.post(
+            url, {"request_id": request_id}
+        )
+        response2 = self.client.post(
+            url, {"request_id": request_id}
+        )
+
+        self.assertEqual(response1.status_code, 200)
+        self.assertEqual(response2.status_code, 200)
+        self.assertEqual(
+            CookingLog.objects.filter(user=self.user).count(),
+            1
+        )
+
+    
+    def test_different_request_ids_allow_multiple_cooks(self):
+   
+
+        self.user.is_staff = True
+        self.user.save(update_fields=["is_staff"])
+        self.client.force_login(self.user)
+
+        url = reverse("tracker:complete_cooking")
+
+        response1 = self.client.post(
+            url,
+            {"request_id": str(uuid.uuid4())}
+        )
+
+        response2 = self.client.post(
+            url,
+            {"request_id": str(uuid.uuid4())}
+        )
+
+        self.assertEqual(response1.status_code, 200)
+        self.assertEqual(response2.status_code, 200)
+
+        self.assertEqual(
+            CookingLog.objects.filter(user=self.user).count(),
+            2
+        )
+
+        streak = CookingStreak.objects.get(user=self.user)
+
+       
+        self.assertEqual(streak.active_streak, 1)
+
+    
+    def test_request_id_cannot_be_reused_by_another_user(self):
+   
+
+        other_user = User.objects.create_user(
+            username="other_tracker_user",
+            password="testpass12345"
+        )
+
+        request_id = uuid.uuid4()
+
+        record_cook(
+            user=self.user,
+            recipe_name="Resep A",
+            request_id=request_id
+        )
+
+        with self.assertRaises(ValueError):
+            record_cook(
+                user=other_user,
+                recipe_name="Resep B",
+                request_id=request_id
+            )
+
+        self.assertEqual(
+            CookingLog.objects.filter(
+                request_id=request_id
+            ).count(),
+            1
+        )
+
+    
+    def test_first_cook_badge_awarded(self):
+       
+        badge = Badge.objects.create(
+            code="FIRST_COOK",
+            name="First Cook",
+            description="Berhasil memasak pertama kali!",
+            kind=Badge.Kind.TOTAL,
+            threshold=1,
+        )
+  
+        record_cook(
+            user=self.user,
+            recipe_name="Nasi Goreng",
+            protein_g=15,
+            carbs_g=40,
+            fat_g=10,
+            calories=310,
+        )
+
+       
+        self.assertTrue(
+            UserBadge.objects.filter(
+                user=self.user,
+                badge=badge,
+            ).exists()
+        )
+
+       
+        self.assertEqual(
+            UserBadge.objects.filter(
+                user=self.user,
+                badge=badge,
+            ).count(),
+            1
+        )
+
+
+
 
 
 

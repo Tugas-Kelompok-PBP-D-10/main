@@ -9,9 +9,9 @@ from django.contrib.auth.models import User
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from .services import record_cook
-
-
 from .models import Badge, CookingLog, CookingStreak, UserBadge
+
+import uuid
 
 # Target nutrisi mingguan (sesuaikan dengan kebutuhan)
 WEEKLY_TARGET = {"protein": 120, "carbs": 120, "fat": 70}
@@ -133,13 +133,23 @@ def complete_cooking(request):
 
     recipe_name = "Test Cooking"
 
+
+    try:
+        request_id = uuid.UUID(request.POST["request_id"])
+    except (KeyError, ValueError, TypeError):
+        return JsonResponse(
+            {"success": False, "message": "Request ID tidak valid."},
+            status=400
+        )
+
     new_badges = record_cook(
         user=request.user,
         recipe_name=recipe_name,
         protein_g=15,
         carbs_g=40,
         fat_g=10,
-        calories=310
+        calories=310,
+        request_id=request_id,
     )
 
     return JsonResponse({
