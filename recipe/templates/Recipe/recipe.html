@@ -1,43 +1,128 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load voting_tags %}
 
 {% block content %}
-<!-- Panggil file CSS khusus recipe -->
+<!-- CSS Recipe + CSS Voting dari app 'voting' -->
 <link rel="stylesheet" href="{% static 'css/recipe.css' %}">
+<link rel="stylesheet" href="{% static 'voting/voting.css' %}">
 
 <!-- Section Hero / Header Recipe Catalog -->
 <section class="recipe-hero-section">
-    <!-- Main Title -->
     <h1 class="recipe-hero-title">
         OlahRasa • Recipe Catalog & Nutrition
     </h1>
-
-    <!-- Subtitle -->
     <p class="recipe-hero-subtitle">
         Masukkan bahan sisa, lalu pilih resep yang paling cocok untuk nutrisi kamu.
     </p>
 
-    <!-- Search / Input Form Area -->
-    <form method="POST" action="" class="recipe-search-container">
-        {% csrf_token %}
-        <!-- Input Field -->
+    <div class="recipe-search-container">
         <input 
             type="text" 
-            name="ingredient_name"
             placeholder="Tambah Bahan" 
             class="recipe-input-field"
-            required
+            readonly
         />
-
-        <!-- Action Buttons -->
         <div class="recipe-btn-group">
-            <button type="button" class="btn-secondary">
-                Lihat Favorit
-            </button>
-            <button type="submit" class="btn-primary">
-                Tambah Bahan
-            </button>
+            <button type="button" class="btn-secondary">Lihat Favorit</button>
+            <button type="button" class="btn-primary">Tambah Bahan</button>
         </div>
-    </form>
+    </div>
 </section>
+
+<!-- Section Inventory Input (Bahan Sisa) -->
+<section class="inventory-section">
+    <div class="inventory-container">
+        <div class="inventory-info">
+            <h2 class="inventory-title">Inventory Input (Bahan Sisa)</h2>
+            <p class="inventory-subtitle">
+                Tulis bahan sisa yang kamu punya. Sistem akan menampilkan resep yang relevan.
+            </p>
+        </div>
+
+        <form method="POST" action="" class="inventory-form">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="ingredient_name" class="form-label">Bahan</label>
+                <input 
+                    type="text" 
+                    id="ingredient_name"
+                    name="ingredient_name"
+                    placeholder="Contoh: bayam, ayam, tomat..." 
+                    class="form-input"
+                    required
+                />
+                <span class="form-hint">Pisahkan dengan koma jika lebih dari satu</span>
+            </div>
+
+            <div class="form-group">
+                <label for="quantity" class="form-label">Jumlah (opsional)</label>
+                <input 
+                    type="text" 
+                    id="quantity"
+                    name="quantity"
+                    placeholder="Contoh: 200g / 1 sdt" 
+                    class="form-input"
+                />
+                <span class="form-hint">Jika kosong, gunakan default</span>
+            </div>
+
+            <div class="form-btn-group">
+                <button type="reset" class="btn-reset">Reset</button>
+                <button type="submit" class="btn-submit">Tambah Bahan</button>
+            </div>
+        </form>
+    </div>
+</section>
+
+<!-- Section Recipe Grid -->
+<section class="recipe-grid-section">
+    <div class="recipe-grid-container">
+        <h2 class="recipe-grid-main-title">Recipe Grid</h2>
+        <p class="recipe-grid-subtitle">Pilih satu resep untuk melihat detail nutrisi.</p>
+
+        <!-- Filter & Action Buttons -->
+        <div class="recipe-grid-actions">
+            <button type="button" class="btn-grid-filter">Filter</button>
+            <button type="button" class="btn-grid-add">Tambah Bahan</button>
+        </div>
+
+        <!-- Grid Cards -->
+        <div class="recipe-grid">
+            {% for recipe in recipes %}
+                <article class="recipe-card">
+                    <div class="recipe-card-media">
+                        <span class="badge-cocok">Cocok {{ recipe.match_count|default:"4/4" }}</span>
+                        {% if recipe.image_url %}
+                            <img src="{{ recipe.image_url }}" alt="{{ recipe.title }}" class="recipe-img">
+                        {% else %}
+                            <div class="recipe-img-placeholder">
+                                Placeholder foto makanan ({{ recipe.title }})
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="recipe-card-content">
+                        <h3 class="recipe-card-title">{{ recipe.title }}</h3>
+                        <p class="recipe-card-meta">
+                            {{ recipe.cooking_time|default:"15" }} menit • {{ recipe.protein|default:"22 g" }} protein
+                        </p>
+
+                        <!-- Custom Tag Voting & Bookmark dari app 'voting' -->
+                        <div class="recipe-card-actions">
+                            {% recipe_actions recipe %}
+                        </div>
+                    </div>
+                </article>
+            {% empty %}
+                <div class="recipe-empty-state">
+                    <p>Belum ada resep yang tersedia.</p>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Skrip JS Voting  -->
+<script src="{% static 'voting/voting.js' %}"></script>
 {% endblock %}

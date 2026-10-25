@@ -1,4 +1,7 @@
-/* Section Hero */
+/* =================================================== */
+/* 1. Section Hero                                     */
+/* =================================================== */
+
 .recipe-hero-section {
     display: flex;
     flex-direction: column;
@@ -24,7 +27,6 @@
     margin-bottom: 32px;
 }
 
-/* Form Container */
 .recipe-search-container {
     width: 100%;
     max-width: 420px;
@@ -34,7 +36,6 @@
     gap: 16px;
 }
 
-/* Input Field */
 .recipe-input-field {
     width: 100%;
     padding: 10px 16px;
@@ -51,7 +52,6 @@
     box-shadow: 0 0 0 3px rgba(232, 122, 93, 0.2);
 }
 
-/* Button Group */
 .recipe-btn-group {
     display: flex;
     align-items: center;
@@ -105,4 +105,287 @@
 
 .btn-primary:active {
     transform: scale(0.98);
+}
+
+/* =================================================== */
+/* 2. Section Inventory Input (Bahan Sisa)             */
+/* =================================================== */
+
+.inventory-section {
+    background-color: #ffffff;
+    padding: 40px 16px 64px;
+    border-top: 1px solid #f3f4f6;
+}
+
+.inventory-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 48px;
+}
+
+.inventory-info {
+    flex: 1;
+    max-width: 420px;
+}
+
+.inventory-title {
+    font-size: 32px;
+    font-weight: 800;
+    color: #0d5c46;
+    line-height: 1.2;
+    margin-bottom: 16px;
+}
+
+.inventory-subtitle {
+    font-size: 15px;
+    color: #4b5563;
+    line-height: 1.5;
+}
+
+.inventory-form {
+    flex: 1;
+    max-width: 460px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.form-label {
+    font-size: 14px;
+    font-weight: 700;
+    color: #1f2937;
+}
+
+.form-input {
+    width: 100%;
+    padding: 10px 14px;
+    border-radius: 6px;
+    border: 1px solid #d1d5db;
+    font-size: 14px;
+    outline: none;
+    box-sizing: border-box;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.form-input:focus {
+    border-color: #0d5c46;
+    box-shadow: 0 0 0 3px rgba(13, 92, 70, 0.15);
+}
+
+.form-hint {
+    font-size: 12px;
+    color: #9ca3af;
+}
+
+.form-btn-group {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 8px;
+}
+
+.btn-reset {
+    flex: 1;
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #1f2937;
+    background-color: transparent;
+    color: #1f2937;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.btn-reset:hover {
+    background-color: #f3f4f6;
+}
+
+.btn-submit {
+    flex: 1;
+    padding: 10px;
+    border-radius: 8px;
+    border: none;
+    background-color: #F27A54;
+    color: #ffffff;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.btn-submit:hover {
+    background-color: #d9633e;
+}
+
+/* =================================================== */
+/* 3. Section Recipe Grid                              */
+/* =================================================== */
+
+.recipe-grid-section {
+    background-color: #ffffff;
+    padding: 40px 16px 80px;
+    border-top: 1px solid #f3f4f6;
+}
+
+.recipe-grid-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.recipe-grid-main-title {
+    font-size: 32px;
+    font-weight: 800;
+    color: #0d5c46;
+    margin-bottom: 8px;
+}
+
+.recipe-grid-subtitle {
+    font-size: 15px;
+    color: #4b5563;
+    margin-bottom: 24px;
+}
+
+.recipe-grid-actions {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 40px;
+}
+
+.btn-grid-filter {
+    padding: 10px 32px;
+    border-radius: 8px;
+    border: 1px solid #1f2937;
+    background-color: transparent;
+    color: #1f2937;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.btn-grid-add {
+    padding: 10px 32px;
+    border-radius: 8px;
+    border: none;
+    background-color: #F27A54;
+    color: #ffffff;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+/* Grid Layout 4 Kolom */
+.recipe-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+    text-align: left;
+}
+
+.recipe-card {
+    background: #ffffff;
+    border-radius: 12px;
+    border: 1px solid #e5e7eb;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.recipe-card-media {
+    position: relative;
+    width: 100%;
+    height: 180px;
+    background-color: #e5e7eb;
+}
+
+.badge-cocok {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    background-color: rgba(255, 255, 255, 0.85);
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #1f2937;
+    z-index: 2;
+}
+
+.recipe-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.recipe-img-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    color: #6b7280;
+    text-align: center;
+    padding: 12px;
+    box-sizing: border-box;
+}
+
+.recipe-card-content {
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+.recipe-card-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #1f2937;
+    margin-bottom: 6px;
+}
+
+.recipe-card-meta {
+    font-size: 14px;
+    font-weight: 700;
+    color: #1f2937;
+    margin-bottom: 12px;
+}
+
+.recipe-card-actions {
+    margin-top: auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+/* Responsive Grid */
+@media (max-width: 1024px) {
+    .recipe-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .inventory-container {
+        flex-direction: column;
+        gap: 32px;
+    }
+    .inventory-info, .inventory-form {
+        max-width: 100%;
+        width: 100%;
+    }
+}
+
+@media (max-width: 640px) {
+    .recipe-grid {
+        grid-template-columns: 1fr;
+    }
 }
