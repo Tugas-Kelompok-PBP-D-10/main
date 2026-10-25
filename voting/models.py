@@ -52,7 +52,6 @@ class Bookmark(models.Model):
         on_delete=models.CASCADE,
         related_name="bookmarked_by",
     )
-    note = models.CharField(max_length=300, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

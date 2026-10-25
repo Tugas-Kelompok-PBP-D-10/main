@@ -11,6 +11,6 @@ class VoteAdmin(admin.ModelAdmin):
 
 @admin.register(Bookmark)
 class BookmarkAdmin(admin.ModelAdmin):
-    list_display = ("id", "user", "recipe", "note", "created_at")
+    list_display = ("id", "user", "recipe", "created_at")
     list_filter = ("created_at",)
-    search_fields = ("user__username", "recipe__title", "note")
+    search_fields = ("user__username", "recipe__title")
