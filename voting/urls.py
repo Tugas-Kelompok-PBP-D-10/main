@@ -8,6 +8,7 @@ urlpatterns = [
     path("<int:recipe_id>/vote/remove/", views.vote_remove, name="vote_remove"),
     path("<int:recipe_id>/summary/", views.vote_summary, name="vote_summary"),
     path("<int:recipe_id>/bookmark/", views.toggle_bookmark, name="toggle_bookmark"),
+    path("bookmarks/", views.bookmark_list, name="bookmark_list"),
     path("bookmarks/clear/", views.bookmark_clear, name="bookmark_clear"),
     path("api/bookmarks/", views.bookmark_list_api, name="bookmark_list_api"),
 ]

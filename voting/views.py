@@ -1,7 +1,9 @@
 from django.core.paginator import Paginator
 from django.http import JsonResponse
-from django.shortcuts import get_object_or_404
 from django.views.decorators.http import require_GET, require_POST
+from django.conf import settings
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import get_object_or_404, render, resolve_url
 
 from recipe.models import Recipe
 from .decorators import ajax_login_required
@@ -119,4 +121,19 @@ def bookmark_list_api(request):
         "total": user_bookmark_count(request.user),
         "filtered_count": paginator.count,
         "categories": available_categories(request.user),
+    })
+
+@login_required
+def bookmark_list(request):
+    filters = {
+        key: request.GET.get(key, "")
+        for key in ("q", "sort", "source", "vote", "min_score", "category")
+    }
+    if filters["sort"] not in SORT_ORDERING:
+        filters["sort"] = "newest"
+
+    return render(request, "voting/bookmark_list.html", {
+        "total": user_bookmark_count(request.user),
+        "filters": filters,
+        "login_url": resolve_url(settings.LOGIN_URL),
     })
