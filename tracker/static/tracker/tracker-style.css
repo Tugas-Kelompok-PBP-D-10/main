@@ -20,7 +20,7 @@
 
 body {
     font-family: 'Sen', sans-serif;
-    background: var(--bg-soft);
+    background: var(--white);
     color: var(--ink);
 }
 
@@ -425,6 +425,129 @@ body {
     line-height: 1.5;
     font-weight: 700;
 }
+
+
+/* =====================================
+   SHARE YOUR PROGRESS — COMPACT MODAL
+===================================== */
+
+.tracker-share-dialog {
+    width: min(410px, calc(100vw - 32px));
+    max-width: 410px;
+    max-height: 88vh;
+
+    margin: auto;
+    padding: 20px;
+
+    border: none;
+    border-radius: 20px;
+
+    background: #FFFEFE;
+    color: #03695E;
+
+    box-shadow: 0 20px 60px rgba(3, 105, 94, 0.18);
+    overflow-y: auto;
+}
+
+.tracker-share-dialog::backdrop {
+    background: rgba(20, 35, 30, 0.55);
+}
+
+.tracker-share-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.tracker-share-header h2 {
+    margin: 0;
+    font-family: "Sen", sans-serif;
+    font-size: 18px;
+    font-weight: 800;
+    color: #03695E;
+}
+
+.tracker-share-close {
+    width: 34px;
+    height: 34px;
+    display: grid;
+    place-items: center;
+
+    border: none;
+    border-radius: 9px;
+    background: #F3F5F2;
+    color: #03695E;
+    cursor: pointer;
+}
+
+#tracker-share-canvas {
+    display: block;
+    width: 100%;
+    max-width: 350px;
+    height: auto;
+    margin: 0 auto;
+
+    border: 1px solid #ECE7E2;
+    border-radius: 14px;
+}
+
+.tracker-share-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 9px;
+    margin-top: 16px;
+}
+
+.tracker-share-actions button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+
+    min-height: 42px;
+    padding: 9px;
+
+    border: 1px solid #DDEBE0;
+    border-radius: 10px;
+
+    background: #F7FAF7;
+    color: #03695E;
+
+    font-family: "Sen", sans-serif;
+    font-size: 11px;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.tracker-share-actions button:hover {
+    background: #DDEBE0;
+}
+
+.tracker-share-actions svg {
+    width: 16px;
+    height: 16px;
+}
+
+#tracker-share-message {
+    margin: 12px 0 0;
+    font-family: "Sen", sans-serif;
+    font-size: 12px;
+    color: #03695E;
+}
+
+@media (max-width: 420px) {
+    .tracker-share-dialog {
+        width: calc(100vw - 24px);
+        padding: 14px;
+    }
+
+    .tracker-share-header h2 {
+        font-size: 16px;
+    }
+}
+
 
 /* RESPONSIVE */
 @media (max-width: 1100px) {
@@ -1059,5 +1182,599 @@ body {
     background: #FBF1CE;
     color: #C29A35;
 }
+
+
+/* =========================================
+   TRACKER — MOBILE RESPONSIVE FIX
+   Khusus layar HP
+========================================= */
+
+@media screen and (max-width: 650px) {
+
+    /* MAIN CONTAINER */
+    .tracker-page {
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+        padding: 20px 14px 36px;
+        overflow-x: clip;
+    }
+
+    /* HERO */
+    .tracker-hero {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 24px;
+    }
+
+    .tracker-avatar {
+        width: 50px;
+        height: 50px;
+        flex-shrink: 0;
+    }
+
+    .tracker-hero-text {
+        min-width: 0;
+    }
+
+    .tracker-hero-text h1 {
+        font-size: 25px;
+        letter-spacing: -0.7px;
+        overflow-wrap: anywhere;
+    }
+
+    .tracker-hero-text p {
+        font-size: 11px;
+        line-height: 1.4;
+    }
+
+    /* ONE-COLUMN LAYOUT */
+    .tracker-layout {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        gap: 24px;
+        width: 100%;
+        min-width: 0;
+    }
+
+    .tracker-left,
+    .tracker-right {
+        min-width: 0;
+        width: 100%;
+        gap: 20px;
+    }
+
+    /* IMPACT CARD */
+    .tracker-impact-card {
+        width: 100%;
+        min-width: 0;
+        padding: 18px 16px;
+        min-height: auto;
+    }
+
+    .tracker-impact-content {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        gap: 22px;
+    }
+
+    .tracker-impact-info {
+        min-width: 0;
+    }
+
+    .tracker-impact-info h2 {
+        font-size: clamp(25px, 8vw, 32px);
+        line-height: 1.05;
+        letter-spacing: -0.8px;
+        overflow-wrap: normal;
+    }
+
+    .tracker-streak-line {
+        font-size: 13px;
+    }
+
+    .tracker-streak-note {
+        font-size: 11px;
+        line-height: 1.5;
+    }
+
+    /* WEEKLY STREAK GRAPH */
+    .tracker-week-box {
+        width: 100%;
+        min-width: 0;
+        padding: 14px 10px;
+        min-height: 150px;
+    }
+
+    .tracker-week-chart {
+        width: 100%;
+        min-height: 135px;
+        gap: 4px;
+        justify-content: space-around;
+    }
+
+    .tracker-week-col {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .tracker-week-track {
+        width: 13px;
+        height: 105px;
+    }
+
+    .tracker-week-label {
+        font-size: 9px;
+    }
+
+    /* NUTRITION CARDS */
+    .tracker-progress-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 8px;
+        width: 100%;
+    }
+
+    .tracker-progress-card {
+        min-width: 0;
+        padding: 12px 8px;
+        min-height: 160px;
+        gap: 10px;
+    }
+
+    .tracker-progress-top {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 7px;
+    }
+
+    .tracker-progress-icon {
+        width: 30px;
+        height: 30px;
+    }
+
+    .tracker-progress-icon svg {
+        width: 17px;
+        height: 17px;
+    }
+
+    .tracker-progress-name {
+        font-size: 11px;
+    }
+
+    .tracker-progress-ring {
+        width: 62px;
+        height: 62px;
+    }
+
+    .tracker-progress-ring::before {
+        width: 47px;
+        height: 47px;
+    }
+
+    .tracker-progress-ring span {
+        font-size: 11px;
+    }
+
+    .tracker-progress-value {
+        font-size: 12px;
+    }
+
+    .tracker-progress-target {
+        font-size: 9px;
+    }
+
+    /* BADGES AND HISTORY */
+    .tracker-right {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .tracker-side-header h3 {
+        font-size: 20px;
+    }
+
+    .tracker-badge-item,
+    .tracker-history-item {
+        min-width: 0;
+        padding: 11px;
+    }
+
+    .tracker-badge-content,
+    .tracker-history-content {
+        min-width: 0;
+        flex: 1;
+    }
+
+    .tracker-badge-content h4,
+    .tracker-history-content h4 {
+        overflow-wrap: anywhere;
+    }
+
+    .tracker-history-status {
+        font-size: 9px;
+        padding: 4px 7px;
+    }
+}
+
+
+/* ==========================================
+   OLAHRASA — SET NUTRITION TARGET
+========================================== */
+
+/* Header Your Progress */
+.tracker-nutrition-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 18px;
+}
+
+/* Tombol Set Target */
+.tracker-set-target-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    flex-shrink: 0;
+
+    min-height: 38px;
+    padding: 8px 14px;
+
+    background: #EAF3ED;
+    color: #03695E;
+    border: 1px solid #C8DFCE;
+    border-radius: 10px;
+
+    font-family: "Sen", sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1.2;
+
+    cursor: pointer;
+    transition:
+        background 0.2s ease,
+        border-color 0.2s ease,
+        transform 0.2s ease;
+}
+
+.tracker-set-target-btn:hover {
+    background: #DCEBDD;
+    border-color: #80B088;
+    transform: translateY(-1px);
+}
+
+.tracker-set-target-btn:active {
+    transform: translateY(0);
+}
+
+.tracker-set-target-btn:focus-visible {
+    outline: 3px solid rgba(128, 176, 136, 0.45);
+    outline-offset: 3px;
+}
+
+.tracker-set-target-btn svg {
+    width: 16px;
+    height: 16px;
+    stroke-width: 2;
+}
+
+/* ==========================================
+   MODAL SET NUTRITION TARGET
+========================================== */
+
+.tracker-target-dialog {
+    box-sizing: border-box;
+    width: min(410px, calc(100vw - 32px));
+    max-width: 410px;
+    max-height: 88vh;
+    margin: auto;
+    padding: 26px;
+
+    background: #FFFFFF;
+    color: #253F35;
+    border: 1px solid #E6EDE7;
+    border-radius: 20px;
+
+    font-family: "Sen", sans-serif;
+    box-shadow: 0 24px 70px rgba(3, 50, 44, 0.18);
+    overflow-y: auto;
+}
+
+.tracker-target-dialog::backdrop {
+    background: rgba(19, 39, 34, 0.52);
+    backdrop-filter: blur(3px);
+}
+
+/* Header Modal */
+.tracker-target-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 14px;
+    margin-bottom: 26px;
+}
+
+.tracker-target-header h2 {
+    margin: 0;
+    color: #03695E;
+    font-family: "Sen", sans-serif;
+    font-size: 20px;
+    font-weight: 800;
+    line-height: 1.3;
+}
+
+.tracker-target-header p {
+    margin: 6px 0 0;
+    color: #77877D;
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+/* Tombol Close */
+.tracker-target-close {
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+
+    width: 34px;
+    height: 34px;
+    padding: 0;
+
+    background: #F0F5F1;
+    color: #03695E;
+    border: none;
+    border-radius: 9px;
+
+    cursor: pointer;
+}
+
+.tracker-target-close:hover {
+    background: #DFEDE2;
+}
+
+.tracker-target-close svg {
+    width: 18px;
+    height: 18px;
+}
+
+/* Form Layout */
+.tracker-target-fields {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+/* Setiap input */
+.tracker-target-field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.tracker-target-field label {
+    display: block;
+    color: #03695E;
+    font-family: "Sen", sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+/* Input angka */
+.tracker-target-field input {
+    box-sizing: border-box;
+    display: block;
+    width: 100%;
+    height: 46px;
+    padding: 0 14px;
+
+    background: #FAFCFA;
+    color: #253F35;
+    border: 1px solid #DDE8DF;
+    border-radius: 11px;
+    outline: none;
+
+    font-family: "Sen", sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.tracker-target-field input::placeholder {
+    color: #A4B0A6;
+    font-weight: 400;
+}
+
+.tracker-target-field input:hover {
+    border-color: #80B088;
+}
+
+.tracker-target-field input:focus {
+    background: #FFFFFF;
+    border-color: #03695E;
+    box-shadow: 0 0 0 3px rgba(128, 176, 136, 0.16);
+}
+
+/* Pesan Error */
+.tracker-target-message {
+    min-height: 18px;
+    margin: 12px 0 0;
+    color: #03695E;
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.tracker-target-message.is-error {
+    color: #B54738;
+}
+
+/* Tombol Cancel & Save */
+.tracker-target-actions {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 10px;
+    margin-top: 18px;
+}
+
+.tracker-target-actions button {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+
+    min-height: 42px;
+    padding: 10px 18px;
+
+    border-radius: 10px;
+    font-family: "Sen", sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+
+    transition:
+        background 0.2s ease,
+        border-color 0.2s ease;
+}
+
+.tracker-target-cancel {
+    background: #FFFFFF;
+    color: #03695E;
+    border: 1px solid #D8E5DA;
+}
+
+.tracker-target-cancel:hover {
+    background: #F0F5F1;
+}
+
+.tracker-target-save {
+    background: #03695E;
+    color: #FFFFFF;
+    border: 1px solid #03695E;
+}
+
+.tracker-target-save:hover {
+    background: #05544B;
+    border-color: #05544B;
+}
+
+.tracker-target-save:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+/* Focus Keyboard */
+.tracker-target-actions button:focus-visible,
+.tracker-target-close:focus-visible {
+    outline: 3px solid rgba(128, 176, 136, 0.45);
+    outline-offset: 2px;
+}
+
+/* ==========================================
+   MOBILE RESPONSIVE
+========================================== */
+
+@media (max-width: 480px) {
+    .tracker-nutrition-header {
+        gap: 10px;
+    }
+
+    .tracker-set-target-btn {
+        padding: 8px 11px;
+        font-size: 11px;
+        min-height: 36px;
+    }
+
+    .tracker-target-dialog {
+        width: calc(100vw - 24px);
+        padding: 20px;
+        border-radius: 16px;
+    }
+
+    .tracker-target-header {
+        margin-bottom: 20px;
+    }
+
+    .tracker-target-header h2 {
+        font-size: 18px;
+    }
+
+    .tracker-target-fields {
+        gap: 14px;
+    }
+
+    .tracker-target-actions button {
+        padding: 10px 14px;
+        font-size: 12px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .tracker-set-target-btn,
+    .tracker-target-field input,
+    .tracker-target-actions button {
+        transition: none;
+    }
+
+    .tracker-set-target-btn:hover {
+        transform: none;
+    }
+}
+
+
+/* ==========================================
+   OLAHRASA — BOOKMARK PLACEHOLDER
+========================================== */
+
+.tracker-bookmarks-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.tracker-bookmarks-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    min-height: 200px;
+    padding: 24px 18px;
+    text-align: center;
+
+    background: #F7FAF7;
+    border: 1px dashed #C8DFCE;
+    border-radius: 14px;
+}
+
+.tracker-bookmarks-empty svg {
+    width: 30px;
+    height: 30px;
+    color: #80B088;
+    margin-bottom: 8px;
+}
+
+.tracker-bookmarks-title {
+    margin: 0;
+    font-family: "Sen", sans-serif;
+    font-size: 15px;
+    font-weight: 800;
+    color: #03695E;
+}
+
+.tracker-bookmarks-description {
+    max-width: 220px;
+    margin: 4px 0 0;
+
+    font-family: "Sen", sans-serif;
+    font-size: 12px;
+    line-height: 1.6;
+    color: #71847A;
+}
+
 
 

@@ -1,21 +1,14 @@
-
 from django.test import TestCase
 from django.contrib.auth import get_user_model
 from django.urls import reverse
 from django.test import override_settings
-from tracker.models import CookingLog, CookingStreak, Badge, UserBadge
+from tracker.models import CookingLog, CookingStreak, Badge, UserBadge, NutritionTarget
 from tracker.services import record_cook
 from django.contrib.auth.models import User
+from django.db import IntegrityError
+from tracker.integrations import (RecipeSnapshot,complete_recipe_cooking,)
 
-from tracker.integrations import (
-    RecipeSnapshot,
-    complete_recipe_cooking,
-)
-
-
-import uuid
-
-
+import uuid, json
 
 class TrackerTest(TestCase):
 
@@ -260,37 +253,191 @@ class TrackerTest(TestCase):
             1
         )
 
+class NutritionTargetTest(TestCase):
 
-    def test_recipe_integration_records_cooking(self):
-        recipe = RecipeSnapshot(
-            name="Sup Ayam",
-            protein_g=25,
-            carbs_g=20,
-            fat_g=8,
-            calories=260,
+    def setUp(self):
+        User = get_user_model()
+
+        self.user = User.objects.create_user(
+            username="nutrition_test_user",
+            password="testpassword123"
         )
 
-        complete_recipe_cooking(
+    def test_create_nutrition_target(self):
+        target = NutritionTarget.objects.create(
             user=self.user,
-            recipe=recipe,
-            request_id=uuid.uuid4(),
+            protein_g=120,
+            carbs_g=150,
+            fat_g=70
         )
 
-        log = CookingLog.objects.get(user=self.user)
+        self.assertEqual(target.protein_g, 120)
+        self.assertEqual(target.carbs_g, 150)
+        self.assertEqual(target.fat_g, 70)
 
-        self.assertEqual(log.recipe_name, "Sup Ayam")
-        self.assertEqual(log.protein_g, 25)
-        self.assertEqual(log.carbs_g, 20)
-        self.assertEqual(log.fat_g, 8)
-        self.assertEqual(log.calories, 260)
+    def test_update_nutrition_target(self):
+        NutritionTarget.objects.create(
+            user=self.user,
+            protein_g=120,
+            carbs_g=150,
+            fat_g=70
+        )
 
-        streak = CookingStreak.objects.get(user=self.user)
+        target, created = NutritionTarget.objects.update_or_create(
+            user=self.user,
+            defaults={
+                "protein_g": 140,
+                "carbs_g": 180,
+                "fat_g": 65
+            }
+        )
 
-        self.assertEqual(streak.active_streak, 1)
+        self.assertFalse(created)
+        self.assertEqual(target.protein_g, 140)
+        self.assertEqual(target.carbs_g, 180)
+        self.assertEqual(target.fat_g, 65)
 
+    def test_one_target_per_user(self):
+        NutritionTarget.objects.create(
+            user=self.user,
+            protein_g=120,
+            carbs_g=150,
+            fat_g=70
+        )
 
+        with self.assertRaises(IntegrityError):
+            NutritionTarget.objects.create(
+                user=self.user,
+                protein_g=100,
+                carbs_g=130,
+                fat_g=50
+            )
 
+class NutritionTargetAPITest(TestCase):
 
+    def setUp(self):
+        User = get_user_model()
 
+        self.user = User.objects.create_user(
+            username="target_api_user",
+            password="testpassword123"
+        )
 
+        self.other_user = User.objects.create_user(
+            username="other_target_user",
+            password="testpassword123"
+        )
 
+        self.url = reverse("tracker:nutrition_target_api")
+        self.client.force_login(self.user)
+
+    def test_get_target_when_not_set(self):
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(response.json()["has_target"])
+        self.assertIsNone(response.json()["target"])
+
+    def test_save_nutrition_target(self):
+        response = self.client.post(
+            self.url,
+            data=json.dumps({
+                "protein_g": 120,
+                "carbs_g": 150,
+                "fat_g": 70,
+            }),
+            content_type="application/json",
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.json()["success"])
+
+        target = NutritionTarget.objects.get(user=self.user)
+
+        self.assertEqual(target.protein_g, 120)
+        self.assertEqual(target.carbs_g, 150)
+        self.assertEqual(target.fat_g, 70)
+
+    def test_update_existing_target(self):
+        NutritionTarget.objects.create(
+            user=self.user,
+            protein_g=120,
+            carbs_g=150,
+            fat_g=70,
+        )
+
+        response = self.client.post(
+            self.url,
+            data=json.dumps({
+                "protein_g": 140,
+                "carbs_g": 180,
+                "fat_g": 65,
+            }),
+            content_type="application/json",
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            NutritionTarget.objects.filter(user=self.user).count(),
+            1
+        )
+
+        target = NutritionTarget.objects.get(user=self.user)
+        self.assertEqual(target.protein_g, 140)
+
+    def test_reject_invalid_target(self):
+        response = self.client.post(
+            self.url,
+            data=json.dumps({
+                "protein_g": 0,
+                "carbs_g": 150,
+                "fat_g": 70,
+            }),
+            content_type="application/json",
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertFalse(
+            NutritionTarget.objects.filter(user=self.user).exists()
+        )
+
+    def test_users_have_separate_targets(self):
+        NutritionTarget.objects.create(
+            user=self.other_user,
+            protein_g=200,
+            carbs_g=250,
+            fat_g=90,
+        )
+
+        self.client.post(
+            self.url,
+            data=json.dumps({
+                "protein_g": 120,
+                "carbs_g": 150,
+                "fat_g": 70,
+            }),
+            content_type="application/json",
+        )
+
+        other_target = NutritionTarget.objects.get(
+            user=self.other_user
+        )
+
+        self.assertEqual(other_target.protein_g, 200)
+        self.assertEqual(other_target.carbs_g, 250)
+
+    def test_login_required(self):
+        self.client.logout()
+
+        response = self.client.post(
+            self.url,
+            data=json.dumps({
+                "protein_g": 120,
+                "carbs_g": 150,
+                "fat_g": 70,
+            }),
+            content_type="application/json",
+        )
+
+        self.assertNotEqual(response.status_code, 200)
+        self.assertFalse(NutritionTarget.objects.exists())

@@ -12,9 +12,7 @@ const nutrientIcons = {
 
 document.addEventListener("DOMContentLoaded", () => {
     loadTrackerDashboard();
-    loadCookingHistory();
 });
-
 
 async function loadTrackerDashboard() {
     const dashboard = document.getElementById(
@@ -82,14 +80,13 @@ async function loadTrackerDashboard() {
 // NUTRITION TRACKING
 // =======================
 
+
 function renderNutrition(nutrients) {
     const container = document.getElementById(
         "nutrition-container"
     );
 
     if (!container) return;
-
-    container.replaceChildren();
 
     const nutrientIcons = {
         Protein: "trending-up",
@@ -103,11 +100,14 @@ function renderNutrition(nutrients) {
         Fat: "#E8CC63"
     };
 
+    // Siapkan elemen baru sebelum mengganti isi container
+    const fragment = document.createDocumentFragment();
+
     nutrients.forEach((nutrient) => {
         const card = document.createElement("article");
         card.className = "tracker-card tracker-progress-card";
 
-        
+        // HEADER
         const header = document.createElement("div");
         header.className = "tracker-progress-top";
 
@@ -131,12 +131,20 @@ function renderNutrition(nutrients) {
 
         header.append(iconBox, title);
 
-       
-        const percent = Math.max(
-            0,
-            Math.min(100, Number(nutrient.percent) || 0)
-        );
+        // NUTRITION PERCENT
+        const hasTarget =
+            nutrient.target !== null &&
+            nutrient.target !== undefined &&
+            Number(nutrient.target) > 0;
 
+        const percent = hasTarget
+            ? Math.max(
+                0,
+                Math.min(100, Number(nutrient.percent) || 0)
+            )
+            : 0;
+
+        // PROGRESS RING
         const ringWrap = document.createElement("div");
         ringWrap.className = "tracker-progress-ring-wrap";
 
@@ -150,12 +158,15 @@ function renderNutrition(nutrients) {
         );
 
         const ringText = document.createElement("span");
-        ringText.textContent = `${percent}%`;
+
+        ringText.textContent = hasTarget
+            ? `${percent}%`
+            : "—";
 
         ring.appendChild(ringText);
         ringWrap.appendChild(ring);
 
-       
+        // NUTRITION VALUES
         const meta = document.createElement("div");
         meta.className = "tracker-progress-meta";
 
@@ -164,26 +175,29 @@ function renderNutrition(nutrients) {
         value.textContent =
             `${nutrient.current}${nutrient.unit}`;
 
+        // Buat elemen target SEBELUM menggunakannya
         const target = document.createElement("p");
         target.className = "tracker-progress-target";
-        target.textContent =
-            `Target: ${nutrient.target}${nutrient.unit}`;
+
+        target.textContent = hasTarget
+            ? `Target: ${nutrient.target}${nutrient.unit}`
+            : "Target not set";
 
         meta.append(value, target);
 
-       
+        // GABUNGKAN CARD
         card.append(header, ringWrap, meta);
-        container.appendChild(card);
+        fragment.appendChild(card);
     });
 
-    
+    // Ganti isi container setelah seluruh kartu berhasil dibuat
+    container.replaceChildren(fragment);
+
+    // Aktifkan icon Lucide
     if (window.lucide) {
         window.lucide.createIcons();
     }
 }
-
-
-
 
 
 // =======================
@@ -402,89 +416,165 @@ function renderCookingHistory(history) {
 }
 
 
-async function submitTestCooking(event) {
-    event.preventDefault();
-
-    const form = event.currentTarget;
-
-    const requestIdInput = form.querySelector(
-        'input[name="request_id"]'
-    );
-
-    if (!requestIdInput.value) {
-        requestIdInput.value = crypto.randomUUID();
-    }
-
-    requestIdInput.value = "";
-
-    const button = form.querySelector("button");
-    const buttonLabel = button.querySelector("span");
-    const message = document.getElementById(
-        "tracker-test-message"
-    );
-
-    if (button.disabled) return;
-
-    button.disabled = true;
-    buttonLabel.textContent = "Menyimpan...";
-
-    try {
-        const response = await fetch(
-            form.dataset.completeUrl,
-            {
-                method: "POST",
-                credentials: "same-origin",
-                body: new FormData(form),
-                headers: {
-                    "Accept": "application/json"
-                }
-            }
-        );
-
-        if (!response.ok) {
-            throw new Error(
-                `Gagal menyimpan: HTTP ${response.status}`
-            );
-        }
-
-        const result = await response.json();
-
-        if (!result.success) {
-            throw new Error(
-                result.message || "Gagal mencatat aktivitas."
-            );
-        }
-
-        message.textContent =
-            result.message || "Aktivitas memasak berhasil dicatat.";
-
-        // Update data tanpa reload halaman
-        await Promise.all([
-            loadTrackerDashboard(),
-            loadCookingHistory()
-        ]);
-
-    } catch (error) {
-        console.error("Test Cooking error:", error);
-
-        message.textContent = error.message;
-
-    } finally {
-        button.disabled = false;
-        buttonLabel.textContent = "Test Cooking";
-    }
-}
+/* ==========================================
+   SET WEEKLY NUTRITION TARGET — AJAX
+========================================== */
 
 document.addEventListener("DOMContentLoaded", () => {
-    const form = document.getElementById(
-        "tracker-test-cooking-form"
-    );
+    const dashboard = document.getElementById("tracker-dashboard");
+    const openBtn = document.getElementById("tracker-set-target-btn");
+    const dialog = document.getElementById("tracker-target-dialog");
+    const closeBtn = document.getElementById("tracker-target-close");
+    const cancelBtn = document.getElementById("tracker-target-cancel");
+    const form = document.getElementById("tracker-target-form");
+    const saveBtn = document.getElementById("tracker-target-save");
+    const message = document.getElementById("tracker-target-message");
 
-    if (form) {
-        form.addEventListener(
-            "submit",
-            submitTestCooking
-        );
+    const proteinInput = document.getElementById("tracker-target-protein");
+    const carbsInput = document.getElementById("tracker-target-carbs");
+    const fatInput = document.getElementById("tracker-target-fat");
+
+    if (
+        !dashboard || !openBtn || !dialog ||
+        !closeBtn || !cancelBtn || !form ||
+        !saveBtn || !message ||
+        !proteinInput || !carbsInput || !fatInput
+    ) {
+        console.error("Nutrition Target: elemen HTML tidak lengkap.");
+        return;
     }
+
+    const targetUrl = dashboard.dataset.nutritionTargetUrl;
+    const dashboardUrl = dashboard.dataset.apiUrl;
+
+    const csrfToken = form.querySelector(
+        'input[name="csrfmiddlewaretoken"]'
+    )?.value;
+
+    function showMessage(text, isError = false) {
+        message.textContent = text;
+        message.classList.toggle("is-error", isError);
+    }
+
+    function closeDialog() {
+        dialog.close();
+        showMessage("");
+    }
+
+    // Buka modal dan tampilkan target yang sudah tersimpan
+    openBtn.addEventListener("click", async () => {
+        showMessage("");
+
+        dialog.showModal();
+
+        try {
+            const response = await fetch(targetUrl, {
+                method: "GET",
+                credentials: "same-origin"
+            });
+
+            if (!response.ok) {
+                throw new Error("Gagal mengambil target nutrisi.");
+            }
+
+            const result = await response.json();
+
+            proteinInput.value = result.target?.protein_g ?? "";
+            carbsInput.value = result.target?.carbs_g ?? "";
+            fatInput.value = result.target?.fat_g ?? "";
+
+        } catch (error) {
+            console.error(error);
+            showMessage(error.message, true);
+        }
+    });
+
+    closeBtn.addEventListener("click", closeDialog);
+    cancelBtn.addEventListener("click", closeDialog);
+
+    // Simpan target menggunakan AJAX
+    form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+
+        showMessage("");
+
+        const protein = Number(proteinInput.value);
+        const carbs = Number(carbsInput.value);
+        const fat = Number(fatInput.value);
+
+        const values = [protein, carbs, fat];
+
+        if (
+            values.some(
+                (value) =>
+                    !Number.isInteger(value) ||
+                    value < 1 ||
+                    value > 10000
+            )
+        ) {
+            showMessage(
+                "Target harus berupa angka bulat antara 1–10000.",
+                true
+            );
+            return;
+        }
+
+        if (!csrfToken) {
+            showMessage("CSRF token tidak ditemukan.", true);
+            return;
+        }
+
+        saveBtn.disabled = true;
+        saveBtn.textContent = "Saving...";
+
+        try {
+            const response = await fetch(targetUrl, {
+                method: "POST",
+                credentials: "same-origin",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": csrfToken
+                },
+                body: JSON.stringify({
+                    protein_g: protein,
+                    carbs_g: carbs,
+                    fat_g: fat
+                })
+            });
+
+            const result = await response.json();
+
+            if (!response.ok || !result.success) {
+                throw new Error(
+                    result.message || "Gagal menyimpan target."
+                );
+            }
+
+            // Refresh data Nutrition Tracking tanpa reload
+            const dashboardResponse = await fetch(dashboardUrl, {
+                method: "GET",
+                credentials: "same-origin"
+            });
+
+            if (!dashboardResponse.ok) {
+                throw new Error(
+                    "Target tersimpan, tetapi grafik gagal diperbarui."
+                );
+            }
+
+            const dashboardData = await dashboardResponse.json();
+
+            renderNutrition(dashboardData.nutrients);
+            closeDialog();
+
+        } catch (error) {
+            console.error(error);
+            showMessage(error.message, true);
+        } finally {
+            saveBtn.disabled = false;
+            saveBtn.textContent = "Save Target";
+        }
+    });
 });
+
 

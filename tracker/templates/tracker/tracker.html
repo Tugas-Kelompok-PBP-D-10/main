@@ -11,12 +11,15 @@
 
 {% block content %}
 
+
 <main
     class="tracker-page"
     id="tracker-dashboard"
     data-api-url="{% url 'tracker:dashboard_api' %}"
     data-history-url="{% url 'tracker:history_api' %}"
+    data-nutrition-target-url="{% url 'tracker:nutrition_target_api' %}"
 >
+
     
     <section class="tracker-hero">
         <div class="tracker-avatar">
@@ -85,16 +88,40 @@
                 </div>
             </div>
 
-            
+            <!-- YOUR PROGRESS / NUTRITION TRACKING -->
             <div class="tracker-progress-section">
-                <div class="tracker-section-title">Your Progress</div>
 
-                <div class="tracker-progress-grid" id="nutrition-container">
+                <div class="tracker-nutrition-header">
+
+                    <div class="tracker-section-title">
+                        Your Progress
+                    </div>
+
+                    <button
+                        type="button"
+                        class="tracker-set-target-btn"
+                        id="tracker-set-target-btn"
+                        aria-haspopup="dialog"
+                        aria-controls="tracker-target-dialog"
+                    >
+                        <i data-lucide="sliders-horizontal"></i>
+                        <span>Set Target</span>
+                    </button>
+
+                </div>
+
+                <div
+                    class="tracker-progress-grid"
+                    id="nutrition-container"
+                >
                     <div class="tracker-card tracker-mini-card">
                         <p>Loading nutrition data...</p>
                     </div>
                 </div>
+
             </div>
+
+           
         </section>
 
         
@@ -110,28 +137,146 @@
                 </div>
             </div>
 
-            <div class="tracker-side-card">
+            <!-- YOUR BOOKMARKS -->
+            <div class="tracker-side-card tracker-bookmark-card">
+
                 <div class="tracker-side-header">
-                    <h3>Cooking History</h3>
-                    <span>Recent</span>
+                    <h3>Your Bookmarks</h3>
+                    <i data-lucide="bookmark" aria-hidden="true"></i>
                 </div>
 
-                
-              <div
-                  id="history-container"
-                  class="tracker-history-list"
-                  aria-live="polite"
-              >
-                  <p class="tracker-placeholder-text">
-                      Loading cooking history...
-                  </p>
-              </div>
+                <div
+                    id="bookmarks-container"
+                    class="tracker-bookmarks-list"
+                    aria-live="polite"
+                >
+                    <div class="tracker-bookmarks-empty">
+                        <i data-lucide="bookmark"></i>
+
+                        <p class="tracker-bookmarks-title">
+                            No bookmarked recipes yet
+                        </p>
+
+                        <p class="tracker-bookmarks-description">
+                            Your saved recipes will appear here
+                            once bookmarks are connected.
+                        </p>
+                    </div>
+                </div>
 
             </div>
         </aside>
     </div>
 
+<!-- SET WEEKLY NUTRITION TARGET -->
+<dialog
+    id="tracker-target-dialog"
+    class="tracker-target-dialog"
+    aria-labelledby="tracker-target-title"
+>
+    <div class="tracker-target-header">
+        <div>
+            <h2 id="tracker-target-title">
+                Set Nutrition Target
+            </h2>
+            <p>Set your weekly nutrition goals.</p>
+        </div>
+
+        <button
+            type="button"
+            id="tracker-target-close"
+            class="tracker-target-close"
+            aria-label="Close target settings"
+        >
+            <i data-lucide="x"></i>
+        </button>
+    </div>
+
+    <form id="tracker-target-form">
+        {% csrf_token %}
+
+        <div class="tracker-target-fields">
+            <div class="tracker-target-field">
+                <label for="tracker-target-protein">
+                    Protein (g)
+                </label>
+
+                <input
+                    type="number"
+                    id="tracker-target-protein"
+                    name="protein_g"
+                    min="1"
+                    max="10000"
+                    step="1"
+                    placeholder="Enter protein target"
+                    required
+                >
+            </div>
+
+            <div class="tracker-target-field">
+                <label for="tracker-target-carbs">
+                    Carbs (g)
+                </label>
+
+                <input
+                    type="number"
+                    id="tracker-target-carbs"
+                    name="carbs_g"
+                    min="1"
+                    max="10000"
+                    step="1"
+                    placeholder="Enter carbs target"
+                    required
+                >
+            </div>
+
+            <div class="tracker-target-field">
+                <label for="tracker-target-fat">
+                    Fat (g)
+                </label>
+
+                <input
+                    type="number"
+                    id="tracker-target-fat"
+                    name="fat_g"
+                    min="1"
+                    max="10000"
+                    step="1"
+                    placeholder="Enter fat target"
+                    required
+                >
+            </div>
+        </div>
+
+        <p
+            class="tracker-target-message"
+            id="tracker-target-message"
+            role="status"
+            aria-live="polite"
+        ></p>
+
+        <div class="tracker-target-actions">
+            <button
+                type="button"
+                class="tracker-target-cancel"
+                id="tracker-target-cancel"
+            >
+                Cancel
+            </button>
+
+            <button
+                type="submit"
+                class="tracker-target-save"
+                id="tracker-target-save"
+            >
+                Save Target
+            </button>
+        </div>
+    </form>
+</dialog>
+
 <!-- SHARE YOUR PROGRESS -->
+
 <dialog
     id="tracker-share-dialog"
     class="tracker-share-dialog"
@@ -188,5 +333,5 @@
 <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js"></script>
 
 
-
+ 
 {% endblock content %}

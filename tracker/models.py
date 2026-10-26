@@ -89,3 +89,20 @@ class UserBadge(models.Model):
 
     def __str__(self):
         return f"{self.user} - {self.badge}"
+
+
+class NutritionTarget(models.Model):
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="tracker_nutrition_target"
+    )
+
+    protein_g = models.PositiveIntegerField()
+    carbs_g = models.PositiveIntegerField()
+    fat_g = models.PositiveIntegerField()
+
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Nutrition Target - {self.user}"

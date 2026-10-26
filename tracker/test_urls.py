@@ -26,6 +26,8 @@ tracker_patterns = [
 urlpatterns = [
     path("", lambda request: redirect("/tracker/")),
 
+    path("tracker/", include("tracker.urls")),
+    
     path(
         "tracker/",
         include((tracker_patterns, "tracker"),

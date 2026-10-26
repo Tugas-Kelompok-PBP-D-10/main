@@ -5,13 +5,12 @@ from django.db.models import Sum
 from django.shortcuts import render
 from django.utils import timezone
 from django.contrib.auth.models import User
-
 from django.http import JsonResponse
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_POST, require_http_methods
 from .services import record_cook
-from .models import Badge, CookingLog, CookingStreak, UserBadge
+from .models import Badge, CookingLog, CookingStreak, UserBadge, NutritionTarget
 
-import uuid
+import uuid, json
 
 # Target nutrisi mingguan (sesuaikan dengan kebutuhan)
 WEEKLY_TARGET = {"protein": 120, "carbs": 120, "fat": 70}
@@ -32,21 +31,122 @@ def _week_data(user, monday):
 
 
 def _nutrients(user, monday):
-    totals = CookingLog.objects.filter(user=user, cooked_on__gte=monday).aggregate(
-        protein=Sum("protein_g"), carbs=Sum("carbs_g"), fat=Sum("fat_g"),
+    totals = CookingLog.objects.filter(
+        user=user,
+        cooked_on__gte=monday,
+        cooked_on__lt=monday + timedelta(days=7),
+    ).aggregate(
+        protein=Sum("protein_g"),
+        carbs=Sum("carbs_g"),
+        fat=Sum("fat_g"),
     )
-    rows = [("Protein", "protein", "green"), ("Carbs", "carbs", "green"), ("Fat", "fat", "yellow")]
+
+    nutrition_target = NutritionTarget.objects.filter(
+        user=user
+    ).first()
+
+    rows = [
+        ("Protein", "protein", "green"),
+        ("Carbs", "carbs", "green"),
+        ("Fat", "fat", "yellow"),
+    ]
+
     result = []
+
     for name, key, color in rows:
         current = totals[key] or 0
-        target = WEEKLY_TARGET[key]
+
+        target = (
+            getattr(nutrition_target, f"{key}_g")
+            if nutrition_target
+            else None
+        )
+
+        percent = (
+            min(100, round(current / target * 100))
+            if target is not None and target > 0
+            else None
+        )
+
         result.append({
-            "name": name, "current": current, "target": target, "unit": "g",
-            "percent": min(100, round(current / target * 100)), "color": color,
+            "name": name,
+            "current": current,
+            "target": target,
+            "unit": "g",
+            "percent": percent,
+            "color": color,
         })
+
     return result
 
 
+@login_required
+@require_http_methods(["GET", "POST"])
+def nutrition_target_api(request):
+
+    if request.method == "GET":
+        target = NutritionTarget.objects.filter(
+            user=request.user
+        ).first()
+
+        return JsonResponse({
+            "success": True,
+            "has_target": target is not None,
+            "target": {
+                "protein_g": target.protein_g,
+                "carbs_g": target.carbs_g,
+                "fat_g": target.fat_g,
+            } if target else None,
+        })
+
+    try:
+        data = json.loads(request.body)
+    except (json.JSONDecodeError, UnicodeDecodeError):
+        return JsonResponse({
+            "success": False,
+            "message": "Format JSON tidak valid.",
+        }, status=400)
+
+    if not isinstance(data, dict):
+        return JsonResponse({
+            "success": False,
+            "message": "Data target harus berupa objek JSON.",
+        }, status=400)
+
+    values = {}
+
+    for field in ("protein_g", "carbs_g", "fat_g"):
+        value = data.get(field)
+
+        if type(value) is not int or not (1 <= value <= 10000):
+            return JsonResponse({
+                "success": False,
+                "message": (
+                    f"{field} harus berupa bilangan bulat "
+                    "antara 1 sampai 10000."
+                ),
+            }, status=400)
+
+        values[field] = value
+
+    target, created = NutritionTarget.objects.update_or_create(
+        user=request.user,
+        defaults=values,
+    )
+
+    return JsonResponse({
+        "success": True,
+        "message": (
+            "Nutrition target berhasil disimpan."
+            if created
+            else "Nutrition target berhasil diperbarui."
+        ),
+        "target": {
+            "protein_g": target.protein_g,
+            "carbs_g": target.carbs_g,
+            "fat_g": target.fat_g,
+        },
+    })
 
 def _badges(user, streak):
     total = CookingLog.objects.filter(
@@ -99,6 +199,12 @@ def _badges(user, streak):
 @login_required
 def tracker_view(request):
     user = request.user
+
+    print(
+    "LOGIN TRACKER:",
+    "ID =", user.id,
+    "USERNAME =", user.username
+)
 
     today = timezone.localdate()
     monday = today - timedelta(days=today.weekday())
@@ -164,6 +270,12 @@ def complete_cooking(request):
 @login_required
 def tracker_dashboard_api(request):
     user = request.user
+
+    print(
+    "TRACKER LOGIN:",
+    "user_id =", user.id,
+    "username =", user.username
+    )
 
     today = timezone.localdate()
     monday = today - timedelta(days=today.weekday())
