@@ -35,7 +35,12 @@
                             onclick="deleteBahan('{{ forloop.counter0 }}')">-</button>
                     {{ form.name }}
                     {{ form.stock }} 
-                    {{ form.protein_content }}
+
+                    {% for field in form %}
+                        {% for error in field.errors %}
+                            <p>{{ error }}</p>
+                        {% endfor %}
+                    {% endfor %}
                 </div>
             {% endfor %}
             <button id="save-button" type="submit" class="button">Simpan Perubahan</button>
@@ -98,7 +103,6 @@
         elem.innerHTML = `
             <td>${bahan.nama}</td>
             <td>${bahan.stok}</td>
-            <td>${bahan.kandungan_protein}</td>
         `;
         return elem;
     }
@@ -119,7 +123,6 @@
             <tr>
                 <th>Nama Bahan</th>
                 <th>Stok</th>
-                <th>Protein</th>
             </tr>
             `;
             bahanData.forEach(bahan => {

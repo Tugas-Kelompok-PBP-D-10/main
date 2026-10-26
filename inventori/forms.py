@@ -8,13 +8,11 @@ class BahanForm(ModelForm):
         fields = [
             "name",
             "stock",
-            "protein_content",
         ]
 
         labels = {
             "name": "Nama bahan",
             "stock": "Stok bahan",
-            "protein_content": "Kandungan protein"
         }
 
         widgets = {
@@ -30,12 +28,6 @@ class BahanForm(ModelForm):
                 attrs={
                     "placeholder": "Unit",
                     "min": 1,
-                    "style": 'width: 5rem !important;',
-                    "class": "form-box",
-                }
-            ),
-            "protein_content": NumberInput(
-                attrs={
                     "style": 'width: 5rem !important;',
                     "class": "form-box",
                 }

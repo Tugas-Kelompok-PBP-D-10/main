@@ -14,7 +14,6 @@ class Bahan(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=255)
     stock = models.PositiveIntegerField()
-    protein_content = models.FloatField()
     inventory = models.ForeignKey(Inventori, on_delete=models.CASCADE, related_name="bahans", default=None)
 
     def __str__(self):
@@ -24,8 +23,6 @@ class Bahan(models.Model):
     def is_in_stock(self):
         return self.stock > 0
 
-    def add_stock(self, ammount):
-        self.stock += ammount
 
 
 

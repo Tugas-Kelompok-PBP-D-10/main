@@ -15,7 +15,6 @@ def get_bahan_json(request):
             "id" : bahan.id,
             "nama": bahan.name,
             "stok": bahan.stock,
-            "kandungan_protein": bahan.protein_content,
         })
     return JsonResponse(data, safe=False)
 
