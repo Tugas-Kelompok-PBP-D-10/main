@@ -3,41 +3,30 @@
 {% load voting_tags %}
 
 {% block content %}
-<!-- CSS Recipe + CSS Voting dari app 'voting' -->
 <link rel="stylesheet" href="{% static 'css/recipe.css' %}">
 <link rel="stylesheet" href="{% static 'voting/voting.css' %}">
-<script src="{% static 'JS/recipe.js' %}"></script>
 
-<!-- Section Hero / Header Recipe Catalog -->
 <section class="recipe-hero-section">
-    <h1 class="recipe-hero-title">
-        OlahRasa • Recipe Catalog & Nutrition
-    </h1>
+    <h1 class="recipe-hero-title">OlahRasa • Katalog Resep &amp; Nutrisi</h1>
     <p class="recipe-hero-subtitle">
-        Masukkan bahan sisa, lalu pilih resep yang paling cocok untuk nutrisi kamu.
+        Masukkan bahan sisa, lalu pilih resep yang paling cocok untuk kebutuhanmu.
     </p>
 
     <div class="recipe-search-container">
-        <input 
-            type="text" 
-            placeholder="Tambah Bahan" 
-            class="recipe-input-field"
-            readonly
-        />
+        <input type="text" placeholder="Tambah bahan" class="recipe-input-field" readonly>
         <div class="recipe-btn-group">
-            <button type="button" class="btn-secondary">Lihat Favorit</button>
-            <button type="button" class="btn-primary">Tambah Bahan</button>
+            <button type="button" class="btn-secondary">Lihat favorit</button>
+            <button type="button" class="btn-primary">Tambah bahan</button>
         </div>
     </div>
 </section>
 
-<!-- Section Inventory Input (Bahan Sisa) -->
 <section class="inventory-section">
     <div class="inventory-container">
         <div class="inventory-info">
-            <h2 class="inventory-title">Inventory Input (Bahan Sisa)</h2>
+            <h2 class="inventory-title">Masukkan Bahan Sisa</h2>
             <p class="inventory-subtitle">
-                Tulis bahan sisa yang kamu punya. Sistem akan menampilkan resep yang relevan.
+                Tulis bahan yang tersedia untuk mengelola bahan sisa di katalog.
             </p>
         </div>
 
@@ -45,74 +34,90 @@
             {% csrf_token %}
             <div class="form-group">
                 <label for="ingredient_name" class="form-label">Bahan</label>
-                <input 
-                    type="text" 
+                <input
+                    type="text"
                     id="ingredient_name"
                     name="ingredient_name"
-                    placeholder="Contoh: bayam, ayam, tomat..." 
+                    placeholder="Contoh: bayam, ayam, tomat"
                     class="form-input"
                     required
-                />
-                <span class="form-hint">Pisahkan dengan koma jika lebih dari satu</span>
+                >
+                <span class="form-hint">Pisahkan dengan koma jika lebih dari satu.</span>
             </div>
 
             <div class="form-group">
                 <label for="quantity" class="form-label">Jumlah (opsional)</label>
-                <input 
-                    type="text" 
+                <input
+                    type="text"
                     id="quantity"
                     name="quantity"
-                    placeholder="Contoh: 200g / 1 sdt" 
+                    placeholder="Contoh: 200 g atau 1 sdt"
                     class="form-input"
-                />
-                <span class="form-hint">Jika kosong, gunakan default</span>
+                >
+                <span class="form-hint">Isi jika jumlah bahan perlu dicatat.</span>
             </div>
 
             <div class="form-btn-group">
                 <button type="reset" class="btn-reset">Reset</button>
-                <button type="submit" class="btn-submit">Tambah Bahan</button>
+                <button type="submit" class="btn-submit">Tambah bahan</button>
             </div>
         </form>
     </div>
 </section>
 
-<!-- Section Recipe Grid -->
 <section class="recipe-grid-section">
     <div class="recipe-grid-container">
-        <h2 class="recipe-grid-main-title">Recipe Grid</h2>
-        <p class="recipe-grid-subtitle">Pilih satu resep untuk melihat detail nutrisi.</p>
+        <h2 class="recipe-grid-main-title">Daftar Resep</h2>
+        <p class="recipe-grid-subtitle">
+            Pilih resep untuk melihat detail, bahan, langkah memasak, dan nutrisi yang tersedia.
+        </p>
 
-        <!-- Filter & Action Buttons -->
         <div class="recipe-grid-actions">
             <button type="button" class="btn-grid-filter">Filter</button>
-            <button type="button" class="btn-grid-add">Tambah Bahan</button>
+            <button type="button" class="btn-grid-add">Tambah bahan</button>
         </div>
 
-        <!-- Grid Cards -->
         <div class="recipe-grid">
             {% for recipe in recipes %}
                 <article class="recipe-card">
-                    <div class="recipe-card-media">
-                        <span class="badge-cocok">Cocok {{ recipe.match_count|default:"4/4" }}</span>
-                        {% if recipe.image_url %}
-                            <img src="{{ recipe.image_url }}" alt="{{ recipe.title }}" class="recipe-img">
-                        {% else %}
-                            <div class="recipe-img-placeholder">
-                                Placeholder foto makanan ({{ recipe.title }})
+                    <button
+                        type="button"
+                        class="recipe-card-open"
+                        aria-haspopup="dialog"
+                        data-recipe-id="{{ recipe.pk }}"
+                        data-detail-url="{% url 'recipe:api_detail' recipe.pk %}"
+                        data-interactions-url="{% url 'recipe:api_interactions' recipe.pk %}"
+                        data-view-url="{% url 'recipe:api_record_view' recipe.pk %}"
+                        data-complete-url="{% url 'recipe:api_complete' recipe.pk %}"
+                    >
+                        <div class="recipe-card-media">
+                            {% if recipe.image_url %}
+                                <img src="{{ recipe.image_url }}" alt="{{ recipe.title }}" class="recipe-img">
+                            {% endif %}
+                            <div class="recipe-img-placeholder" aria-hidden="true" {% if recipe.image_url %}hidden{% endif %}>
+                                Foto belum tersedia
                             </div>
-                        {% endif %}
-                    </div>
-
-                    <div class="recipe-card-content">
-                        <h3 class="recipe-card-title">{{ recipe.title }}</h3>
-                        <p class="recipe-card-meta">
-                            {{ recipe.cooking_time|default:"15" }} menit • {{ recipe.protein|default:"22 g" }} protein
-                        </p>
-
-                        <!-- Custom Tag Voting & Bookmark dari app 'voting' -->
-                        <div class="recipe-card-actions">
-                            {% recipe_actions recipe %}
                         </div>
+
+                        <div class="recipe-card-content">
+                            <h3 class="recipe-card-title">{{ recipe.title }}</h3>
+                            <p class="recipe-card-meta">
+                                {% if recipe.cooking_time %}{{ recipe.cooking_time }} menit{% endif %}
+                                {% if recipe.protein is not None %}
+                                    {% if recipe.cooking_time %} • {% endif %}{{ recipe.protein }} g protein
+                                {% endif %}
+                            </p>
+                            <span class="recipe-card-status recipe-status-viewed" {% if not recipe.interaction_viewed %}hidden{% endif %}>
+                                ✓ Dilihat
+                            </span>
+                            <span class="recipe-card-status recipe-status-completed" {% if not recipe.interaction_completed %}hidden{% endif %}>
+                                ✓ Sudah dimasak
+                            </span>
+                        </div>
+                    </button>
+
+                    <div class="recipe-card-actions" data-login-url="{{ recipe_login_url }}">
+                        {% recipe_actions recipe %}
                     </div>
                 </article>
             {% empty %}
@@ -124,47 +129,113 @@
     </div>
 </section>
 
-<!-- Skrip JS Voting  -->
-<script src="{% static 'voting/voting.js' %}"></script>
-
-<!-- Modal Detail Nutrisi (Pop-up Overlay) -->
-<div id="nutritionModal" class="modal-overlay" style="display: none;">
-    <div class="modal-content">
-        <!-- Header Pop-up -->
-        <div class="modal-header">
-            <h2 id="modalTitle" class="modal-title">Nama Resep</h2>
-            <button type="button" class="btn-close-modal" id="btnCloseModal">&times;</button>
+<div
+    id="nutritionModal"
+    class="recipe-modal-overlay"
+    aria-hidden="true"
+    hidden
+>
+    <section
+        class="recipe-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="modalTitle"
+        tabindex="-1"
+    >
+        <div class="recipe-modal-header">
+            <h2 id="modalTitle" class="recipe-modal-title"></h2>
+            <button
+                type="button"
+                class="recipe-modal-close"
+                id="btnCloseModal"
+                aria-label="Tutup detail resep"
+            >
+                &times;
+            </button>
         </div>
 
-        <!-- Isi Pop-up -->
-        <div class="modal-body">
-            <div class="modal-image-placeholder">
-                <span id="modalImageText">Placeholder foto resep</span>
-            </div>
+        <p id="recipeModalStatus" class="recipe-modal-status" role="status" aria-live="polite">
+            Memuat detail resep…
+        </p>
+        <p id="recipeModalError" class="recipe-modal-error" role="alert" hidden></p>
 
-            <div class="nutrition-breakdown">
-                <h3 class="nutrition-heading">Nutritional Breakdown</h3>
-                <table class="nutrition-table">
-                    <tr>
-                        <td class="label">Calories</td>
-                        <td class="value" id="modalCalories">350 kcal</td>
-                    </tr>
-                    <tr>
-                        <td class="label">Protein</td>
-                        <td class="value" id="modalProtein">22 g</td>
-                    </tr>
-                    <tr>
-                        <td class="label">Carbs</td>
-                        <td class="value" id="modalCarbs">45 g</td>
-                    </tr>
-                    <tr>
-                        <td class="label">Fats</td>
-                        <td class="value" id="modalFats">12 g</td>
-                    </tr>
-                </table>
+        <div id="recipeModalDetails" class="recipe-modal-body" hidden>
+            <img id="modalImage" class="recipe-modal-image" alt="" hidden>
+            <div id="modalImagePlaceholder" class="recipe-img-placeholder recipe-modal-image-placeholder" aria-hidden="true">
+                Foto belum tersedia
             </div>
+            <p id="modalDescription" class="recipe-modal-description" hidden></p>
+            <p id="modalCookingTime" class="recipe-modal-cooking-time" hidden></p>
+
+            <section class="recipe-modal-section" aria-labelledby="nutritionHeading">
+                <h3 id="nutritionHeading" class="recipe-modal-heading">Informasi nutrisi</h3>
+                <p id="nutritionBasisLabel" class="recipe-nutrition-basis"></p>
+                <dl class="recipe-nutrition-list">
+                    <div id="nutritionCaloriesRow" class="recipe-nutrition-row" hidden>
+                        <dt>Kalori</dt>
+                        <dd id="nutritionCaloriesValue"></dd>
+                    </div>
+                    <div id="nutritionProteinRow" class="recipe-nutrition-row" hidden>
+                        <dt>Protein</dt>
+                        <dd id="nutritionProteinValue"></dd>
+                    </div>
+                    <div id="nutritionCarbsRow" class="recipe-nutrition-row" hidden>
+                        <dt>Karbohidrat</dt>
+                        <dd id="nutritionCarbsValue"></dd>
+                    </div>
+                    <div id="nutritionFatRow" class="recipe-nutrition-row" hidden>
+                        <dt>Lemak</dt>
+                        <dd id="nutritionFatValue"></dd>
+                    </div>
+                </dl>
+                <ul id="nutritionAdditional" class="recipe-nutrition-additional" hidden></ul>
+                <div id="nutritionTotalsSection" class="recipe-nutrition-totals" hidden>
+                    <h4 id="nutritionTotalsHeading"></h4>
+                    <dl id="nutritionTotals" class="recipe-nutrition-list"></dl>
+                </div>
+                <p id="nutritionEmpty" class="recipe-section-empty" hidden>
+                    Informasi nutrisi belum tersedia.
+                </p>
+            </section>
+
+            <section id="ingredientsSection" class="recipe-modal-section" hidden>
+                <h3 class="recipe-modal-heading">Bahan</h3>
+                <div id="servingCalculator" class="recipe-serving-calculator" hidden>
+                    <label for="recipeServings">Sesuaikan jumlah porsi</label>
+                    <input id="recipeServings" type="number" min="1" step="1" inputmode="numeric">
+                    <span id="originalServingsLabel" class="recipe-serving-note"></span>
+                </div>
+                <ul id="modalIngredients" class="recipe-detail-list"></ul>
+            </section>
+
+            <section id="instructionsSection" class="recipe-modal-section" hidden>
+                <h3 class="recipe-modal-heading">Cara memasak</h3>
+                <ol id="modalInstructions" class="recipe-detail-list recipe-instructions"></ol>
+            </section>
+
+            <section id="recipeCompletionPanel" class="recipe-completion-panel" hidden>
+                <label class="recipe-completion-confirm">
+                    <input type="checkbox" id="recipeCompletionConfirm">
+                    Saya mengonfirmasi sudah memasak resep ini.
+                </label>
+                <button
+                    type="button"
+                    id="recipeCompletionButton"
+                    class="recipe-completion-button"
+                    disabled
+                >
+                    Tandai sudah dimasak
+                </button>
+                <p id="recipeCompletionStatus" role="status" aria-live="polite"></p>
+            </section>
+            <p id="recipeLoginPrompt" class="recipe-login-prompt" hidden>
+                Masuk untuk menyimpan status resep yang dilihat atau menandai resep telah dimasak.
+                <a id="recipeLoginLink" href="{{ recipe_login_url }}">Masuk</a>
+            </p>
         </div>
-    </div>
+    </section>
 </div>
-{% endblock %}
 
+<script src="{% static 'voting/voting.js' %}"></script>
+<script src="{% static 'JS/recipe.js' %}" defer></script>
+{% endblock %}
