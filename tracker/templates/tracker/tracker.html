@@ -56,41 +56,17 @@
                                 Rekor terbaikmu {{ streak.longest }} hari. Terus masak untuk mengalahkannya!
                             {% endif %}
                         </p>
-
-                        
-                      {% if user.is_staff %}
-                      <form
-                          id="tracker-test-cooking-form"
-                          data-complete-url="{% url 'tracker:complete_cooking' %}"
-                      >
-                          {% csrf_token %}
-
-                            <input
-                                type="hidden"
-                                name="request_id"
-                                id="tracker-request-id"
-                            >
-
-
-                          <button
-                              type="submit"
-                              class="tracker-btn"
-                              id="tracker-test-cooking-btn"
-                          >
-                              <i data-lucide="chef-hat"></i>
-                              <span>Test Cooking</span>
-                          </button>
-                      </form>
-
-                      <p
-                          id="tracker-test-message"
-                          role="status"
-                          aria-live="polite"
-                      ></p>
-                      {% endif %}
-
+                    <button
+                        type="button"
+                        class="tracker-btn"
+                        id="tracker-share-btn"
+                        aria-haspopup="dialog"
+                        aria-controls="tracker-share-dialog"
+                    >
+                        <i data-lucide="share-2" aria-hidden="true"></i>
+                        <span>Post</span>
+                    </button>
                     </div>
-
                     <div class="tracker-week-box">
                         <div class="tracker-week-chart" id="week-chart">
                             {% for day in week %}
@@ -154,8 +130,60 @@
             </div>
         </aside>
     </div>
+
+<!-- SHARE YOUR PROGRESS -->
+<dialog
+    id="tracker-share-dialog"
+    class="tracker-share-dialog"
+    aria-labelledby="tracker-share-title"
+>
+    <div class="tracker-share-header">
+        <h2 id="tracker-share-title">
+            Share Your Progress
+        </h2>
+
+        <button
+            type="button"
+            id="tracker-share-close"
+            class="tracker-share-close"
+            aria-label="Close"
+        >
+            <i data-lucide="x"></i>
+        </button>
+    </div>
+
+    <canvas
+        id="tracker-share-canvas"
+        width="1080"
+        height="1350"
+        aria-label="Preview kartu pencapaian OlahRasa"
+        role="img"
+    ></canvas>
+
+    <div class="tracker-share-actions">
+        <button type="button" id="tracker-download-share">
+            <i data-lucide="download"></i>
+            Download PNG
+        </button>
+        <button type="button" id="tracker-native-share">
+            <i data-lucide="share-2"></i>
+            Share Image
+        </button>
+        <button type="button" id="tracker-whatsapp-share">
+            <i data-lucide="message-circle"></i>
+            WhatsApp
+        </button>
+        <button type="button" id="tracker-copy-share">
+            <i data-lucide="link"></i>
+            Copy Link
+        </button>
+    </div>
+
+    <p id="tracker-share-message" role="status" aria-live="polite"></p>
+</dialog>
 </main>
 
+<script src="{% static 'tracker/share.js' %}" defer></script>
 <script src="{% static 'tracker/tracker.js' %}" defer></script>
 <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js"></script>
 

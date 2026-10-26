@@ -7,6 +7,12 @@ from tracker.models import CookingLog, CookingStreak, Badge, UserBadge
 from tracker.services import record_cook
 from django.contrib.auth.models import User
 
+from tracker.integrations import (
+    RecipeSnapshot,
+    complete_recipe_cooking,
+)
+
+
 import uuid
 
 
@@ -253,6 +259,35 @@ class TrackerTest(TestCase):
             ).count(),
             1
         )
+
+
+    def test_recipe_integration_records_cooking(self):
+        recipe = RecipeSnapshot(
+            name="Sup Ayam",
+            protein_g=25,
+            carbs_g=20,
+            fat_g=8,
+            calories=260,
+        )
+
+        complete_recipe_cooking(
+            user=self.user,
+            recipe=recipe,
+            request_id=uuid.uuid4(),
+        )
+
+        log = CookingLog.objects.get(user=self.user)
+
+        self.assertEqual(log.recipe_name, "Sup Ayam")
+        self.assertEqual(log.protein_g, 25)
+        self.assertEqual(log.carbs_g, 20)
+        self.assertEqual(log.fat_g, 8)
+        self.assertEqual(log.calories, 260)
+
+        streak = CookingStreak.objects.get(user=self.user)
+
+        self.assertEqual(streak.active_streak, 1)
+
 
 
 
