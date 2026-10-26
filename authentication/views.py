@@ -58,13 +58,13 @@ def login_page(request):
         form = AuthenticationForm(request)
 
     form.fields["username"].widget.attrs.update({
-        "class": "input-control",
+        "class": "form-control auth-input",
         "placeholder": "Masukkan username",
         "autocomplete": "username",
     })
 
     form.fields["password"].widget.attrs.update({
-        "class" : "input-control",
+        "class" : "form-control auth-input",
         "placeholder":"Masukkan password",
         "autocomplete": "current-password",
     })
