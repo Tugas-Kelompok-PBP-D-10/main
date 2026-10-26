@@ -10,6 +10,17 @@
 {% endblock %}
 
 {% block content %}
+<div id="messages" style="z-index: 999; position: fixed;">
+    <p id="message" class="alert alert-{{ message.tags }}" style="background-color: #f8d7da; 
+            color: #721c24; 
+            padding: 12px; 
+            margin-bottom: 15px; 
+            border-radius: 4px;">
+        Gagal menambahkan bahan. Pastikan stok tidak 0.
+    </p>
+</div>
+
+
 <div id="content">
     <h1>Inventori</h1>
     <h2>Rekomendasi Resep</h2>
@@ -17,34 +28,6 @@
         <table id="bahan-table">
 
         </table>
-    </div>
-    <div id="bahan-form-grid">
-        <form method="post" id="bahan-form" action="{% url 'inventori' %}">
-            {% csrf_token %}
-            {{ formset.management_form }}
-            <p class="form-title">                   Nama Bahan               Stok            Protein </p>
-            {% for form in formset %}
-                <div class="bahan-form" id="row-{{ forloop.counter0 }}">
-                    {{ form.id }}
-                    <div style="display: none;">
-                        {{ form.DELETE }}
-                    </div>
-                    <button type="button" 
-                            class="button"
-                            bahan-id="{{ form.instance.id }}"
-                            onclick="deleteBahan('{{ forloop.counter0 }}')">-</button>
-                    {{ form.name }}
-                    {{ form.stock }} 
-
-                    {% for field in form %}
-                        {% for error in field.errors %}
-                            <p>{{ error }}</p>
-                        {% endfor %}
-                    {% endfor %}
-                </div>
-            {% endfor %}
-            <button id="save-button" type="submit" class="button">Simpan Perubahan</button>
-        </form>
     </div>
 
     <div id="recipe-grid">
@@ -57,10 +40,7 @@
                 popovertarget="tambah-bahan-modal">
             <span aria-hidden="true">+</span>    
         </button>
-        <button id="edit-button" 
-                type="button" 
-                onclick="editBahan()"
-                class="button">Edit Inventori</button>
+        <a href="{% url 'update_inventori' %}" class="href-button">Edit Inventori</a>
     </div>
 </div>
 
@@ -69,7 +49,7 @@
 
 <script>
     document.getElementById('backdrop').hidden = true;
-    document.getElementById('bahan-form-grid').hidden = true;
+    document.getElementById('messages').style.display = 'none';
     async function editBahan() {
         fetch(window.location.href)
         .then(response => response.text())
@@ -173,12 +153,19 @@
                 closeBahanModal();
                 fetchBahan();
             } 
+            else {
+                document.getElementById('messages').style.display = '';
+                setTimeout(() => {
+                    document.getElementById('messages').style.display = 'none';
+                }, 5000);
+            }
         } catch (error) {
             console.error('Error menambahkan bahan:', error);
         } finally {
             submitButton.disabled = false;
         }
     }
+
 
     if (bahanForm) {
         bahanForm.addEventListener('submit', addBahan);
@@ -202,12 +189,12 @@
         hidePopup();
     });
 
-    document.getElementById('edit-button').addEventListener('click', () => {
-        document.getElementById('edit-button').hidden = true;
-        document.getElementById('bahan-grid').hidden = true;
-        document.getElementById('add-button').hidden = true;
-        document.getElementById('bahan-form-grid').hidden = false;
-    });
+    // document.getElementById('edit-button').addEventListener('click', () => {
+    //     document.getElementById('edit-button').hidden = true;
+    //     document.getElementById('bahan-grid').hidden = true;
+    //     document.getElementById('add-button').hidden = true;
+    //     document.getElementById('bahan-form-grid').hidden = false;
+    // });
 
 
     fetchBahan();

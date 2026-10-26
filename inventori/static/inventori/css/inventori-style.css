@@ -1,4 +1,27 @@
 
+#bahan-form-grid {
+    background-color: #f9e58b;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: 100%;
+    margin: 0 auto;
+    text-align: center;
+    width: 500px;
+    padding: 2rem;
+    border-radius: 2rem;
+}
+
+.href-button {
+    text-decoration: none;
+}
+
+#kembali-button {
+    display: inline-block;
+    margin-top: 2rem;
+}
+
+
 /* Grid Halaman */
 #content {
     display: grid;
@@ -17,7 +40,7 @@ h1 {
     margin-bottom: 1rem;
 } 
 
-#bahan-grid, #bahan-form-grid {
+#bahan-grid{
     grid-area: inventori;
     background-color: #f9e58b;
     padding: 2rem;
@@ -68,7 +91,7 @@ h1 {
     border-bottom-right-radius: 2rem;
 }
 
-.button {
+.button, .href-button {
     padding: 0.5rem 1rem 0.5rem 1rem;
     border-radius: 2rem;
     background-color: #ee8252;
@@ -123,12 +146,12 @@ h2 {
   background: rgba(0, 0, 0, 0.3); /* Optional: darkens the background slightly */
   backdrop-filter: blur(5px); /* Blurs whatever is behind it */
   -webkit-backdrop-filter: blur(5px); /* Safari support */
-  z-index: 999; /* Places it just below the popup */
+  z-index: 998; /* Places it just below the popup */
 }
 
 /* Tabel Bahan */
 td {
-    background-color: #fff0e8;
+    background-color: white;
     border: 0.3rem solid #f9e58b;
     border-radius: 0.5rem;
 }
