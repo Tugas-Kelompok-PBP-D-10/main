@@ -211,7 +211,7 @@
 }
 
 .btn-submit {
-    flex: 1;
+    flex: 2;
     padding: 10px;
     border-radius: 8px;
     border: none;
@@ -388,4 +388,109 @@
     .recipe-grid {
         grid-template-columns: 1fr;
     }
+}
+
+/* =================================================== */
+/* Modal Overlay dengan Latar Belakang Blur            */
+/* =================================================== */
+
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.4); /* Gelap transparan */
+    backdrop-filter: blur(8px); /* Efek blur latar belakang */
+    -webkit-backdrop-filter: blur(8px); /* Support untuk Safari */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+.modal-content {
+    background: #ffffff;
+    width: 90%;
+    max-width: 480px;
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    animation: modalPop 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes modalPop {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.modal-title {
+    font-size: 20px;
+    font-weight: 800;
+    color: #0d5c46;
+    margin: 0;
+}
+
+.btn-close-modal {
+    background: transparent;
+    border: none;
+    font-size: 28px;
+    line-height: 1;
+    color: #6b7280;
+    cursor: pointer;
+}
+
+.modal-image-placeholder {
+    width: 100%;
+    height: 180px;
+    background-color: #e5e7eb;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    color: #6b7280;
+    margin-bottom: 20px;
+}
+
+.nutrition-heading {
+    font-size: 15px;
+    font-weight: 700;
+    color: #1f2937;
+    margin-bottom: 12px;
+}
+
+.nutrition-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.nutrition-table td {
+    padding: 10px 0;
+    border-bottom: 1px solid #f3f4f6;
+    font-size: 14px;
+}
+
+.nutrition-table .label {
+    color: #0d5c46;
+    font-weight: 600;
+}
+
+.nutrition-table .value {
+    color: #6b7280;
+    text-align: right;
+    font-weight: 500;
 }

@@ -1,5 +1,6 @@
 from django.shortcuts import render
 from .models import Ingredient, Recipe  # 1. Pastikan Recipe di-import
+from django.contrib.auth.decorators import login_required
 
 def recipe_home(request):
     if request.method == 'POST':

@@ -6,6 +6,7 @@
 <!-- CSS Recipe + CSS Voting dari app 'voting' -->
 <link rel="stylesheet" href="{% static 'css/recipe.css' %}">
 <link rel="stylesheet" href="{% static 'voting/voting.css' %}">
+<script src="{% static 'JS/recipe.js' %}"></script>
 
 <!-- Section Hero / Header Recipe Catalog -->
 <section class="recipe-hero-section">
@@ -125,4 +126,45 @@
 
 <!-- Skrip JS Voting  -->
 <script src="{% static 'voting/voting.js' %}"></script>
+
+<!-- Modal Detail Nutrisi (Pop-up Overlay) -->
+<div id="nutritionModal" class="modal-overlay" style="display: none;">
+    <div class="modal-content">
+        <!-- Header Pop-up -->
+        <div class="modal-header">
+            <h2 id="modalTitle" class="modal-title">Nama Resep</h2>
+            <button type="button" class="btn-close-modal" id="btnCloseModal">&times;</button>
+        </div>
+
+        <!-- Isi Pop-up -->
+        <div class="modal-body">
+            <div class="modal-image-placeholder">
+                <span id="modalImageText">Placeholder foto resep</span>
+            </div>
+
+            <div class="nutrition-breakdown">
+                <h3 class="nutrition-heading">Nutritional Breakdown</h3>
+                <table class="nutrition-table">
+                    <tr>
+                        <td class="label">Calories</td>
+                        <td class="value" id="modalCalories">350 kcal</td>
+                    </tr>
+                    <tr>
+                        <td class="label">Protein</td>
+                        <td class="value" id="modalProtein">22 g</td>
+                    </tr>
+                    <tr>
+                        <td class="label">Carbs</td>
+                        <td class="value" id="modalCarbs">45 g</td>
+                    </tr>
+                    <tr>
+                        <td class="label">Fats</td>
+                        <td class="value" id="modalFats">12 g</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
+
