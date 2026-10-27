@@ -26,6 +26,7 @@ def show_inventori(request):
     }
     return render(request, "inventori.html", context)
 
+@login_required(login_url='/login/')
 def update_inventori(request):
     bahan2 = Bahan.objects.filter(inventory=request.user.inventori)
     
@@ -37,12 +38,14 @@ def update_inventori(request):
             return redirect("inventori")
         else:
             messages.error(request, "Gagal menyimpan: Pastikan stok tidak 0")
-    formset = BahanFormSet(queryset=bahan2)
+    else:
+        formset = BahanFormSet(queryset=bahan2)
     context = {
         "formset": formset,
     }
     return render(request, "components/update_inventori.html", context)
 
+@login_required(login_url='/login/')
 def delete_bahan(request, bahan_id):
     bahan = get_object_or_404(Bahan, pk=bahan_id)
 
@@ -52,6 +55,7 @@ def delete_bahan(request, bahan_id):
         return redirect("update_inventori")
     return redirect("update_inventori")
 
+@login_required(login_url='/login/')
 def add_bahan(request):
     form = BahanForm(request.POST)
     

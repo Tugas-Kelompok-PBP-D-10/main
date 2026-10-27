@@ -23,7 +23,6 @@
                     <label for="{{ field.id_for_label }}">{{ field.label }}</label>
                     <br>
                     {{ field }}
-                    {{ field.errors }}
                     {% for error in field.errors %}
                         <p class="form-error">{{ error }}</p>
                     {% endfor %}

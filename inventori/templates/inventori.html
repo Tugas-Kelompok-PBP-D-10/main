@@ -11,11 +11,7 @@
 
 {% block content %}
 <div id="messages" style="z-index: 999; position: fixed;">
-    <p id="message" class="alert alert-{{ message.tags }}" style="background-color: #f8d7da; 
-            color: #721c24; 
-            padding: 12px; 
-            margin-bottom: 15px; 
-            border-radius: 4px;">
+    <p id="message" class="message">
         Gagal menambahkan bahan. Pastikan stok tidak 0.
     </p>
 </div>
@@ -50,30 +46,6 @@
 <script>
     document.getElementById('backdrop').hidden = true;
     document.getElementById('messages').style.display = 'none';
-    async function editBahan() {
-        fetch(window.location.href)
-        .then(response => response.text())
-        .then(htmlString => {
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(htmlString, 'text/html');
-            
-            const freshForm = doc.getElementById('bahan-form-grid').innerHTML;
-            
-            const currentContainer = document.getElementById('bahan-form-grid');
-            currentContainer.innerHTML = freshForm;
-        });
-    }
-    
-    async function deleteBahan(rowIndex) {
-        if (!confirm('Apakah Anda yakin ingin menghapus bahan ini?')) return;
-
-        const row = document.getElementById(`row-${rowIndex}`);
-        const deleteCheckbox = document.querySelector(`input[name="form-${rowIndex}-DELETE"]`);
-        if (deleteCheckbox) {
-            deleteCheckbox.checked = true;
-            row.style.display = 'none';
-        }
-    }
 
     function buildBahanCard(bahan) {
         const elem = document.createElement('tr');
@@ -188,14 +160,6 @@
     document.getElementById('backdrop').addEventListener('click', () => {
         hidePopup();
     });
-
-    // document.getElementById('edit-button').addEventListener('click', () => {
-    //     document.getElementById('edit-button').hidden = true;
-    //     document.getElementById('bahan-grid').hidden = true;
-    //     document.getElementById('add-button').hidden = true;
-    //     document.getElementById('bahan-form-grid').hidden = false;
-    // });
-
 
     fetchBahan();
 

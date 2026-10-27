@@ -28,7 +28,7 @@
     grid-template-areas: 
         "title-i title-r"
         "inventori resep"
-        "button-i misc";
+        "button-i resep"; 
     grid-template-columns: 33fr 66fr;
     column-gap: 5rem;
 }
@@ -48,10 +48,6 @@ h1 {
     border-top-left-radius: 2rem;
     border-top-right-radius: 2rem;
 }
-
-/* #bahan-form-grid {
-    grid-area: inventori;
-} */
 
 .form-title {
     white-space: pre-wrap;
@@ -147,6 +143,14 @@ h2 {
   backdrop-filter: blur(5px); /* Blurs whatever is behind it */
   -webkit-backdrop-filter: blur(5px); /* Safari support */
   z-index: 998; /* Places it just below the popup */
+}
+
+.message {
+    background-color: #f8d7da; 
+    color: #721c24; 
+    padding: 12px; 
+    margin-bottom: 15px; 
+    border-radius: 4px;
 }
 
 /* Tabel Bahan */
