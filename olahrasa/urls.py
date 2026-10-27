@@ -7,6 +7,8 @@ urlpatterns = [
 
     path('accounts/', include('allauth.urls')),
 
+    path('voting/', include('voting.urls')),
+
     path('tracker/', include('tracker.urls')),
     # Ubah LoginView bawaan jadi redirect langsung ke tracker untuk testing lokal:
     path('accounts/login/', lambda request: redirect('/tracker/'), name='login'),
