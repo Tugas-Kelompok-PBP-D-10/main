@@ -16,14 +16,14 @@ from .forms import RegisterForm
 def welcome(request):
 
     if request.user.is_authenticated:
-        return redirect("authentication:dashboard")
+        return redirect("tracker:tracker")
 
     return render(request, 'welcome.html')
 
 def register_page(request):
 
     if request.user.is_authenticated:
-        return redirect("authentication:dashboard")
+        return redirect("tracker:tracker")
 
     if request.method == "POST":
 
@@ -44,7 +44,7 @@ def register_page(request):
 def login_page(request):
 
     if request.user.is_authenticated:
-        return redirect("authentication:dashboard")
+        return redirect("tracker:tracker")
 
     if request.method == "POST":
         form = AuthenticationForm(request, data=request.POST)
@@ -52,19 +52,19 @@ def login_page(request):
         if form.is_valid():
             user = form.get_user()
             auth_login(request,user)
-            return redirect("authentication:dashboard")
+            return redirect("tracker:tracker")
 
     else:
         form = AuthenticationForm(request)
 
     form.fields["username"].widget.attrs.update({
-        "class": "input-control",
+        "class": "form-control auth-input",
         "placeholder": "Masukkan username",
         "autocomplete": "username",
     })
 
     form.fields["password"].widget.attrs.update({
-        "class" : "input-control",
+        "class" : "form-control auth-input",
         "placeholder":"Masukkan password",
         "autocomplete": "current-password",
     })
