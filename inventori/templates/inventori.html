@@ -10,10 +10,9 @@
 {% endblock %}
 
 {% block content %}
-<div id="messages" style="z-index: 999; position: fixed;">
-    <p id="message" class="message">
-        Gagal menambahkan bahan. Pastikan stok tidak 0.
-    </p>
+<div id="messages">
+    <p id="message-success" class="message"></p>
+    <p id="message-error" class="message"></p>
 </div>
 
 
@@ -124,18 +123,25 @@
                 bahanForm.reset();
                 closeBahanModal();
                 fetchBahan();
-            } 
-            else {
-                document.getElementById('messages').style.display = '';
-                setTimeout(() => {
-                    document.getElementById('messages').style.display = 'none';
-                }, 5000);
+                showMessage('message-success', 'message-error');
+            } else {
+                showMessage('message-error', 'message-success');
             }
         } catch (error) {
             console.error('Error menambahkan bahan:', error);
         } finally {
             submitButton.disabled = false;
         }
+    }
+
+    function showMessage(toShow, toHide) {
+        document.getElementById('messages').style.display = 'flex';
+        document.getElementById(toHide).hidden = true;
+        document.getElementById(toShow).innerHTML = 'Gagal menambahkan bahan. Pastikan stok tidak 0.';
+        setTimeout(() => {
+            document.getElementById('messages').style.display = 'none';
+            document.getElementById(toHide).hidden = false;
+        }, 5000);
     }
 
 

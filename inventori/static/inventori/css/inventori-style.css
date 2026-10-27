@@ -150,7 +150,25 @@ h2 {
   z-index: 998; /* Places it just below the popup */
 }
 
-.message {
+#messages {
+    position: fixed;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    inset: 0;
+    margin: 1rem auto;
+    z-index: 999;
+}
+
+#message-success {
+    background-color: #def8d7; 
+    color: #30721c; 
+    padding: 12px; 
+    margin-bottom: 15px; 
+    border-radius: 4px;
+}
+
+#message-error {
     background-color: #f8d7da; 
     color: #721c24; 
     padding: 12px; 
