@@ -34,6 +34,7 @@ ALLOWED_HOSTS = ["hafiza-nurul-olahrasa.pws.cs.ui.ac.id"]
 
 # Application definition
 
+
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -42,22 +43,24 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
-    'inventori',
-    'tracker',
-    'recipe',
+   # Modul kelompok
+    'tracker.apps.TrackerConfig',
     'authentication',
+    'inventori',
+    'recipe',
     'voting',
-
+  
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
     'allauth.socialaccount.providers.google',
+
 ]
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
-    'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -77,7 +80,7 @@ ROOT_URLCONF = 'olahrasa.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'olahrasa' /'templates'],
+        "DIRS": [BASE_DIR / "olahrasa" / "templates"],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -138,7 +141,9 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.1/howto/static-files/
 
 STATIC_URL = 'static/'
-STATICFILES_DIRS = [BASE_DIR / 'olahrasa' /'static']
+STATICFILES_DIRS = [
+    BASE_DIR / "olahrasa" / "static",
+]
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 WHITENOISE_USE_FINDERS = True
 
