@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.db import models
 from django.db.models import Q
+from django.core.validators import MinValueValidator
 
 
 class Ingredient(models.Model):
@@ -20,6 +21,11 @@ class Ingredient(models.Model):
 
 
 class Recipe(models.Model):
+    SOURCE_TYPE_CHOICES = [
+        ("auto", "Pencarian Spoonacular otomatis"),
+        ("local", "Resep lokal"),
+        ("spoonacular", "Spoonacular"),
+    ]
     NUTRITION_BASIS_CHOICES = [
         ("unknown", "Belum diketahui"),
         ("per_serving", "Per porsi"),
@@ -34,11 +40,45 @@ class Recipe(models.Model):
         blank=True,
         related_name="recipes",
     )
-    title = models.CharField(max_length=255)
-    description = models.TextField(blank=True, null=True)
-    cooking_time = models.IntegerField(default=15)
-    servings = models.PositiveSmallIntegerField(null=True, blank=True)
+    title = models.CharField(max_length=255, verbose_name="Nama resep")
+    description = models.TextField(blank=True, null=True, verbose_name="Deskripsi")
+    preparation_time = models.PositiveSmallIntegerField(
+        null=True,
+        blank=True,
+        verbose_name="Waktu persiapan (menit)",
+    )
+    cooking_time = models.PositiveSmallIntegerField(
+        null=True,
+        blank=True,
+        verbose_name="Waktu memasak (menit)",
+    )
+    servings = models.PositiveSmallIntegerField(
+        null=True,
+        blank=True,
+        validators=[MinValueValidator(1)],
+        verbose_name="Jumlah porsi",
+    )
+    image = models.ImageField(
+        upload_to="recipes/",
+        blank=True,
+        verbose_name="Foto resep",
+    )
     image_url = models.URLField(blank=True)
+    source_type = models.CharField(
+        max_length=16,
+        choices=SOURCE_TYPE_CHOICES,
+        default="auto",
+        verbose_name="Jenis sumber data",
+    )
+    source_name = models.CharField(
+        max_length=255,
+        blank=True,
+        verbose_name="Nama sumber resep",
+    )
+    is_published = models.BooleanField(
+        default=True,
+        verbose_name="Tampilkan di katalog",
+    )
     spoonacular_id = models.PositiveBigIntegerField(
         null=True,
         blank=True,
@@ -62,8 +102,21 @@ class Recipe(models.Model):
         default="unknown",
     )
     additional_nutrition = models.JSONField(default=dict, blank=True)
-    ingredients = models.JSONField(default=list, blank=True)
-    instructions = models.TextField(blank=True)
+    ingredients = models.JSONField(
+        default=list,
+        blank=True,
+        verbose_name="Bahan dan takaran",
+        help_text=(
+            'Gunakan JSON berupa daftar, misalnya '
+            '[{"name": "kentang", "amount": 300, "unit": "g"}]. '
+            "Bahan tanpa jumlah numerik boleh disimpan sebagai teks."
+        ),
+    )
+    instructions = models.TextField(
+        blank=True,
+        verbose_name="Langkah memasak",
+        help_text="Tulis satu langkah per baris. Urutan baris menjadi nomor langkah.",
+    )
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

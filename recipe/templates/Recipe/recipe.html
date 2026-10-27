@@ -91,10 +91,10 @@
                         data-complete-url="{% url 'recipe:api_complete' recipe.pk %}"
                     >
                         <div class="recipe-card-media">
-                            {% if recipe.image_url %}
-                                <img src="{{ recipe.image_url }}" alt="{{ recipe.title }}" class="recipe-img">
+                            {% if recipe.card_image_url %}
+                                <img src="{{ recipe.card_image_url }}" alt="{{ recipe.title }}" class="recipe-img">
                             {% endif %}
-                            <div class="recipe-img-placeholder" aria-hidden="true" {% if recipe.image_url %}hidden{% endif %}>
+                            <div class="recipe-img-placeholder" aria-hidden="true" {% if recipe.card_image_url %}hidden{% endif %}>
                                 Foto belum tersedia
                             </div>
                         </div>
@@ -102,7 +102,9 @@
                         <div class="recipe-card-content">
                             <h3 class="recipe-card-title">{{ recipe.title }}</h3>
                             <p class="recipe-card-meta">
-                                {% if recipe.cooking_time %}{{ recipe.cooking_time }} menit{% endif %}
+                                {% if recipe.preparation_time %}Persiapan {{ recipe.preparation_time }} menit{% endif %}
+                                {% if recipe.cooking_time %}{% if recipe.preparation_time %} • {% endif %}Masak {{ recipe.cooking_time }} menit{% endif %}
+                                {% if recipe.servings %} • {{ recipe.servings }} porsi{% endif %}
                                 {% if recipe.protein is not None %}
                                     {% if recipe.cooking_time %} • {% endif %}{{ recipe.protein }} g protein
                                 {% endif %}
@@ -117,7 +119,13 @@
                     </button>
 
                     <div class="recipe-card-actions" data-login-url="{{ recipe_login_url }}">
-                        {% recipe_actions recipe %}
+                        {% if request.user.is_authenticated and not voting_routes_available %}
+                            <p class="recipe-voting-unavailable" role="status">
+                                Vote dan simpan belum tersedia sampai URL aplikasi voting terhubung.
+                            </p>
+                        {% else %}
+                            {% recipe_actions recipe %}
+                        {% endif %}
                     </div>
                 </article>
             {% empty %}
@@ -165,6 +173,8 @@
                 Foto belum tersedia
             </div>
             <p id="modalDescription" class="recipe-modal-description" hidden></p>
+            <p id="modalSource" class="recipe-modal-source" hidden></p>
+            <p id="modalPreparationTime" class="recipe-modal-cooking-time" hidden></p>
             <p id="modalCookingTime" class="recipe-modal-cooking-time" hidden></p>
 
             <section class="recipe-modal-section" aria-labelledby="nutritionHeading">
@@ -211,6 +221,9 @@
             <section id="instructionsSection" class="recipe-modal-section" hidden>
                 <h3 class="recipe-modal-heading">Cara memasak</h3>
                 <ol id="modalInstructions" class="recipe-detail-list recipe-instructions"></ol>
+                <p id="instructionsEmpty" class="recipe-section-empty" hidden>
+                    Langkah memasak belum tersedia untuk resep ini.
+                </p>
             </section>
 
             <section id="recipeCompletionPanel" class="recipe-completion-panel" hidden>

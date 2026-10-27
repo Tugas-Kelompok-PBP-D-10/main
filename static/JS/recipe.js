@@ -30,11 +30,14 @@
         const image = document.getElementById("modalImage");
         const imagePlaceholder = document.getElementById("modalImagePlaceholder");
         const description = document.getElementById("modalDescription");
+        const source = document.getElementById("modalSource");
+        const preparationTime = document.getElementById("modalPreparationTime");
         const cookingTime = document.getElementById("modalCookingTime");
         const ingredientsSection = document.getElementById("ingredientsSection");
         const ingredientsList = document.getElementById("modalIngredients");
         const instructionsSection = document.getElementById("instructionsSection");
         const instructionsList = document.getElementById("modalInstructions");
+        const instructionsEmpty = document.getElementById("instructionsEmpty");
         const nutritionEmpty = document.getElementById("nutritionEmpty");
         const nutritionAdditional = document.getElementById("nutritionAdditional");
         const nutritionBasisLabel = document.getElementById("nutritionBasisLabel");
@@ -113,6 +116,10 @@
             image.alt = "";
             description.hidden = true;
             description.textContent = "";
+            source.hidden = true;
+            source.textContent = "";
+            preparationTime.hidden = true;
+            preparationTime.textContent = "";
             cookingTime.hidden = true;
             cookingTime.textContent = "";
             ingredientsSection.hidden = true;
@@ -125,6 +132,7 @@
             originalServings = null;
             instructionsSection.hidden = true;
             instructionsList.replaceChildren();
+            instructionsEmpty.hidden = true;
             nutritionAdditional.hidden = true;
             nutritionAdditional.replaceChildren();
             nutritionBasisLabel.textContent = "";
@@ -374,6 +382,15 @@
                 description.textContent = recipe.description;
                 description.hidden = false;
             }
+            if (recipe.source_name) {
+                source.textContent = "Sumber resep: " + recipe.source_name;
+                source.hidden = false;
+            }
+            if (recipe.preparation_time) {
+                preparationTime.textContent =
+                    "Waktu persiapan: " + recipe.preparation_time + " menit";
+                preparationTime.hidden = false;
+            }
             if (recipe.cooking_time) {
                 cookingTime.textContent = "Waktu memasak: " + recipe.cooking_time + " menit";
                 cookingTime.hidden = false;
@@ -393,13 +410,16 @@
             }
             renderNutrition(currentNutrition);
             renderIngredients();
-            instructionsSection.hidden =
-                renderTextList(instructionsList, payload.instructions) === 0;
+            instructionsSection.hidden = false;
+            instructionsEmpty.hidden =
+                renderTextList(instructionsList, payload.instructions) > 0;
             details.hidden = false;
 
             const external = payload.external || {};
             if (external.status === "ok") {
                 setStatus("Detail resep berhasil dimuat.");
+            } else if (external.status === "local") {
+                setStatus("Detail resep lokal berhasil dimuat.");
             } else if (external.status === "not_configured") {
                 setStatus("Data lokal ditampilkan. Spoonacular belum dikonfigurasi.");
             } else if (external.status === "not_found") {
