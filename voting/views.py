@@ -5,7 +5,7 @@ from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, render, resolve_url
 
-from recipe.models import Recipe
+from recipe.models import Recipe, RecipeInteraction
 from .decorators import ajax_login_required
 from .models import Bookmark
 from .services import (
@@ -89,10 +89,22 @@ def bookmark_list_api(request):
 
     paginator = Paginator(bookmarks, PAGE_SIZE)
     page_obj = paginator.get_page(request.GET.get("page"))
+    page_bookmarks = list(page_obj)
+
+    # Status "dilihat" / "sudah dimasak" milik user ini (tabel RecipeInteraction modul Recipe),
+    # diambil dengan satu query untuk seluruh kartu di halaman.
+    interactions = {
+        row["recipe_id"]: row
+        for row in RecipeInteraction.objects.filter(
+            user=request.user,
+            recipe_id__in=[bookmark.recipe_id for bookmark in page_bookmarks],
+        ).values("recipe_id", "viewed_at", "completed_at")
+    }
 
     results = []
-    for bookmark in page_obj:
+    for bookmark in page_bookmarks:
         recipe = bookmark.recipe
+        interaction = interactions.get(recipe.pk, {})
         summary = get_vote_summary(recipe, request.user)
         category = getattr(recipe, CATEGORY_FIELD, "") if CATEGORY_FIELD else ""
         results.append({
@@ -107,6 +119,11 @@ def bookmark_list_api(request):
                 "downvotes": summary["downvotes"],
                 "score": summary["score"],
                 "user_vote": summary["user_vote"],
+                "image_url": recipe.image_url or "",
+                "cooking_time": recipe.cooking_time,
+                "protein": float(recipe.protein) if recipe.protein is not None else None,
+                "viewed": bool(interaction.get("viewed_at")),
+                "completed": bool(interaction.get("completed_at")),
             },
         })
 
@@ -122,6 +139,7 @@ def bookmark_list_api(request):
         "filtered_count": paginator.count,
         "categories": available_categories(request.user),
     })
+
 
 @login_required
 def bookmark_list(request):

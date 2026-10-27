@@ -25,3 +25,11 @@ class BookmarkPageTests(TestCase):
         response = self.client.get(self.url, {"q": "nasi", "source": "api"})
         self.assertContains(response, 'value="nasi"')
         self.assertContains(response, 'value="api" selected')
+
+    def test_page_includes_recipe_modal_and_recipe_api_urls(self):
+        self.client.force_login(self.user)
+        response = self.client.get(self.url)
+        self.assertContains(response, 'id="nutritionModal"')
+        self.assertContains(response, "JS/recipe.js")
+        self.assertContains(response, reverse("recipe:api_detail", args=[0]))
+        self.assertContains(response, reverse("recipe:api_complete", args=[0]))
