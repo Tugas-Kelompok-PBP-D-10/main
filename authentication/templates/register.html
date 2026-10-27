@@ -1,106 +1,146 @@
+{% load static %}
 
-{% extends "auth_base.html" %}
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-{% block title %}Register | OlahRasa{% endblock %}
+    <title>Register | OlahRasa</title>
 
-{% block form_content %}
+    <link rel="stylesheet" href="{% static 'css/login.css' %}?v=5">
+</head>
 
-<div class="mb-4">
-    <h2 class="fw-bold auth-heading">Sign-Up</h2>
-    <p class="auth-muted small">
-        Start your diet journey with OlahRasa
-    </p>
-</div>
+<body>
 
-<form method="POST"
-      action="{% url 'authentication:register' %}">
+    <main class="auth-layout">
 
-    {% csrf_token %}
+        <!-- PANEL KIRI -->
+        <section class="auth-brand-panel">
 
-    {% if form.non_field_errors %}
-        <div class="alert alert-danger" role="alert">
-            {{ form.non_field_errors }}
-        </div>
-    {% endif %}
+            <h1>Welcome To OlahRasa</h1>
 
-    <!-- USERNAME -->
-    <div class="mb-3">
-        <label for="{{ form.username.id_for_label }}"
-               class="form-label auth-label">
-            NAME
-        </label>
-
-        {{ form.username }}
-
-        {% for error in form.username.errors %}
-            <div class="invalid-feedback d-block">
-                {{ error }}
+            <div class="brand-illustration">
+                <img
+                    src="{% static 'image/olahrasa-logo.png' %}"
+                    alt="OlahRasa"
+                    class="brand-logo"
+                >
             </div>
-        {% endfor %}
-    </div>
 
-    <!-- EMAIL -->
-    <div class="mb-3">
-        <label for="{{ form.email.id_for_label }}"
-               class="form-label auth-label">
-            EMAIL
-        </label>
+            <p class="brand-tagline">
+                Track what you <strong>eat</strong>,
+                feel what you <strong>gain.</strong>
+            </p>
 
-        {{ form.email }}
+        </section>
 
-        {% for error in form.email.errors %}
-            <div class="invalid-feedback d-block">
-                {{ error }}
+        <!-- PANEL KANAN -->
+        <section class="auth-form-panel">
+
+            <div class="auth-form-wrapper">
+
+                <div class="register-heading">
+                    <h2>Sign-Up</h2>
+                    <p>Start your diet journey with OlahRasa</p>
+                </div>
+
+                <form
+                    method="POST"
+                    action="{% url 'authentication:register' %}"
+                    class="auth-form"
+                >
+
+                    {% csrf_token %}
+
+                    {% if form.non_field_errors %}
+                        <div class="alert-error">
+                            {{ form.non_field_errors }}
+                        </div>
+                    {% endif %}
+
+                    <div class="form-field">
+
+                        <label for="{{ form.username.id_for_label }}">
+                            NAME
+                        </label>
+
+                        {{ form.username }}
+
+                        {% for error in form.username.errors %}
+                            <small class="field-error">
+                                {{ error }}
+                            </small>
+                        {% endfor %}
+
+                    </div>
+
+                    <div class="form-field">
+
+                        <label for="{{ form.email.id_for_label }}">
+                            EMAIL
+                        </label>
+
+                        {{ form.email }}
+
+                        {% for error in form.email.errors %}
+                            <small class="field-error">
+                                {{ error }}
+                            </small>
+                        {% endfor %}
+
+                    </div>
+
+                    <div class="form-field">
+
+                        <label for="{{ form.password1.id_for_label }}">
+                            PASSWORD
+                        </label>
+
+                        {{ form.password1 }}
+
+                        {% for error in form.password1.errors %}
+                            <small class="field-error">
+                                {{ error }}
+                            </small>
+                        {% endfor %}
+
+                    </div>
+
+                    <div class="form-field">
+
+                        <label for="{{ form.password2.id_for_label }}">
+                            RE-TYPE PASSWORD
+                        </label>
+
+                        {{ form.password2 }}
+
+                        {% for error in form.password2.errors %}
+                            <small class="field-error">
+                                {{ error }}
+                            </small>
+                        {% endfor %}
+
+                    </div>
+
+                    <button type="submit" class="primary-button">
+                        SIGN UP
+                    </button>
+
+                </form>
+
+                <p class="account-link">
+                    Already have an account?
+                    <a href="{% url 'authentication:login' %}">
+                        LOG IN
+                    </a>
+                </p>
+
             </div>
-        {% endfor %}
-    </div>
 
-    <!-- PASSWORD -->
-    <div class="mb-3">
-        <label for="{{ form.password1.id_for_label }}"
-               class="form-label auth-label">
-            PASSWORD
-        </label>
+        </section>
 
-        {{ form.password1 }}
+    </main>
 
-        {% for error in form.password1.errors %}
-            <div class="invalid-feedback d-block">
-                {{ error }}
-            </div>
-        {% endfor %}
-    </div>
-
-    <!-- KONFIRMASI PASSWORD -->
-    <div class="mb-4">
-        <label for="{{ form.password2.id_for_label }}"
-               class="form-label auth-label">
-            RE-TYPE PASSWORD
-        </label>
-
-        {{ form.password2 }}
-
-        {% for error in form.password2.errors %}
-            <div class="invalid-feedback d-block">
-                {{ error }}
-            </div>
-        {% endfor %}
-    </div>
-
-    <button type="submit"
-            class="btn auth-primary-btn w-100 fw-bold">
-        SIGN UP
-    </button>
-
-</form>
-
-<p class="text-center mt-3 auth-muted">
-    Already have an account?
-
-    <a href="{% url 'authentication:login' %}"
-       class="auth-link fw-bold">
-        LOG IN
-    </a>
-</p>
-
-{% endblock %}
+</body>
+</html>

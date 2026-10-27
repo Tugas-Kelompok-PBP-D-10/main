@@ -1,113 +1,149 @@
-
-{% extends "auth_base.html" %}
+{% load static %}
 {% load socialaccount %}
 
-{% block title %}Login | OlahRasa{% endblock %}
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-{% block form_content %}
+    <title>Login | OlahRasa</title>
 
-<h2 class="visually-hidden">Login OlahRasa</h2>
+    <link rel="stylesheet" href="{% static 'css/login.css' %}?v=5">
+</head>
 
-{% if messages %}
-    {% for message in messages %}
-        <div class="alert alert-success" role="alert">
-            {{ message }}
-        </div>
-    {% endfor %}
-{% endif %}
+<body>
 
-<form method="POST"
-      action="{% url 'authentication:login' %}">
+    <main class="auth-layout">
 
-    {% csrf_token %}
+        <!-- PANEL KIRI -->
+        <section class="auth-brand-panel">
 
-    {% if form.non_field_errors %}
-        <div class="alert alert-danger" role="alert">
-            {{ form.non_field_errors }}
-        </div>
-    {% endif %}
+            <h1>Welcome To OlahRasa</h1>
 
-    <!-- USERNAME -->
-    <div class="mb-3">
-
-        <label for="{{ form.username.id_for_label }}"
-               class="form-label auth-label">
-            USERNAME
-        </label>
-
-        {{ form.username }}
-
-        {% for error in form.username.errors %}
-            <div class="invalid-feedback d-block">
-                {{ error }}
+            <div class="brand-illustration">
+                <img
+                    src="{% static 'image/olahrasa-logo.png' %}"
+                    alt="OlahRasa"
+                    class="brand-logo"
+                >
             </div>
-        {% endfor %}
 
-    </div>
+            <p class="brand-tagline">
+                Track what you <strong>eat</strong>,
+                feel what you <strong>gain.</strong>
+            </p>
 
-    <!-- PASSWORD -->
-    <div class="mb-4">
+        </section>
 
-        <label for="{{ form.password.id_for_label }}"
-               class="form-label auth-label">
-            PASSWORD
-        </label>
+        <!-- PANEL KANAN -->
+        <section class="auth-form-panel">
 
-        {{ form.password }}
+            <div class="auth-form-wrapper">
 
-        {% for error in form.password.errors %}
-            <div class="invalid-feedback d-block">
-                {{ error }}
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert-success">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+
+                <form
+                    method="POST"
+                    action="{% url 'authentication:login' %}"
+                    class="auth-form"
+                >
+
+                    {% csrf_token %}
+
+                    {% if form.non_field_errors %}
+                        <div class="alert-error">
+                            {{ form.non_field_errors }}
+                        </div>
+                    {% endif %}
+
+                    <div class="form-field">
+
+                        <label for="{{ form.username.id_for_label }}">
+                            EMAIL / USERNAME
+                        </label>
+
+                        {{ form.username }}
+
+                        {% for error in form.username.errors %}
+                            <small class="field-error">
+                                {{ error }}
+                            </small>
+                        {% endfor %}
+
+                    </div>
+
+                    <div class="form-field">
+
+                        <label for="{{ form.password.id_for_label }}">
+                            PASSWORD
+                        </label>
+
+                        {{ form.password }}
+
+                        {% for error in form.password.errors %}
+                            <small class="field-error">
+                                {{ error }}
+                            </small>
+                        {% endfor %}
+
+                    </div>
+
+                    <button type="submit" class="primary-button">
+                        LOG IN
+                    </button>
+
+                </form>
+
+                <p class="account-link">
+                    Don’t have an account?
+                    <a href="{% url 'authentication:register' %}">
+                        SIGN UP
+                    </a>
+                </p>
+
+                <div class="social-divider">
+                    <span>or</span>
+                </div>
+
+                <!-- GOOGLE LOGIN -->
+                <form
+                    method="POST"
+                    action="{% provider_login_url 'google' process='login' %}"
+                    class="google-login-form"
+                >
+
+                    {% csrf_token %}
+
+                    <button
+                        type="submit"
+                        class="google-icon-button"
+                        aria-label="Masuk dengan Google"
+                        title="Masuk dengan Google"
+                    >
+
+                        <img
+                            src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
+                            alt="Google"
+                            width="26"
+                            height="26"
+                        >
+
+                    </button>
+
+                </form>
+
             </div>
-        {% endfor %}
 
-    </div>
+        </section>
 
-    <button type="submit"
-            class="btn auth-primary-btn w-100 fw-bold">
-        LOG IN
-    </button>
+    </main>
 
-</form>
-
-<!-- LINK REGISTER -->
-<p class="text-center mt-3 mb-2 auth-muted">
-    Don't have an account?
-
-    <a href="{% url 'authentication:register' %}"
-       class="auth-link fw-bold">
-        SIGN UP
-    </a>
-</p>
-
-<!-- DIVIDER -->
-<div class="text-center auth-muted my-2">
-    or
-</div>
-
-<!-- GOOGLE OAUTH -->
-<form method="POST"
-      action="{% provider_login_url 'google' process='login' %}"
-      class="d-flex justify-content-center mt-2">
-
-    {% csrf_token %}
-
-    <button type="submit"
-            class="btn btn-outline-secondary rounded-circle
-                   google-icon-btn d-inline-flex
-                   align-items-center justify-content-center"
-            title="Masuk dengan Google"
-            aria-label="Masuk dengan Google">
-
-        <img
-            src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
-            alt=""
-            width="25"
-            height="25"
-        >
-
-    </button>
-
-</form>
-
-{% endblock %}
+</body>
+</html>
