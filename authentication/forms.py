@@ -26,7 +26,7 @@ class RegisterForm(UserCreationForm):
 
         # Berikan styling yang sama kepada semua input.
         for field in self.fields.values():
-            field.widget.attrs["class"] = "input-control"
+            field.widget.attrs["class"] = "form-control auth-input"
 
         placeholders = {
             "username": "Masukkan username",

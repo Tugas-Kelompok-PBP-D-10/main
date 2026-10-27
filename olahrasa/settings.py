@@ -29,7 +29,7 @@ SECRET_KEY = 'django-insecure-5nw4m*_1af7#(nmoai+9fb7u=&@*j4hiew(=7bqbvap4q!a(g7
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["hafiza-nurul-olahrasa.pws.cs.ui.ac.id"]
+ALLOWED_HOSTS = ['127.0.0.1','localhost',"hafiza-nurul-olahrasa.pws.cs.ui.ac.id"]
 
 
 # Application definition
@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'inventori',
     'tracker',
     'recipe',
+    'voting',
     'authentication',
 
     'allauth',
@@ -140,6 +141,10 @@ STATIC_URL = 'static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 WHITENOISE_USE_FINDERS = True
+
+# Penyimpanan foto resep yang diunggah melalui Django Admin.
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
 
 
 # Email
