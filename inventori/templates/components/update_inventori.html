@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block meta %}
+<title>Inventori | OlahRasa</title>
+{% endblock meta %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'inventori/css/inventori-style.css' %}">
+{% endblock %}
+
+{% block content %}
+{% if messages %}
+    <div id="messages">
+        {% for message in messages %}
+            <div id="message-{{ message.tags }}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    </div>
+{% endif %}
+    <div id="bahan-form-grid">
+        <form method="post" id="bahan-form" action="{% url 'update_inventori' %}">
+            {% csrf_token %}
+            {{ formset.management_form }}
+            <p class="form-title">              Nama Bahan               Stok</p>
+            {% for form in formset %}
+                <div class="bahan-form" id="row-{{ forloop.counter0 }}">
+                    {{ form.id }}
+                    <div style="display: none;">
+                        {{ form.DELETE }}
+                    </div>
+                    <button type="submit" form="delete-form-{{ form.instance.id }}" class="button button-danger" onclick="return confirm('Are you sure?');">-</button>
+                    {{ form.name }}
+                    {{ form.stock }} 
+                </div>
+            {% endfor %}
+            <a id="kembali-button" href="{% url 'inventori' %}" class="href-button">Kembali ke halaman Inventori</a>
+            <button id="save-button" type="submit" class="button">Simpan Perubahan</button>
+        </form>
+    </div>
+
+    {% for form in formset %}
+    {% if form.instance.id %}
+        <form id="delete-form-{{ form.instance.id }}" method="post" action="{% url 'delete_bahan' form.instance.id %}" style="display: none;">
+            {% csrf_token %}
+        </form>
+    {% endif %}
+{% endfor %}
+
+<script>
+    setTimeout(() => {
+        document.getElementById('messages').style.display = 'none';
+    }, 5000);
+</script>
+{% endblock content %}

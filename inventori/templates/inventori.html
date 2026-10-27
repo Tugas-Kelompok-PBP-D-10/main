@@ -5,7 +5,169 @@
 <title>Inventori | OlahRasa</title>
 {% endblock meta %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'inventori/css/inventori-style.css' %}">
+{% endblock %}
 
 {% block content %}
-<p>Coming Soon</p>
+<div id="messages">
+    <p id="message-success" class="message"></p>
+    <p id="message-error" class="message"></p>
+</div>
+
+
+<div id="content">
+    <h1>Inventori</h1>
+    <h2>Rekomendasi Resep</h2>
+    <div id="bahan-grid">
+        <table id="bahan-table">
+
+        </table>
+    </div>
+
+    <div id="recipe-grid">
+        <p>Coming Soon</p>
+    </div>
+    <div class="buttons">
+        <button type="button"
+                id="add-button"
+                class="button"
+                popovertarget="tambah-bahan-modal">
+            <span aria-hidden="true">+</span>    
+        </button>
+        <a href="{% url 'update_inventori' %}" class="href-button">Edit Inventori</a>
+    </div>
+</div>
+
+<div class="blur-backdrop" id="backdrop"></div>
+{% include "components/tambah_bahan_modal.html" %}
+
+<script>
+    document.getElementById('backdrop').hidden = true;
+    document.getElementById('messages').style.display = 'none';
+
+    function buildBahanCard(bahan) {
+        const elem = document.createElement('tr');
+        elem.className = "bahan-card";
+        elem.innerHTML = '';
+
+        elem.innerHTML = `
+            <td>${bahan.nama}</td>
+            <td>${bahan.stok}</td>
+        `;
+        return elem;
+    }
+
+    async function fetchBahan() {
+        const bahanGrid = document.getElementById('bahan-table');
+        const url = "{% url 'get_bahan_json' %}";
+        const response = await fetch(url, {
+            headers: {'Accept': 'application/json'},
+        });
+
+        const bahanData = await response.json();
+        bahanGrid.innerHTML = '';
+        if (bahanData.length === 0) {
+            bahanGrid.innerHTML = '<p>Tidak ada bahan dalam inventori</p>';
+        } else {
+            bahanGrid.innerHTML = `
+            <tr>
+                <th>Nama Bahan</th>
+                <th>Stok</th>
+            </tr>
+            `;
+            bahanData.forEach(bahan => {
+                bahanGrid.appendChild(buildBahanCard(bahan));
+            });
+        }
+    }
+
+    function closeBahanModal() {
+        document.getElementById("tambah-bahan-modal").hidePopover();
+        document.getElementById('backdrop').hidden = true;
+    }
+
+    const TAMBAH_BAHAN_ENDPOINT = "{% url 'add_bahan' %}";
+    const bahanForm = document.getElementById('tambah-bahan-form');
+
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    async function addBahan(event) {
+        event.preventDefault();
+
+        const submitButton = bahanForm.querySelector('button[type="submit"]');
+        submitButton.disabled = true;
+
+        try {
+            const response = await fetch(TAMBAH_BAHAN_ENDPOINT, {
+                method: 'POST',
+                headers: { 'X-CSRFToken': getCookie('csrftoken') },
+                body: new FormData(bahanForm),
+            });
+            const result = await response.json().catch(() => ({}));
+
+            if (response.ok) {
+                bahanForm.reset();
+                closeBahanModal();
+                fetchBahan();
+                showMessage('message-success', 'message-error');
+            } else {
+                showMessage('message-error', 'message-success');
+            }
+        } catch (error) {
+            console.error('Error menambahkan bahan:', error);
+        } finally {
+            submitButton.disabled = false;
+        }
+    }
+
+    function showMessage(toShow, toHide) {
+        document.getElementById('messages').style.display = 'flex';
+        document.getElementById(toHide).hidden = true;
+        document.getElementById(toShow).innerHTML = 'Gagal menambahkan bahan. Pastikan stok tidak 0.';
+        setTimeout(() => {
+            document.getElementById('messages').style.display = 'none';
+            document.getElementById(toHide).hidden = false;
+        }, 5000);
+    }
+
+
+    if (bahanForm) {
+        bahanForm.addEventListener('submit', addBahan);
+    }
+
+    function showPopup() {
+        document.getElementById('backdrop').hidden = false;
+        document.getElementById('tambah-bahan-modal').hidden = false;
+    }
+
+    function hidePopup() {
+        document.getElementById('backdrop').hidden = true;
+        document.getElementById('tambah-bahan-modal').hidden = true;
+    }
+    
+    document.getElementById('add-button').addEventListener('click', () => {
+        showPopup();
+    });
+
+    document.getElementById('backdrop').addEventListener('click', () => {
+        hidePopup();
+    });
+
+    fetchBahan();
+
+</script>
 {% endblock content %}

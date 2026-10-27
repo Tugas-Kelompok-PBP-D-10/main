@@ -1,0 +1,195 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;800&display=swap');
+
+body {
+    font-family: 'Montserrat', sans-serif;
+}
+
+#bahan-form-grid {
+    background-color: #f9e58b;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: 100%;
+    margin: 2rem auto;
+    text-align: center;
+    width: 500px;
+    padding: 2rem;
+    border-radius: 2rem;
+}
+
+.href-button {
+    text-decoration: none;
+}
+
+#kembali-button {
+    display: inline-block;
+    margin-top: 2rem;
+}
+
+
+/* Grid Halaman */
+#content {
+    display: grid;
+    grid-template-areas: 
+        "title-i title-r"
+        "inventori resep"
+        "button-i resep"; 
+    grid-template-columns: 33fr 66fr;
+    column-gap: 5rem;
+}
+
+h1 {
+    grid-area: title-i;
+    text-align: center;
+    color: #ee8252;
+    margin-bottom: 1rem;
+} 
+
+#bahan-grid{
+    grid-area: inventori;
+    background-color: #f9e58b;
+    padding: 2rem;
+    padding-top: 0.7rem;
+    border-top-left-radius: 2rem;
+    border-top-right-radius: 2rem;
+}
+
+.form-title {
+    white-space: pre-wrap;
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+    font-weight: bold;
+}
+
+.bahan-form {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.3rem;
+    gap: 1rem;
+}
+
+.form-box {
+    border: 0px none;
+    padding: 0.3rem;
+    border-radius: 0.3rem;
+    margin-top: 0.3rem;
+}
+
+#save-button {
+    display: block;
+    margin: 2rem auto 0;
+}
+
+.buttons {
+    grid-area: button-i;
+    display: grid;
+    place-items: center;
+    align-content: center;
+    gap: 0.5rem;
+    background-color: #f9e58b;
+    padding-bottom: 2rem;
+    border-bottom-left-radius: 2rem;
+    border-bottom-right-radius: 2rem;
+}
+
+.button, .href-button {
+    padding: 0.5rem 1rem 0.5rem 1rem;
+    border-radius: 2rem;
+    background-color: #ee8252;
+    border: 0rem;
+    color: white;
+}
+
+h2 {
+    grid-area: title-r;
+}
+
+#recipe-grid {
+    grid-area: resep;
+}
+
+#tambah-bahan-modal {
+    /* Posisikan di tengah halaman */
+    justify-content: center;
+    align-items: flex-start;
+    height: 275px;
+    margin: 10rem auto;
+    z-index: 1000;
+    /* --------------------------- */
+    border: 0px none;
+    padding: 1rem;
+    background-color: #03695e;
+    color: white;
+    border-radius: 1rem;
+    width: 300px;
+}
+
+.modal-title {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-modal__actions {
+    display: flex;
+    justify-content: space-between;
+}
+
+.blur-backdrop {
+  position: fixed;
+  inset: 0; /* Covers the entire screen */
+  background: rgba(0, 0, 0, 0.3); /* Optional: darkens the background slightly */
+  backdrop-filter: blur(5px); /* Blurs whatever is behind it */
+  -webkit-backdrop-filter: blur(5px); /* Safari support */
+  z-index: 998; /* Places it just below the popup */
+}
+
+#messages {
+    position: fixed;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    inset: 0;
+    margin: 1rem auto;
+    z-index: 999;
+}
+
+#message-success {
+    background-color: #def8d7; 
+    color: #30721c; 
+    padding: 12px; 
+    margin-bottom: 15px; 
+    border-radius: 4px;
+}
+
+#message-error {
+    background-color: #f8d7da; 
+    color: #721c24; 
+    padding: 12px; 
+    margin-bottom: 15px; 
+    border-radius: 4px;
+}
+
+/* Tabel Bahan */
+td {
+    background-color: white;
+    border: 0.3rem solid #f9e58b;
+    border-radius: 0.5rem;
+}
+
+th, td {
+    padding: 0.3rem;
+}
+
+table {
+    width: 100%;
+    text-align: center;
+    border-collapse: separate;
+    border-spacing: 0 0.5rem;
+}
