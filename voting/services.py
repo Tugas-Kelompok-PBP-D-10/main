@@ -9,7 +9,8 @@ from .models import Bookmark, Vote
 DOWNVOTE_LIMIT = 100
 
 # Ganti sesuai nama field kategori di model Recipe asli, atau None kalau tidak ada.
-CATEGORY_FIELD = "category"
+# Model Recipe final belum punya field kategori, jadi dinonaktifkan (filter kategori otomatis tersembunyi).
+CATEGORY_FIELD = None
 
 
 def get_vote_summary(recipe, user=None):

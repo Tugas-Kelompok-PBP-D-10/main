@@ -9,10 +9,10 @@ https://docs.djangoproject.com/en/6.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.1/ref/settings/
 """
+
 import os
 from pathlib import Path
 from dotenv import load_dotenv
-
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -29,10 +29,19 @@ SECRET_KEY = 'django-insecure-5nw4m*_1af7#(nmoai+9fb7u=&@*j4hiew(=7bqbvap4q!a(g7
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['127.0.0.1','localhost',"hafiza-nurul-olahrasa.pws.cs.ui.ac.id"]
+ALLOWED_HOSTS = [
+    "hafiza-nurul-olahrasa.pws.cs.ui.ac.id",
+]
+
+CSRF_TRUSTED_ORIGINS = [
+    "https://hafiza-nurul-olahrasa.pws.cs.ui.ac.id",
+]
+
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 
 # Application definition
+
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -42,22 +51,24 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
+   # Modul kelompok
+    'tracker.apps.TrackerConfig',
+    'authentication',
     'inventori',
-    'tracker',
     'recipe',
     'voting',
-    'authentication',
-
+  
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
     'allauth.socialaccount.providers.google',
+
 ]
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
-    'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -77,7 +88,7 @@ ROOT_URLCONF = 'olahrasa.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates'],
+        "DIRS": [BASE_DIR / "olahrasa" / "templates"],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -138,7 +149,9 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.1/howto/static-files/
 
 STATIC_URL = 'static/'
-STATICFILES_DIRS = [BASE_DIR / 'static']
+STATICFILES_DIRS = [
+    BASE_DIR / "olahrasa" / "static",
+]
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 WHITENOISE_USE_FINDERS = True
 
@@ -156,12 +169,12 @@ MAILERS = {
     },
 }
 
-LOGIN_REDIRECT_URL = "/dashboard/"
+LOGIN_REDIRECT_URL = "/tracker/"
 
 SOCIALACCOUNT_PROVIDERS = {
-    "google" : {
+    "google": {
         "APP": {
-            "client_id" : os.getenv("GOOGLE_CLIENT_ID"),
+            "client_id": os.getenv("GOOGLE_CLIENT_ID"),
             "secret": os.getenv("GOOGLE_CLIENT_SECRET"),
             "key": "",
         },
@@ -169,9 +182,9 @@ SOCIALACCOUNT_PROVIDERS = {
             "profile",
             "email",
         ],
-        "AUTH_PARAMS" : {
-            "access_type" : "online",
+        "AUTH_PARAMS": {
+            "access_type": "online",
         },
-        "OAUTH_PKCE_ENABLED" : True,
+        "OAUTH_PKCE_ENABLED": True,
     }
 }

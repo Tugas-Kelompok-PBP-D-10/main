@@ -1,9 +1,11 @@
 from django.core.paginator import Paginator
 from django.http import JsonResponse
-from django.shortcuts import get_object_or_404
 from django.views.decorators.http import require_GET, require_POST
+from django.conf import settings
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import get_object_or_404, render, resolve_url
 
-from recipe.models import Recipe
+from recipe.models import Recipe, RecipeInteraction
 from .decorators import ajax_login_required
 from .models import Bookmark
 from .services import (
@@ -71,6 +73,15 @@ def bookmark_clear(request):
     return JsonResponse({"message": "Semua bookmark dihapus.", "bookmark_count": 0})
 
 
+def _recipe_image_url(recipe):
+    """Foto unggahan (ImageField) diutamakan, lalu image_url; urutan sama dengan kartu di halaman resep."""
+    try:
+        stored = recipe.image.url if recipe.image else ""
+    except (OSError, ValueError):
+        stored = ""
+    return stored or recipe.image_url or ""
+
+
 @require_GET
 @ajax_login_required
 def bookmark_list_api(request):
@@ -87,10 +98,22 @@ def bookmark_list_api(request):
 
     paginator = Paginator(bookmarks, PAGE_SIZE)
     page_obj = paginator.get_page(request.GET.get("page"))
+    page_bookmarks = list(page_obj)
+
+    # Status "dilihat" / "sudah dimasak" milik user ini (tabel RecipeInteraction modul Recipe),
+    # diambil dengan satu query untuk seluruh kartu di halaman.
+    interactions = {
+        row["recipe_id"]: row
+        for row in RecipeInteraction.objects.filter(
+            user=request.user,
+            recipe_id__in=[bookmark.recipe_id for bookmark in page_bookmarks],
+        ).values("recipe_id", "viewed_at", "completed_at")
+    }
 
     results = []
-    for bookmark in page_obj:
+    for bookmark in page_bookmarks:
         recipe = bookmark.recipe
+        interaction = interactions.get(recipe.pk, {})
         summary = get_vote_summary(recipe, request.user)
         category = getattr(recipe, CATEGORY_FIELD, "") if CATEGORY_FIELD else ""
         results.append({
@@ -105,6 +128,13 @@ def bookmark_list_api(request):
                 "downvotes": summary["downvotes"],
                 "score": summary["score"],
                 "user_vote": summary["user_vote"],
+                "image_url": _recipe_image_url(recipe),
+                "preparation_time": recipe.preparation_time,
+                "cooking_time": recipe.cooking_time,
+                "servings": recipe.servings,
+                "is_published": recipe.is_published,
+                "viewed": bool(interaction.get("viewed_at")),
+                "completed": bool(interaction.get("completed_at")),
             },
         })
 
@@ -119,4 +149,20 @@ def bookmark_list_api(request):
         "total": user_bookmark_count(request.user),
         "filtered_count": paginator.count,
         "categories": available_categories(request.user),
+    })
+
+
+@login_required
+def bookmark_list(request):
+    filters = {
+        key: request.GET.get(key, "")
+        for key in ("q", "sort", "source", "vote", "min_score", "category")
+    }
+    if filters["sort"] not in SORT_ORDERING:
+        filters["sort"] = "newest"
+
+    return render(request, "voting/bookmark_list.html", {
+        "total": user_bookmark_count(request.user),
+        "filters": filters,
+        "login_url": resolve_url(settings.LOGIN_URL),
     })

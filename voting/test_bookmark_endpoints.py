@@ -1,8 +1,9 @@
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
+from django.utils import timezone
 
-from recipe.models import Recipe
+from recipe.models import Recipe, RecipeInteraction
 from .models import Bookmark
 from .services import cast_vote
 
@@ -96,6 +97,58 @@ class BookmarkApiTests(TestCase):
         self.assertEqual(fields["score"], 1)
         self.assertEqual(fields["user_vote"], 1)
         self.assertEqual(fields["source"], "community")
+
+    def test_includes_recipe_card_fields(self):
+        Recipe.objects.filter(pk=self.nasi.pk).update(
+            image_url="https://example.com/nasi.jpg",
+            preparation_time=10,
+            cooking_time=25,
+            servings=4,
+        )
+        self.client.force_login(self.user)
+        fields = self.client.get(self.url).json()["results"][0]["fields"]
+        self.assertEqual(fields["image_url"], "https://example.com/nasi.jpg")
+        self.assertEqual(fields["preparation_time"], 10)
+        self.assertEqual(fields["cooking_time"], 25)
+        self.assertEqual(fields["servings"], 4)
+        self.assertTrue(fields["is_published"])
+        self.assertFalse(fields["viewed"])
+        self.assertFalse(fields["completed"])
+
+    def test_uploaded_image_is_preferred_over_image_url(self):
+        Recipe.objects.filter(pk=self.nasi.pk).update(
+            image="recipes/nasi.jpg",
+            image_url="https://example.com/lama.jpg",
+        )
+        self.client.force_login(self.user)
+        fields = self.client.get(self.url).json()["results"][0]["fields"]
+        self.assertTrue(fields["image_url"].endswith("recipes/nasi.jpg"))
+
+    def test_unpublished_recipe_is_flagged_but_stays_listed(self):
+        Recipe.objects.filter(pk=self.nasi.pk).update(is_published=False)
+        self.client.force_login(self.user)
+        data = self.client.get(self.url).json()
+        self.assertEqual(data["total"], 1)
+        self.assertFalse(data["results"][0]["fields"]["is_published"])
+
+    def test_reports_only_the_viewers_interaction_status(self):
+        now = timezone.now()
+        RecipeInteraction.objects.create(user=self.user, recipe=self.nasi, viewed_at=now)
+        RecipeInteraction.objects.create(
+            user=self.other, recipe=self.nasi, viewed_at=now, completed_at=now
+        )
+        self.client.force_login(self.user)
+        fields = self.client.get(self.url).json()["results"][0]["fields"]
+        self.assertTrue(fields["viewed"])
+        self.assertFalse(fields["completed"])
+
+    def test_missing_optional_recipe_fields_do_not_break_the_api(self):
+        self.client.force_login(self.user)
+        fields = self.client.get(self.url).json()["results"][0]["fields"]
+        self.assertEqual(fields["image_url"], "")
+        self.assertIsNone(fields["preparation_time"])
+        self.assertIsNone(fields["cooking_time"])
+        self.assertIsNone(fields["servings"])
 
     def test_filter_by_source(self):
         api_recipe = Recipe.objects.create(title="Resep API", author=None)
