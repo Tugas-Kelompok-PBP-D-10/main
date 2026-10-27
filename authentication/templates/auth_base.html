@@ -1,0 +1,73 @@
+
+{% load static %}
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>{% block title %}OlahRasa{% endblock %}</title>
+
+    <!-- Bootstrap 5.3.8 -->
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+        integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB"
+        crossorigin="anonymous"
+    >
+
+    <!-- Styling khusus Figma OlahRasa -->
+    <link rel="stylesheet" href="{% static 'css/login.css' %}?v=bootstrap1">
+</head>
+
+<body class="auth-page">
+
+    <main class="container-fluid px-0 px-md-4 py-0 py-md-4">
+
+        <div class="auth-shell row g-0 mx-auto shadow-lg overflow-hidden">
+
+            <!-- PANEL KIRI -->
+            <section class="col-lg-7 auth-brand-panel
+                            d-flex flex-column align-items-center text-center">
+
+                <h1 class="fw-bold w-100">
+                    Welcome To OlahRasa
+                </h1>
+
+                <div class="brand-illustration flex-grow-1
+                            d-flex align-items-center justify-content-center">
+
+                    <img
+                        src="{% static 'image/olahrasa-logo.png' %}"
+                        alt="Logo OlahRasa"
+                        class="img-fluid brand-logo"
+                    >
+
+                </div>
+
+                <p class="brand-tagline mb-0">
+                    Track what you <strong>eat</strong>,
+                    feel what you <strong>gain.</strong>
+                </p>
+
+            </section>
+
+            <!-- PANEL KANAN -->
+            <section class="col-lg-5 auth-form-panel bg-white
+                            d-flex align-items-center justify-content-center">
+
+                <div class="auth-form-wrapper w-100">
+
+                    {% block form_content %}
+                    {% endblock %}
+
+                </div>
+
+            </section>
+
+        </div>
+
+    </main>
+
+</body>
+</html>

@@ -1,0 +1,453 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Bookmark | OlahRasa{% endblock %}
+
+{% block content %}
+{# Bootstrap hanya dimuat di halaman ini (milik modul voting), bukan di base.html #}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+{# Potongan recipe.css (kartu + modal detail) tanpa aturan global yang bentrok dengan Bootstrap #}
+<link rel="stylesheet" href="{% static 'voting/recipe-card-modal.css' %}">
+
+<main class="container py-4">
+    <header class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+        <h1 class="h3 mb-0">Bookmark Saya <span class="nav-badge" data-bookmark-count>{{ total }}</span></h1>
+        <button type="button" id="clear-button"
+            class="btn btn-outline-dark btn-sm rounded-pill{% if not total %} d-none{% endif %}">
+            Hapus semua
+        </button>
+    </header>
+
+    <form id="bookmark-filter-form" class="row g-2 align-items-end mb-4">
+        <div class="col-12 col-md-4">
+            <label class="form-label small mb-1" for="f-q">Cari judul</label>
+            <input id="f-q" type="search" name="q" value="{{ filters.q }}" class="form-control"
+                placeholder="Cari bookmark...">
+        </div>
+        <div class="col-6 col-md-2">
+            <label class="form-label small mb-1" for="f-sort">Urutan</label>
+            <select id="f-sort" name="sort" class="form-select">
+                <option value="newest" {% if filters.sort == 'newest' %}selected{% endif %}>Terbaru</option>
+                <option value="oldest" {% if filters.sort == 'oldest' %}selected{% endif %}>Terlama</option>
+                <option value="title" {% if filters.sort == 'title' %}selected{% endif %}>Judul A-Z</option>
+            </select>
+        </div>
+        <div class="col-6 col-md-2">
+            <label class="form-label small mb-1" for="f-source">Sumber</label>
+            <select id="f-source" name="source" class="form-select">
+                <option value="">Semua</option>
+                <option value="community" {% if filters.source == 'community' %}selected{% endif %}>Resep komunitas
+                </option>
+                <option value="api" {% if filters.source == 'api' %}selected{% endif %}>Resep dari API</option>
+            </select>
+        </div>
+        <div class="col-6 col-md-2">
+            <label class="form-label small mb-1" for="f-vote">Vote saya</label>
+            <select id="f-vote" name="vote" class="form-select">
+                <option value="">Semua</option>
+                <option value="up" {% if filters.vote == 'up' %}selected{% endif %}>Saya upvote</option>
+                <option value="down" {% if filters.vote == 'down' %}selected{% endif %}>Saya downvote</option>
+                <option value="none" {% if filters.vote == 'none' %}selected{% endif %}>Belum saya vote</option>
+            </select>
+        </div>
+        <div class="col-6 col-md-2">
+            <label class="form-label small mb-1" for="f-score">Skor minimal</label>
+            <input id="f-score" type="number" name="min_score" value="{{ filters.min_score }}" class="form-control"
+                placeholder="0">
+        </div>
+        <div class="col-6 col-md-3 d-none" id="category-wrapper">
+            <label class="form-label small mb-1" for="f-category">Kategori</label>
+            <select id="f-category" name="category" class="form-select">
+                <option value="">Semua</option>
+                {% if filters.category %}<option value="{{ filters.category }}" selected>{{ filters.category }}</option>
+                {% endif %}
+            </select>
+        </div>
+        <div class="col-12 d-flex gap-2">
+            <button type="submit" class="btn btn-dark btn-sm rounded-pill">Terapkan</button>
+            <button type="button" id="reset-button" class="btn btn-outline-secondary btn-sm rounded-pill">Reset</button>
+        </div>
+    </form>
+
+    <!-- Loading State -->
+    <div id="loading" class="text-center text-muted py-5 d-none">
+        <p class="mb-0">Memuat bookmark...</p>
+    </div>
+
+    <!-- Error State -->
+    <div id="error" class="alert alert-danger d-none" role="alert">
+        Gagal memuat bookmark. Silakan coba lagi.
+    </div>
+
+    <!-- Empty State -->
+    <div id="empty" class="text-center text-muted py-5 d-none">
+        <p id="empty-message" class="mb-2"></p>
+        <a id="empty-link" href="{% url 'recipe:home' %}" class="d-none">Ke halaman resep</a>
+    </div>
+
+    <!-- Bookmark Grid -->
+    {# Pembungkus .recipe-grid dibutuhkan recipe.js untuk menangkap klik kartu; style inline menjaga tata letak Bootstrap #}
+    <div class="recipe-grid" style="display: block;">
+        <div id="grid" class="row row-cols-1 row-cols-sm-2 row-cols-xl-4 g-4 d-none"></div>
+    </div>
+
+    <nav id="pagination-nav" aria-label="Halaman bookmark" class="mt-4 d-none">
+        <ul id="pagination-list" class="pagination justify-content-center"></ul>
+    </nav>
+</main>
+
+{# Modal detail resep milik modul Recipe (salinan markup dari recipe.html) + skrip aslinya #}
+{% include 'voting/_recipe_modal.html' %}
+<script src="{% static 'JS/recipe.js' %}" defer></script>
+
+<script>
+    // Script berjalan setelah DOMContentLoaded karena voting.js dimuat dengan `defer`
+    // (script defer selesai dijalankan sebelum event ini), sehingga window.votingKit sudah ada.
+    document.addEventListener("DOMContentLoaded", () => {
+        const API_ENDPOINT = "{% url 'voting:bookmark_list_api' %}";
+        const CLEAR_ENDPOINT = "{% url 'voting:bookmark_clear' %}";
+        // Alamat dengan id 0 dipakai sebagai cetakan, lalu "/0/" diganti id asli (pola dummy UUID Tutorial 5)
+        const VOTE_URL_TEMPLATE = "{% url 'voting:vote' 0 %}";
+        const BOOKMARK_URL_TEMPLATE = "{% url 'voting:toggle_bookmark' 0 %}";
+        const RECIPE_LIST_URL = "{% url 'recipe:home' %}";
+        // Alamat API modul Recipe (dibaca recipe.js dari atribut data-* pada kartu)
+        const RECIPE_DETAIL_URL_TEMPLATE = "{% url 'recipe:api_detail' 0 %}";
+        const RECIPE_INTERACTIONS_URL_TEMPLATE = "{% url 'recipe:api_interactions' 0 %}";
+        const RECIPE_VIEW_URL_TEMPLATE = "{% url 'recipe:api_record_view' 0 %}";
+        const RECIPE_COMPLETE_URL_TEMPLATE = "{% url 'recipe:api_complete' 0 %}";
+        const LOGIN_URL = "{{ login_url }}";
+        const SEARCH_DEBOUNCE_DELAY = 300;
+
+        let abortController;
+        let debounceTimer;
+        let currentPage = Number(new URLSearchParams(window.location.search).get("page")) || 1;
+
+        // ---------- Elemen DOM ----------
+        const loadingState = document.getElementById("loading");
+        const errorState = document.getElementById("error");
+        const emptyState = document.getElementById("empty");
+        const emptyMessage = document.getElementById("empty-message");
+        const emptyLink = document.getElementById("empty-link");
+        const gridContainer = document.getElementById("grid");
+        const paginationNav = document.getElementById("pagination-nav");
+        const paginationList = document.getElementById("pagination-list");
+        const filterForm = document.getElementById("bookmark-filter-form");
+        const resetButton = document.getElementById("reset-button");
+        const clearButton = document.getElementById("clear-button");
+        const categoryWrapper = document.getElementById("category-wrapper");
+        const categorySelect = document.getElementById("f-category");
+
+        // ---------- Helper ----------
+        // Mengubah karakter khusus HTML menjadi entity (pengganti auto-escaping Django, Tutorial 5)
+        function escapeHtml(value) {
+            return String(value ?? "")
+                .replaceAll("&", "&amp;")
+                .replaceAll("<", "&lt;")
+                .replaceAll(">", "&gt;")
+                .replaceAll('"', "&quot;")
+                .replaceAll("'", "&#39;");
+        }
+
+        function urlFor(template, id) {
+            return template.replace("/0/", "/" + id + "/");
+        }
+
+        // Menyembunyikan/menampilkan bagian halaman (pola displayPageSection Tutorial 5, kelas d-none Bootstrap)
+        function displayPageSection({ showLoading = false, showError = false, showEmpty = false, showGrid = false }) {
+            loadingState.classList.toggle("d-none", !showLoading);
+            errorState.classList.toggle("d-none", !showError);
+            emptyState.classList.toggle("d-none", !showEmpty);
+            gridContainer.classList.toggle("d-none", !showGrid);
+        }
+
+        // ---------- Membuat kartu ----------
+        // Markup tombol HARUS sama dengan voting/_recipe_actions.html (mode login),
+        // karena voting.js membaca class dan atribut data-* yang sama.
+        function buildActionsHtml(f) {
+            const csrf = escapeHtml(votingKit.getCookie("csrftoken") || "");
+            const upvotes = Number(f.upvotes);
+            const downvotes = Number(f.downvotes);
+            const voteClass = f.user_vote === 1 ? " is-up" : f.user_vote === -1 ? " is-down" : "";
+
+            return `
+      <div class="vote-actions">
+        <div class="vote${voteClass}"
+             title="${upvotes} upvote, ${downvotes} downvote"
+             data-vote-url="${urlFor(VOTE_URL_TEMPLATE, Number(f.recipe_id))}"
+             data-list-url="${RECIPE_LIST_URL}"
+             data-csrf="${csrf}">
+          <button type="button" class="vote__btn vote__btn--up" data-value="1" aria-label="Upvote"
+                  aria-pressed="${f.user_vote === 1}">
+            <svg class="vote-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18v-6H5l7-7 7 7h-4v6H9z"/></svg>
+          </button>
+          <span class="vote__count" aria-live="polite">${Number(f.score)}</span>
+          <button type="button" class="vote__btn vote__btn--down" data-value="-1" aria-label="Downvote"
+                  aria-pressed="${f.user_vote === -1}">
+            <svg class="vote-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6v6h4l-7 7-7-7h4V6h6z"/></svg>
+          </button>
+        </div>
+        <button type="button" class="bookmark is-saved"
+                data-url="${urlFor(BOOKMARK_URL_TEMPLATE, Number(f.recipe_id))}"
+                data-csrf="${csrf}" aria-label="Lepas bookmark" aria-pressed="true">
+          <svg class="vote-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></svg>
+        </button>
+        <span class="sr-only" data-status role="status" aria-live="polite"></span>
+      </div>`;
+        }
+
+        // Struktur kartu MENIRU kartu di recipe/templates/Recipe/recipe.html, karena modal detail
+        // (static/JS/recipe.js) mencari class dan atribut data-* berikut:
+        //   button.recipe-card-open  + data-recipe-id, data-detail-url, data-interactions-url,
+        //                              data-view-url, data-complete-url
+        //   .recipe-card-media (wajib ada), .recipe-img, .recipe-img-placeholder,
+        //   .recipe-status-viewed, .recipe-status-completed
+        //   .recipe-card-actions (data-login-url) harus SEJAJAR dengan tombol di dalam <article>.
+        function buildBookmarkCardElement(item) {
+            const f = item.fields;
+            const recipeId = Number(f.recipe_id);
+            // Resep yang sudah tidak dipublikasikan: modul Recipe menjawab 404 untuk detailnya,
+            // jadi kartu tetap tampil (supaya bisa di-unbookmark) tetapi tidak bisa dibuka.
+            const unavailable = f.is_published === false;
+            const columnElement = document.createElement("div");
+            columnElement.className = "col";
+            columnElement.dataset.bookmarkId = item.pk;
+
+            const sourceLabel = f.source === "api" ? "Resep API" : "Resep komunitas";
+            const categoryHtml = f.category
+                ? `<span class="badge text-bg-light border">${escapeHtml(f.category)}</span>`
+                : "";
+            const unavailableHtml = unavailable
+                ? `<span class="badge text-bg-secondary">Tidak tersedia</span>`
+                : "";
+            const savedAt = new Date(f.saved_at).toLocaleDateString("id-ID", {
+                day: "2-digit", month: "short", year: "numeric",
+            });
+
+            // Foto unggahan (/media/...) atau URL penuh; "//host" dan "javascript:" ditolak
+            const hasImage = typeof f.image_url === "string" && /^(?:https?:\/\/|\/(?!\/))/i.test(f.image_url);
+            const imageHtml = hasImage
+                ? `<img src="${escapeHtml(f.image_url)}" alt="${escapeHtml(f.title)}" class="recipe-img">`
+                : "";
+
+            // Baris info sama dengan kartu di halaman resep: "Persiapan X menit • Masak Y menit • Z porsi"
+            const meta = [];
+            if (Number(f.preparation_time) > 0) meta.push(`Persiapan ${Number(f.preparation_time)} menit`);
+            if (Number(f.cooking_time) > 0) meta.push(`Masak ${Number(f.cooking_time)} menit`);
+            if (Number(f.servings) > 0) meta.push(`${Number(f.servings)} porsi`);
+
+            const disabledAttrs = unavailable ? ' disabled aria-disabled="true"' : "";
+            const unavailableTitle = unavailable ? ' title="Resep ini sudah tidak ditampilkan di katalog"' : "";
+
+            columnElement.innerHTML = `
+      <article class="recipe-card h-100"${unavailableTitle}>
+        <button type="button" class="recipe-card-open" aria-haspopup="dialog"${disabledAttrs}
+                data-recipe-id="${recipeId}"
+                data-detail-url="${urlFor(RECIPE_DETAIL_URL_TEMPLATE, recipeId)}"
+                data-interactions-url="${urlFor(RECIPE_INTERACTIONS_URL_TEMPLATE, recipeId)}"
+                data-view-url="${urlFor(RECIPE_VIEW_URL_TEMPLATE, recipeId)}"
+                data-complete-url="${urlFor(RECIPE_COMPLETE_URL_TEMPLATE, recipeId)}">
+          <div class="recipe-card-media">
+            ${imageHtml}
+            <div class="recipe-img-placeholder" aria-hidden="true"${hasImage ? " hidden" : ""}>Foto belum tersedia</div>
+          </div>
+          <div class="recipe-card-content">
+            <div class="d-flex flex-wrap gap-1 mb-2">
+              <span class="badge text-bg-dark">${sourceLabel}</span>${categoryHtml}${unavailableHtml}
+            </div>
+            <h3 class="recipe-card-title">${escapeHtml(f.title)}</h3>
+            <p class="recipe-card-meta">${escapeHtml(meta.join(" \u2022 "))}</p>
+            <span class="recipe-card-status recipe-status-viewed"${f.viewed ? "" : " hidden"}>\u2713 Dilihat</span>
+            <span class="recipe-card-status recipe-status-completed"${f.completed ? "" : " hidden"}>\u2713 Sudah dimasak</span>
+            <p class="small text-muted mb-0">Disimpan ${escapeHtml(savedAt)}</p>
+          </div>
+        </button>
+        <div class="recipe-card-actions" data-login-url="${escapeHtml(LOGIN_URL)}">
+          ${buildActionsHtml(f)}
+        </div>
+      </article>`;
+
+            // Gambar rusak: tampilkan placeholder (sama seperti recipe.js untuk kartu di halaman resep)
+            const cardImage = columnElement.querySelector(".recipe-img");
+            if (cardImage) {
+                cardImage.addEventListener("error", () => {
+                    cardImage.hidden = true;
+                    const placeholder = columnElement.querySelector(".recipe-img-placeholder");
+                    if (placeholder) placeholder.hidden = false;
+                }, { once: true });
+            }
+            return columnElement;
+        }
+
+        function renderPagination(pagination) {
+            paginationList.innerHTML = "";
+            paginationNav.classList.toggle("d-none", pagination.num_pages <= 1);
+            if (pagination.num_pages <= 1) return;
+
+            function addItem(label, page, disabled) {
+                const li = document.createElement("li");
+                li.className = "page-item" + (disabled ? " disabled" : "");
+                const button = document.createElement("button");
+                button.type = "button";
+                button.className = "page-link";
+                button.textContent = label;
+                button.disabled = Boolean(disabled);
+                if (page) button.dataset.page = page;
+                li.appendChild(button);
+                paginationList.appendChild(li);
+            }
+
+            addItem("\u00ab Sebelumnya", pagination.page - 1, !pagination.has_previous);
+            addItem("Halaman " + pagination.page + " / " + pagination.num_pages, null, true);
+            addItem("Berikutnya \u00bb", pagination.page + 1, !pagination.has_next);
+        }
+
+        function renderCategories(categories) {
+            const selected = categorySelect.value;
+            categorySelect.innerHTML = "";
+            const allOption = document.createElement("option");
+            allOption.value = "";
+            allOption.textContent = "Semua";
+            categorySelect.appendChild(allOption);
+            categories.forEach((name) => {
+                const option = document.createElement("option");
+                option.value = name;
+                option.textContent = name;
+                categorySelect.appendChild(option);
+            });
+            categorySelect.value = categories.includes(selected) ? selected : "";
+            categoryWrapper.classList.toggle("d-none", categories.length === 0);
+        }
+
+        function syncCounters(total) {
+            document.querySelectorAll("[data-bookmark-count]").forEach((el) => {
+                el.textContent = total;
+            });
+            clearButton.classList.toggle("d-none", total === 0);
+        }
+
+        function buildParams(page) {
+            const params = new URLSearchParams();
+            new FormData(filterForm).forEach((value, key) => {
+                const text = String(value).trim();
+                if (text) params.set(key, text);
+            });
+            params.set("page", page);
+            return params;
+        }
+
+        // ---------- Fetch data bookmark ----------
+        async function fetchBookmarks(page = 1, { silent = false } = {}) {
+            if (abortController) abortController.abort();
+            abortController = new AbortController();
+            const params = buildParams(page);
+
+            try {
+                if (!silent) displayPageSection({ showLoading: true });
+
+                const response = await fetch(API_ENDPOINT + "?" + params.toString(), {
+                    headers: { "Accept": "application/json" },
+                    credentials: "same-origin",
+                    signal: abortController.signal,
+                });
+
+                if (response.status === 401) {
+                    window.location.assign(LOGIN_URL + "?next=" + encodeURIComponent(window.location.pathname));
+                    return;
+                }
+                if (!response.ok) throw new Error("Failed to fetch data");
+
+                const data = await response.json();
+                currentPage = data.pagination.page;
+                window.history.replaceState(null, "", "?" + params.toString());
+
+                syncCounters(data.total);
+                renderCategories(data.categories);
+
+                if (data.results.length === 0) {
+                    emptyMessage.textContent = data.total === 0
+                        ? "Belum ada bookmark. Simpan resep favoritmu dari halaman resep."
+                        : "Tidak ada bookmark yang cocok dengan pencarian atau filter yang dipilih.";
+                    emptyLink.classList.toggle("d-none", data.total !== 0);
+                    paginationNav.classList.add("d-none");
+                    displayPageSection({ showEmpty: true });
+                    return;
+                }
+
+                gridContainer.innerHTML = "";
+                data.results.forEach((item) => {
+                    gridContainer.appendChild(buildBookmarkCardElement(item));
+                });
+                renderPagination(data.pagination);
+                displayPageSection({ showGrid: true });
+            } catch (error) {
+                if (error.name === "AbortError") return;
+                console.error("Error loading bookmarks:", error);
+                displayPageSection({ showError: true });
+            }
+        }
+
+        // ---------- Filter, pencarian (debouncing), reset, pagination ----------
+        filterForm.addEventListener("input", () => {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(() => fetchBookmarks(1), SEARCH_DEBOUNCE_DELAY);
+        });
+
+        filterForm.addEventListener("submit", (event) => {
+            event.preventDefault();
+            clearTimeout(debounceTimer);
+            fetchBookmarks(1);
+        });
+
+        resetButton.addEventListener("click", () => {
+            Array.from(filterForm.elements).forEach((el) => {
+                if (!el.name) return;
+                el.value = el.name === "sort" ? "newest" : "";
+            });
+            clearTimeout(debounceTimer);
+            fetchBookmarks(1);
+        });
+
+        paginationList.addEventListener("click", (event) => {
+            const button = event.target.closest("[data-page]");
+            if (button) fetchBookmarks(Number(button.dataset.page));
+        });
+
+        // ---------- Hapus semua ----------
+        clearButton.addEventListener("click", async () => {
+            if (!confirm("Hapus semua bookmark?")) return;
+            clearButton.disabled = true;
+            try {
+                const data = await votingKit.post(CLEAR_ENDPOINT);
+                if (!data) return;
+                votingKit.toast("Berhasil", data.message, "success");
+                fetchBookmarks(1);
+            } catch (error) {
+                votingKit.toast("Gagal menghapus", error.message, "error");
+            } finally {
+                clearButton.disabled = false;
+            }
+        });
+
+        // ---------- Sinkron dengan klik vote/bookmark dari voting.js ----------
+        document.addEventListener("voting:bookmark-changed", (event) => {
+            // Bookmark dilepas dari kartu: muat ulang daftar supaya kartu hilang dan pagination benar
+            if (!event.detail.bookmarked) fetchBookmarks(currentPage, { silent: true });
+        });
+
+        document.addEventListener("voting:vote-changed", (event) => {
+            if (event.detail.deleted) {
+                event.preventDefault(); // tetap di halaman ini, cukup muat ulang daftar
+                fetchBookmarks(currentPage, { silent: true });
+                return;
+            }
+            // Vote berubah dan filter berbasis vote/skor aktif: hasil filter bisa berubah
+            if (filterForm.elements.vote.value || filterForm.elements.min_score.value) {
+                fetchBookmarks(currentPage, { silent: true });
+            }
+        });
+
+        // ---------- Mulai aplikasi ----------
+        fetchBookmarks(currentPage);
+    });
+</script>
+{% endblock %}

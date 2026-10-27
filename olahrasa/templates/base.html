@@ -14,7 +14,9 @@
     {% block meta %}{% endblock %}
 
     <!-- CSS khusus halaman -->
-    {% block extra_css %}{% endblock %}
+    {% block extra_css %}
+    <link rel="stylesheet" href="{% static 'voting/voting.css' %}">
+    {% endblock %}
 </head>
 
 <body>
@@ -152,6 +154,8 @@
             });
         });
     </script>
+
+    <script src="{% static 'voting/voting.js' %}" defer></script>
 
 </body>
 </html>
