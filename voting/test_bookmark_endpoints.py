@@ -101,16 +101,35 @@ class BookmarkApiTests(TestCase):
     def test_includes_recipe_card_fields(self):
         Recipe.objects.filter(pk=self.nasi.pk).update(
             image_url="https://example.com/nasi.jpg",
+            preparation_time=10,
             cooking_time=25,
-            protein="12.50",
+            servings=4,
         )
         self.client.force_login(self.user)
         fields = self.client.get(self.url).json()["results"][0]["fields"]
         self.assertEqual(fields["image_url"], "https://example.com/nasi.jpg")
+        self.assertEqual(fields["preparation_time"], 10)
         self.assertEqual(fields["cooking_time"], 25)
-        self.assertEqual(fields["protein"], 12.5)
+        self.assertEqual(fields["servings"], 4)
+        self.assertTrue(fields["is_published"])
         self.assertFalse(fields["viewed"])
         self.assertFalse(fields["completed"])
+
+    def test_uploaded_image_is_preferred_over_image_url(self):
+        Recipe.objects.filter(pk=self.nasi.pk).update(
+            image="recipes/nasi.jpg",
+            image_url="https://example.com/lama.jpg",
+        )
+        self.client.force_login(self.user)
+        fields = self.client.get(self.url).json()["results"][0]["fields"]
+        self.assertTrue(fields["image_url"].endswith("recipes/nasi.jpg"))
+
+    def test_unpublished_recipe_is_flagged_but_stays_listed(self):
+        Recipe.objects.filter(pk=self.nasi.pk).update(is_published=False)
+        self.client.force_login(self.user)
+        data = self.client.get(self.url).json()
+        self.assertEqual(data["total"], 1)
+        self.assertFalse(data["results"][0]["fields"]["is_published"])
 
     def test_reports_only_the_viewers_interaction_status(self):
         now = timezone.now()
@@ -127,7 +146,9 @@ class BookmarkApiTests(TestCase):
         self.client.force_login(self.user)
         fields = self.client.get(self.url).json()["results"][0]["fields"]
         self.assertEqual(fields["image_url"], "")
-        self.assertIsNone(fields["protein"])
+        self.assertIsNone(fields["preparation_time"])
+        self.assertIsNone(fields["cooking_time"])
+        self.assertIsNone(fields["servings"])
 
     def test_filter_by_source(self):
         api_recipe = Recipe.objects.create(title="Resep API", author=None)

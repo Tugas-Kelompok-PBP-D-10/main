@@ -130,6 +130,14 @@
     justify-content: space-between;
 }
 
+.recipe-voting-unavailable {
+    margin: 0;
+    padding: 10px 12px;
+    color: #6b7280;
+    font-size: 12px;
+    line-height: 1.5;
+}
+
 /* Modal resep dengan lapisan latar */
 .recipe-modal-overlay {
     position: fixed;
@@ -230,6 +238,7 @@
 .recipe-modal-body[hidden],
 .recipe-modal-image[hidden],
 .recipe-modal-description[hidden],
+.recipe-modal-source[hidden],
 .recipe-modal-cooking-time[hidden],
 .recipe-modal-section[hidden],
 .recipe-nutrition-row[hidden],
@@ -270,6 +279,12 @@
     color: #0d5c46;
     font-size: 13px;
     font-weight: 700;
+}
+
+.recipe-modal-source {
+    margin: 0 0 8px;
+    color: #6b7280;
+    font-size: 12px;
 }
 
 .recipe-modal-section {
@@ -479,4 +494,10 @@
 /* ---------- Khusus halaman bookmark ---------- */
 #grid .recipe-card-actions {
     padding: 0 14px 14px;
+}
+
+/* Resep yang sudah tidak dipublikasikan: kartu tampil tetapi tidak bisa dibuka */
+#grid .recipe-card-open:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
 }

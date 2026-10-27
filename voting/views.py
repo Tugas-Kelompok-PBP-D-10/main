@@ -73,6 +73,15 @@ def bookmark_clear(request):
     return JsonResponse({"message": "Semua bookmark dihapus.", "bookmark_count": 0})
 
 
+def _recipe_image_url(recipe):
+    """Foto unggahan (ImageField) diutamakan, lalu image_url; urutan sama dengan kartu di halaman resep."""
+    try:
+        stored = recipe.image.url if recipe.image else ""
+    except (OSError, ValueError):
+        stored = ""
+    return stored or recipe.image_url or ""
+
+
 @require_GET
 @ajax_login_required
 def bookmark_list_api(request):
@@ -119,9 +128,11 @@ def bookmark_list_api(request):
                 "downvotes": summary["downvotes"],
                 "score": summary["score"],
                 "user_vote": summary["user_vote"],
-                "image_url": recipe.image_url or "",
+                "image_url": _recipe_image_url(recipe),
+                "preparation_time": recipe.preparation_time,
                 "cooking_time": recipe.cooking_time,
-                "protein": float(recipe.protein) if recipe.protein is not None else None,
+                "servings": recipe.servings,
+                "is_published": recipe.is_published,
                 "viewed": bool(interaction.get("viewed_at")),
                 "completed": bool(interaction.get("completed_at")),
             },

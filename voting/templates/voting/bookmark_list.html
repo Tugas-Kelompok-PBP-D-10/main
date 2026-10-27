@@ -195,11 +195,6 @@
       </div>`;
         }
 
-        // Angka dari server: 12.5 -> "12.5", 12 -> "12"
-        function formatNumber(value) {
-            return String(Number(Number(value).toFixed(1)));
-        }
-
         // Struktur kartu MENIRU kartu di recipe/templates/Recipe/recipe.html, karena modal detail
         // (static/JS/recipe.js) mencari class dan atribut data-* berikut:
         //   button.recipe-card-open  + data-recipe-id, data-detail-url, data-interactions-url,
@@ -210,6 +205,9 @@
         function buildBookmarkCardElement(item) {
             const f = item.fields;
             const recipeId = Number(f.recipe_id);
+            // Resep yang sudah tidak dipublikasikan: modul Recipe menjawab 404 untuk detailnya,
+            // jadi kartu tetap tampil (supaya bisa di-unbookmark) tetapi tidak bisa dibuka.
+            const unavailable = f.is_published === false;
             const columnElement = document.createElement("div");
             columnElement.className = "col";
             columnElement.dataset.bookmarkId = item.pk;
@@ -218,22 +216,31 @@
             const categoryHtml = f.category
                 ? `<span class="badge text-bg-light border">${escapeHtml(f.category)}</span>`
                 : "";
+            const unavailableHtml = unavailable
+                ? `<span class="badge text-bg-secondary">Tidak tersedia</span>`
+                : "";
             const savedAt = new Date(f.saved_at).toLocaleDateString("id-ID", {
                 day: "2-digit", month: "short", year: "numeric",
             });
 
-            const hasImage = typeof f.image_url === "string" && /^https?:\/\//i.test(f.image_url);
+            // Foto unggahan (/media/...) atau URL penuh; "//host" dan "javascript:" ditolak
+            const hasImage = typeof f.image_url === "string" && /^(?:https?:\/\/|\/(?!\/))/i.test(f.image_url);
             const imageHtml = hasImage
                 ? `<img src="${escapeHtml(f.image_url)}" alt="${escapeHtml(f.title)}" class="recipe-img">`
                 : "";
 
+            // Baris info sama dengan kartu di halaman resep: "Persiapan X menit • Masak Y menit • Z porsi"
             const meta = [];
-            if (Number(f.cooking_time) > 0) meta.push(`${Number(f.cooking_time)} menit`);
-            if (f.protein !== null && f.protein !== undefined) meta.push(`${formatNumber(f.protein)} g protein`);
+            if (Number(f.preparation_time) > 0) meta.push(`Persiapan ${Number(f.preparation_time)} menit`);
+            if (Number(f.cooking_time) > 0) meta.push(`Masak ${Number(f.cooking_time)} menit`);
+            if (Number(f.servings) > 0) meta.push(`${Number(f.servings)} porsi`);
+
+            const disabledAttrs = unavailable ? ' disabled aria-disabled="true"' : "";
+            const unavailableTitle = unavailable ? ' title="Resep ini sudah tidak ditampilkan di katalog"' : "";
 
             columnElement.innerHTML = `
-      <article class="recipe-card h-100">
-        <button type="button" class="recipe-card-open" aria-haspopup="dialog"
+      <article class="recipe-card h-100"${unavailableTitle}>
+        <button type="button" class="recipe-card-open" aria-haspopup="dialog"${disabledAttrs}
                 data-recipe-id="${recipeId}"
                 data-detail-url="${urlFor(RECIPE_DETAIL_URL_TEMPLATE, recipeId)}"
                 data-interactions-url="${urlFor(RECIPE_INTERACTIONS_URL_TEMPLATE, recipeId)}"
@@ -245,7 +252,7 @@
           </div>
           <div class="recipe-card-content">
             <div class="d-flex flex-wrap gap-1 mb-2">
-              <span class="badge text-bg-dark">${sourceLabel}</span>${categoryHtml}
+              <span class="badge text-bg-dark">${sourceLabel}</span>${categoryHtml}${unavailableHtml}
             </div>
             <h3 class="recipe-card-title">${escapeHtml(f.title)}</h3>
             <p class="recipe-card-meta">${escapeHtml(meta.join(" \u2022 "))}</p>
