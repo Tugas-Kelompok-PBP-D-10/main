@@ -30,7 +30,7 @@ SECRET_KEY = 'django-insecure-5nw4m*_1af7#(nmoai+9fb7u=&@*j4hiew(=7bqbvap4q!a(g7
 DEBUG = True
 
 ALLOWED_HOSTS = [
-    '127.0.0.1',"hafiza-nurul-olahrasa.pws.cs.ui.ac.id",
+     '127.0.0.1',"hafiza-nurul-olahrasa.pws.cs.ui.ac.id",
 ]
 
 CSRF_TRUSTED_ORIGINS = [

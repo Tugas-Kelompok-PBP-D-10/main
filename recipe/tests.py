@@ -27,6 +27,8 @@ from .services import (
     analyze_recipe_with_spoonacular,
     calculate_and_store_recipe_nutrition,
     get_recipe_detail,
+    import_high_protein_spoonacular_recipes,
+    normalize_indonesian_recipe_query,
     get_spoonacular_recipe,
     scale_ingredient_quantities,
 )
@@ -62,6 +64,18 @@ class RecipePageTests(TestCase):
         self.assertNotContains(response, 'class="vote__btn')
         self.assertContains(response, "12.50")
         self.assertNotContains(response, "350 kcal")
+
+    def test_search_form_sits_between_submission_invite_and_recipe_catalog(self):
+        response = self.client.get(reverse("recipe:home"))
+
+        self.assertEqual(response.status_code, 200)
+        body = response.content.decode("utf-8")
+        self.assertContains(response, "Cari Menu")
+        self.assertContains(response, 'id="recipeSearchInput"')
+        self.assertLess(body.index("Punya rekomendasi menu?"), body.index("Cari Menu"))
+        self.assertLess(body.index("Cari Menu"), body.index("Daftar Resep"))
+        self.assertContains(response, 'id="recipeSearchLoadMore"')
+        self.assertContains(response, "recipeSearchStatus")
 
     def test_empty_database_shows_friendly_empty_state(self):
         Recipe.objects.all().delete()
@@ -275,6 +289,76 @@ class RecipePageTests(TestCase):
 
         spoonacular.assert_not_called()
         self.assertEqual(payload["nutrition"]["calories"], {"value": 120, "unit": "kcal"})
+
+    @patch("recipe.services._request_spoonacular")
+    def test_search_result_opens_existing_detail_payload_and_preserves_missing_nutrition(self, request_api):
+        cache.clear()
+        request_api.side_effect = [
+            {
+                "results": [
+                    {
+                        "id": 912345,
+                        "title": "Chicken and Spinach Soup",
+                        "image": "https://images.example.test/soup.jpg",
+                        "readyInMinutes": 25,
+                        "servings": 2,
+                    }
+                ],
+                "totalResults": 1,
+            },
+            {
+                "id": 912345,
+                "title": "Chicken and Spinach Soup",
+                "summary": "<p>A simple soup.</p>",
+                "image": "https://images.example.test/soup.jpg",
+                "readyInMinutes": 25,
+                "servings": 2,
+                "extendedIngredients": [
+                    {"name": "chicken breast", "original": "2 chicken breasts", "amount": 2, "unit": "pieces"}
+                ],
+                "analyzedInstructions": [{"steps": [{"number": 1, "step": "Boil the chicken."}]}],
+                "nutrition": {"nutrients": [
+                    {"name": "Protein", "amount": 31, "unit": "g"},
+                    {"name": "Calories", "amount": 280, "unit": "kcal"},
+                ]},
+            },
+        ]
+
+        with patch.dict(os.environ, {"SPOONACULAR_API_KEY": "test-key"}):
+            search_response = self.client.get(
+                reverse("recipe:api_spoonacular_search"),
+                {"q": "ayam", "offset": 0},
+            )
+            self.assertEqual(search_response.status_code, 200)
+            search_result = search_response.json()["results"][0]
+            detail_response = self.client.get(search_result["detail_url"])
+
+        self.assertEqual(detail_response.status_code, 200)
+        detail = detail_response.json()
+        self.assertEqual(detail["recipe"]["title"], "Chicken and Spinach Soup")
+        self.assertEqual(detail["recipe"]["image"], "https://images.example.test/soup.jpg")
+        self.assertEqual(detail["recipe"]["servings"], 2)
+        self.assertEqual(detail["ingredients"][0]["name"], "chicken breast")
+        self.assertEqual(detail["instructions"], ["Boil the chicken."])
+        self.assertEqual(detail["nutrition"]["protein"], {"value": 31, "unit": "g"})
+        self.assertEqual(detail["nutrition"]["fat"], None)
+        self.assertEqual(detail["translation_status"], "unavailable")
+        self.assertEqual(request_api.call_args_list[0].args[0], "recipes/complexSearch")
+        self.assertEqual(request_api.call_args_list[0].args[1]["query"], "chicken")
+        self.assertEqual(request_api.call_args_list[0].args[1]["sort"], "protein")
+        self.assertEqual(request_api.call_args_list[1].args[0], "recipes/912345/information")
+
+    @patch("recipe.services._request_spoonacular")
+    def test_search_api_reports_missing_key_without_making_up_results(self, request_api):
+        with patch.dict(os.environ, {"SPOONACULAR_API_KEY": ""}):
+            response = self.client.get(
+                reverse("recipe:api_spoonacular_search"),
+                {"q": "ayam"},
+            )
+
+        self.assertEqual(response.status_code, 503)
+        self.assertEqual(response.json()["error"]["code"], "not_configured")
+        request_api.assert_not_called()
 
     def test_local_recipe_does_not_search_for_an_unrelated_api_recipe(self):
         local_recipe = Recipe.objects.create(
@@ -619,6 +703,11 @@ class RecipeSubmissionTests(TestCase):
 
 
 class RecipeServiceUtilityTests(TestCase):
+    def test_indonesian_recipe_search_terms_are_normalized_to_english(self):
+        self.assertEqual(normalize_indonesian_recipe_query("Ayam goreng"), "chicken fried")
+        self.assertEqual(normalize_indonesian_recipe_query("sup tahu"), "soup tofu")
+        self.assertEqual(normalize_indonesian_recipe_query("rendang"), "rendang")
+
     def test_scale_helper_changes_numeric_amounts_without_mutating_base_list(self):
         ingredients = [
             {"name": "kentang", "amount": 400, "unit": "g"},
@@ -733,6 +822,64 @@ class RecipeServiceUtilityTests(TestCase):
         recipe.refresh_from_db()
         self.assertEqual(recipe.calories, Decimal("300.00"))
         self.assertEqual(recipe.nutrition_basis, "whole_recipe")
+
+    @patch("recipe.services._request_spoonacular")
+    def test_imports_only_new_recipes_with_at_least_30g_protein_and_preserves_existing(self, request_api):
+        cache.clear()
+        existing = Recipe.objects.create(
+            title="Jangan ditimpa",
+            source_type="local",
+            spoonacular_id=7003,
+            calories="123",
+        )
+
+        def spoon_recipe(recipe_id, title, protein):
+            return {
+                "id": recipe_id,
+                "title": title,
+                "summary": "<p>Recipe summary.</p>",
+                "image": "https://images.example.test/recipe.jpg",
+                "readyInMinutes": 30,
+                "servings": 2,
+                "extendedIngredients": [
+                    {"name": "chicken breast", "original": "2 chicken breasts", "amount": 2, "unit": "pieces"}
+                ],
+                "analyzedInstructions": [{"steps": [{"number": 1, "step": "Cook the chicken."}]}],
+                "nutrition": {"nutrients": [
+                    {"name": "Calories", "amount": 310, "unit": "kcal"},
+                    {"name": "Protein", "amount": protein, "unit": "g"},
+                    {"name": "Fat", "amount": 8, "unit": "g"},
+                    {"name": "Carbohydrates", "amount": 12, "unit": "g"},
+                ]},
+            }
+
+        request_api.return_value = {
+            "results": [
+                spoon_recipe(7001, "High Protein Chicken", 35),
+                spoon_recipe(7002, "Low Protein Soup", 29),
+                spoon_recipe(7003, "External copy", 40),
+            ]
+        }
+        with patch.dict(os.environ, {"SPOONACULAR_API_KEY": "test-key"}):
+            result = import_high_protein_spoonacular_recipes("ayam", limit=3)
+
+        self.assertEqual(result["status"], "ok")
+        self.assertEqual(result["created"], 1)
+        self.assertEqual(result["duplicates"], 1)
+        self.assertEqual(result["skipped"], 1)
+        request_params = request_api.call_args.args[1]
+        self.assertEqual(request_params["query"], "chicken")
+        self.assertEqual(request_params["minProtein"], 30)
+        self.assertEqual(request_params["sort"], "protein")
+
+        imported = Recipe.objects.get(spoonacular_id=7001)
+        existing.refresh_from_db()
+        self.assertEqual(imported.protein, Decimal("35.00"))
+        self.assertEqual(imported.nutrition_basis, "per_serving")
+        self.assertEqual(imported.instructions, "Cook the chicken.")
+        self.assertEqual(imported.ingredients[0]["name"], "chicken breast")
+        self.assertEqual(existing.title, "Jangan ditimpa")
+        self.assertEqual(existing.calories, Decimal("123.00"))
 
     @patch("recipe.services._request_spoonacular")
     def test_custom_recipe_analysis_is_explicit_and_passes_local_data(self, request_api):

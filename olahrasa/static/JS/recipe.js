@@ -3,6 +3,10 @@
 
     function initRecipeModal() {
         const grid = document.querySelector(".recipe-grid");
+        const searchForm = document.getElementById("recipeSearchForm");
+        const searchInput = document.getElementById("recipeSearchInput");
+        const searchStatus = document.getElementById("recipeSearchStatus");
+        const searchLoadMore = document.getElementById("recipeSearchLoadMore");
         const overlay = document.getElementById("nutritionModal");
         const modal = overlay && overlay.querySelector(".recipe-modal");
         const closeButton = document.getElementById("btnCloseModal");
@@ -34,6 +38,7 @@
         const image = document.getElementById("modalImage");
         const imagePlaceholder = document.getElementById("modalImagePlaceholder");
         const description = document.getElementById("modalDescription");
+        const source = document.getElementById("modalSource");
         const cookingTime = document.getElementById("modalCookingTime");
         const ingredientsSection = document.getElementById("ingredientsSection");
         const ingredientsList = document.getElementById("modalIngredients");
@@ -83,6 +88,11 @@
         let submissionCloseTimer = null;
         let submissionPreviousFocus = null;
         let submissionSavedBodyOverflow = "";
+        let recipeSearchTimer = null;
+        let recipeSearchController = null;
+        let recipeSearchToken = 0;
+        let recipeSearchNextOffset = null;
+        let recipeSearchHasMore = false;
         const pendingCookingRequests = new Map();
 
         function getCookie(name) {
@@ -204,6 +214,185 @@
             if (placeholder) placeholder.hidden = true;
         }
 
+        function setRecipeSearchStatus(message, state) {
+            if (!searchStatus) return;
+            searchStatus.textContent = message || "";
+            searchStatus.hidden = !message;
+            searchStatus.dataset.state = state || "";
+            searchStatus.setAttribute("role", state === "error" ? "alert" : "status");
+        }
+
+        function clearSearchCards() {
+            grid.querySelectorAll('.recipe-card-open[data-external-recipe="true"]')
+                .forEach(function (cardButton) {
+                    const card = cardButton.closest(".recipe-card");
+                    if (card) card.remove();
+                });
+            const emptyState = grid.querySelector(".recipe-empty-state");
+            if (emptyState) {
+                emptyState.hidden = Boolean(grid.querySelector(".recipe-card"));
+            }
+        }
+
+        function createSpoonacularSearchCard(item) {
+            const recipeId = Number(item && item.id);
+            if (!Number.isInteger(recipeId) || recipeId < 1 || !item.detail_url) return null;
+            let detailUrl;
+            try {
+                detailUrl = new URL(item.detail_url, window.location.origin);
+            } catch (_error) {
+                return null;
+            }
+            if (detailUrl.origin !== window.location.origin) return null;
+
+            const article = document.createElement("article");
+            article.className = "recipe-card";
+            const button = document.createElement("button");
+            button.type = "button";
+            button.className = "recipe-card-open";
+            button.setAttribute("aria-haspopup", "dialog");
+            button.dataset.recipeId = "spoonacular-" + recipeId;
+            button.dataset.detailUrl = detailUrl.pathname + detailUrl.search;
+            button.dataset.externalRecipe = "true";
+
+            const media = document.createElement("div");
+            media.className = "recipe-card-media";
+            const imageUrl = safeRecipeImageUrl(item.image);
+            if (imageUrl) {
+                const recipeImage = document.createElement("img");
+                recipeImage.className = "recipe-img";
+                recipeImage.alt = item.title ? "Foto " + item.title : "Foto resep";
+                recipeImage.src = imageUrl;
+                recipeImage.addEventListener("error", function () {
+                    recipeImage.hidden = true;
+                    placeholder.hidden = false;
+                }, { once: true });
+                media.appendChild(recipeImage);
+            }
+            const placeholder = document.createElement("div");
+            placeholder.className = "recipe-img-placeholder";
+            placeholder.setAttribute("aria-hidden", "true");
+            placeholder.textContent = "Foto belum tersedia";
+            placeholder.hidden = Boolean(imageUrl);
+            media.appendChild(placeholder);
+
+            const content = document.createElement("div");
+            content.className = "recipe-card-content";
+            const titleText = document.createElement("h3");
+            titleText.className = "recipe-card-title";
+            titleText.textContent = String(item.title || "Resep Spoonacular");
+            const meta = document.createElement("p");
+            meta.className = "recipe-card-meta";
+            const details = [];
+            const cookingTime = Number(item.cooking_time);
+            const servings = Number(item.servings);
+            const protein = Number(item.protein);
+            if (Number.isInteger(cookingTime) && cookingTime > 0) {
+                details.push("Masak " + cookingTime + " menit");
+            }
+            if (Number.isInteger(servings) && servings > 0) {
+                details.push(servings + " porsi");
+            }
+            if (Number.isFinite(protein) && protein >= 0) {
+                details.push(String(protein) + " g protein");
+            }
+            meta.textContent = details.join(" • ");
+            content.append(titleText, meta);
+            button.append(media, content);
+            article.appendChild(button);
+            return article;
+        }
+
+        function appendSpoonacularSearchResults(items) {
+            const emptyState = grid.querySelector(".recipe-empty-state");
+            if (emptyState && Array.isArray(items) && items.length) emptyState.hidden = true;
+            let lastSearchCard = grid.querySelector(
+                '.recipe-card-open[data-external-recipe="true"]'
+            );
+            if (lastSearchCard) lastSearchCard = lastSearchCard.closest(".recipe-card");
+            for (const item of Array.isArray(items) ? items : []) {
+                const card = createSpoonacularSearchCard(item);
+                if (!card) continue;
+                if (lastSearchCard && lastSearchCard.parentElement === grid) {
+                    lastSearchCard.after(card);
+                } else {
+                    grid.prepend(card);
+                }
+                lastSearchCard = card;
+            }
+        }
+
+        async function runRecipeSearch(append) {
+            if (!searchForm || !searchInput || !searchStatus) return;
+            const query = searchInput.value.trim();
+            if (query.length < 2) {
+                if (!append) {
+                    clearSearchCards();
+                    setRecipeSearchStatus(query ? "Ketik minimal 2 karakter untuk mencari." : "", "");
+                    searchLoadMore.hidden = true;
+                }
+                return;
+            }
+            if (append && !recipeSearchHasMore) return;
+
+            if (recipeSearchController) recipeSearchController.abort();
+            recipeSearchController = new AbortController();
+            const controller = recipeSearchController;
+            const token = ++recipeSearchToken;
+            const offset = append ? recipeSearchNextOffset : 0;
+            if (!append) {
+                clearSearchCards();
+                recipeSearchNextOffset = null;
+                recipeSearchHasMore = false;
+                searchLoadMore.hidden = true;
+            }
+            setRecipeSearchStatus(
+                append ? "Memuat resep berikutnya…" : "Mencari resep…",
+                "loading"
+            );
+            searchLoadMore.disabled = true;
+
+            const url = new URL(searchForm.dataset.searchUrl, window.location.origin);
+            url.searchParams.set("q", query);
+            url.searchParams.set("offset", String(offset || 0));
+            try {
+                const payload = await requestJson(url.pathname + url.search, {
+                    method: "GET",
+                    signal: controller.signal,
+                });
+                if (token !== recipeSearchToken) return;
+                const results = Array.isArray(payload.results) ? payload.results : [];
+                appendSpoonacularSearchResults(results);
+                recipeSearchHasMore = Boolean(payload.has_more);
+                recipeSearchNextOffset = payload.next_offset;
+                searchLoadMore.hidden = !recipeSearchHasMore;
+                searchLoadMore.disabled = !recipeSearchHasMore;
+                if (!results.length && !append) {
+                    setRecipeSearchStatus("Tidak ada resep yang cocok. Coba kata kunci lain.", "empty");
+                } else if (!results.length) {
+                    setRecipeSearchStatus("Tidak ada hasil tambahan untuk kata kunci ini.", "empty");
+                } else {
+                    const totalShown = grid.querySelectorAll(
+                        '.recipe-card-open[data-external-recipe="true"]'
+                    ).length;
+                    setRecipeSearchStatus(
+                        totalShown + " hasil Spoonacular ditampilkan; urutan memprioritaskan protein.",
+                        "success"
+                    );
+                }
+            } catch (requestError) {
+                if (requestError.name === "AbortError" || token !== recipeSearchToken) return;
+                searchLoadMore.disabled = false;
+                searchLoadMore.hidden = !recipeSearchHasMore;
+                setRecipeSearchStatus(
+                    requestError.message || "Pencarian resep gagal. Coba lagi sebentar.",
+                    "error"
+                );
+            } finally {
+                if (token === recipeSearchToken) recipeSearchController = null;
+            }
+        }
+
         function setSubmissionError(message) {
             submissionErrors.textContent = message || "";
             submissionErrors.hidden = !message;
@@ -299,6 +488,8 @@
             image.alt = "";
             description.hidden = true;
             description.textContent = "";
+            source.hidden = true;
+            source.textContent = "";
             cookingTime.hidden = true;
             cookingTime.textContent = "";
             ingredientsSection.hidden = true;
@@ -364,6 +555,12 @@
         }
 
         function renderInteraction(recipeId, interaction) {
+            if (activeCard && activeCard.dataset.externalRecipe === "true") {
+                completionPanel.hidden = true;
+                loginPrompt.hidden = true;
+                completionStatus.textContent = "";
+                return;
+            }
             const state = interaction || {};
             const isAuthenticated = Boolean(state.authenticated);
 
@@ -563,6 +760,10 @@
                 description.textContent = recipe.description;
                 description.hidden = false;
             }
+            if (recipe.source_name) {
+                source.textContent = "Sumber: " + recipe.source_name;
+                source.hidden = false;
+            }
             if (recipe.cooking_time) {
                 cookingTime.textContent = "Waktu memasak: " + recipe.cooking_time + " menit";
                 cookingTime.hidden = false;
@@ -587,7 +788,9 @@
             details.hidden = false;
 
             const external = payload.external || {};
-            if (external.status === "ok") {
+            if (payload.translation_status === "unavailable") {
+                setStatus("Resep dari Spoonacular ditampilkan dalam bahasa sumber; layanan terjemahan Indonesia belum tersedia.");
+            } else if (external.status === "ok") {
                 setStatus("Detail resep berhasil dimuat.");
             } else if (external.status === "not_configured") {
                 setStatus("Data lokal ditampilkan. Spoonacular belum dikonfigurasi.");
@@ -606,6 +809,9 @@
         }
 
         async function markViewed(card) {
+            if (card.dataset.externalRecipe === "true" || !card.dataset.viewUrl) {
+                return;
+            }
             try {
                 const interaction = await requestJson(card.dataset.viewUrl, {
                     method: "POST",
@@ -701,6 +907,48 @@
                 openModal(card);
             }
         });
+
+        if (searchForm && searchInput && searchStatus && searchLoadMore) {
+            searchInput.addEventListener("input", function () {
+                if (recipeSearchTimer) window.clearTimeout(recipeSearchTimer);
+                if (recipeSearchController) {
+                    recipeSearchController.abort();
+                    recipeSearchController = null;
+                }
+                recipeSearchToken += 1;
+                recipeSearchHasMore = false;
+                recipeSearchNextOffset = null;
+                searchLoadMore.hidden = true;
+                searchLoadMore.disabled = false;
+
+                const query = searchInput.value.trim();
+                clearSearchCards();
+                if (!query) {
+                    setRecipeSearchStatus("", "");
+                    return;
+                }
+                if (query.length < 2) {
+                    setRecipeSearchStatus("Ketik minimal 2 karakter untuk mencari.", "");
+                    return;
+                }
+                setRecipeSearchStatus("Pencarian dimulai setelah jeda singkat…", "loading");
+                recipeSearchTimer = window.setTimeout(function () {
+                    recipeSearchTimer = null;
+                    runRecipeSearch(false);
+                }, 450);
+            });
+
+            searchForm.addEventListener("submit", function (event) {
+                event.preventDefault();
+                if (recipeSearchTimer) window.clearTimeout(recipeSearchTimer);
+                recipeSearchTimer = null;
+                runRecipeSearch(false);
+            });
+
+            searchLoadMore.addEventListener("click", function () {
+                runRecipeSearch(true);
+            });
+        }
 
         // Membuka detail resep otomatis dari link Bookmark Tracker
             const params = new URLSearchParams(window.location.search);
