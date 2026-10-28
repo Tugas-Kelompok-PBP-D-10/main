@@ -19,6 +19,7 @@
         {% endfor %}
     </div>
 {% endif %}
+    <h1>Update Inventori</h1>
     <div id="bahan-form-grid">
         <form method="post" id="bahan-form" action="{% url 'update_inventori' %}">
             {% csrf_token %}
