@@ -57,15 +57,27 @@
             
             <div class="olahrasa-nav-links" id="olahrasa-nav-links">
 
-                <a href="#">
+                <a 
+                    href="/dashboard/"
+                    class="{% if request.path == '/dashboard/' %}active{% endif %}"
+                    {% if request.path == '/dashboard/' %}aria-current="page"{% endif %}
+                >
                     Home
                 </a>
 
-                <a href="#">
+                <a 
+                    href="/inventori/"
+                    class="{% if request.path == '/inventori/' %}active{% endif %}"
+                    {% if request.path == '/inventori/' %}aria-current="page"{% endif %}
+                >
                     Inventory
                 </a>
 
-                <a href="#">
+                <a 
+                    href="/recipe/"
+                    class="{% if request.path == '/recipe/' %}active{% endif %}"
+                    {% if request.path == '/recipe/' %}aria-current="page"{% endif %}
+                >
                     Recipe
                 </a>
 
@@ -80,6 +92,7 @@
                 {% if request.user.is_authenticated %}
 
                 <a
+                    id="olahrasa-nav-cta"
                     href="{% url 'authentication:profile' %}"
                     class="{% if request.path == '/profile/' %}active{% endif %}"
                     {% if request.path == '/profile/' %}aria-current="page"{% endif %}
@@ -88,10 +101,6 @@
                 </a>
 
                 {% endif %}
-
-                <a href="#" class="olahrasa-nav-cta">
-                    Get Started
-                </a>
 
             </div>
         </div>

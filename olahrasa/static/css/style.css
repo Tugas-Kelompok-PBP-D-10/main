@@ -144,7 +144,7 @@ body > .container {
 }
 
 /* Get Started */
-.olahrasa-nav-links .olahrasa-nav-cta {
+.olahrasa-nav-links #olahrasa-nav-cta {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -165,7 +165,7 @@ body > .container {
     transition: background 0.2s ease;
 }
 
-.olahrasa-nav-links .olahrasa-nav-cta:hover {
+.olahrasa-nav-links #olahrasa-nav-cta:hover {
     background: #91BE99;
     color: #FFFFFF;
 }
