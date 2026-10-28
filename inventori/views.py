@@ -6,7 +6,7 @@ from .forms import BahanForm
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 
-# Create your views here.
+
 def get_bahan_json(request):
     bahan2 = Bahan.objects.filter(inventory=request.user.inventori)
     data = []
@@ -37,9 +37,9 @@ def update_inventori(request):
             formset.save()
             return redirect("inventori")
         else:
-            messages.error(request, "Gagal menyimpan: Pastikan stok tidak 0")
-    else:
-        formset = BahanFormSet(queryset=bahan2)
+            messages.error(request, "Gagal menyimpan perubahan. Pastikan stok tidak kurang dari 1.")
+    
+    formset = BahanFormSet(queryset=bahan2)
     context = {
         "formset": formset,
     }

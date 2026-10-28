@@ -1,9 +1,14 @@
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Sen:wght@400;700;800&display=swap');
 
 body {
-    font-family: 'Montserrat', sans-serif;
+    font-family: 'Sen', sans-serif;
 }
 
+.href-button {
+    text-decoration: none;
+}
+
+/* Pengaturan halaman Update Inventori */ 
 #bahan-form-grid {
     background-color: #f9e58b;
     display: flex;
@@ -17,41 +22,9 @@ body {
     border-radius: 2rem;
 }
 
-.href-button {
-    text-decoration: none;
-}
-
 #kembali-button {
     display: inline-block;
     margin-top: 2rem;
-}
-
-
-/* Grid Halaman */
-#content {
-    display: grid;
-    grid-template-areas: 
-        "title-i title-r"
-        "inventori resep"
-        "button-i resep"; 
-    grid-template-columns: 33fr 66fr;
-    column-gap: 5rem;
-}
-
-h1 {
-    grid-area: title-i;
-    text-align: center;
-    color: #ee8252;
-    margin-bottom: 1rem;
-} 
-
-#bahan-grid{
-    grid-area: inventori;
-    background-color: #f9e58b;
-    padding: 2rem;
-    padding-top: 0.7rem;
-    border-top-left-radius: 2rem;
-    border-top-right-radius: 2rem;
 }
 
 .form-title {
@@ -80,7 +53,35 @@ h1 {
     margin: 2rem auto 0;
 }
 
-.buttons {
+/* Pengaturan halaman Inventori */
+#content { 
+    /* Grid Halaman */
+    display: grid;
+    grid-template-areas: 
+        "title-i title-r"
+        "inventori resep"
+        "button-i resep"; 
+    grid-template-columns: 33fr 66fr;
+    column-gap: 5rem;
+}
+
+h1 { /* Judul Inventori dan Update Inventori*/
+    grid-area: title-i;
+    text-align: center;
+    color: #ee8252;
+    margin-bottom: 1rem;
+} 
+
+#bahan-grid{
+    grid-area: inventori;
+    background-color: #f9e58b;
+    padding: 2rem;
+    padding-top: 0.7rem;
+    border-top-left-radius: 2rem;
+    border-top-right-radius: 2rem;
+}
+
+.buttons { /* Tombol + dan Update Inventori */
     grid-area: button-i;
     display: grid;
     place-items: center;
@@ -92,6 +93,16 @@ h1 {
     border-bottom-right-radius: 2rem;
 }
 
+h2 { /* Judul Rekomendasi Resep */
+    grid-area: title-r;
+}
+
+#recipe-grid {
+    grid-area: resep;
+}
+
+/* Pengaturan untuk semua tombol pada 
+   halaman Inventori dan Update Inventori*/
 .button, .href-button {
     padding: 0.5rem 1rem 0.5rem 1rem;
     border-radius: 2rem;
@@ -100,14 +111,25 @@ h1 {
     color: white;
 }
 
-h2 {
-    grid-area: title-r;
+/* Pengaturan tabel bahan */
+td {
+    background-color: white;
+    border: 0.3rem solid #f9e58b;
+    border-radius: 0.5rem;
 }
 
-#recipe-grid {
-    grid-area: resep;
+th, td {
+    padding: 0.3rem;
 }
 
+table {
+    width: 100%;
+    text-align: center;
+    border-collapse: separate;
+    border-spacing: 0 0.5rem;
+}
+
+/* Pengaturan Popup Tambah Bahan */
 #tambah-bahan-modal {
     /* Posisikan di tengah halaman */
     justify-content: center;
@@ -141,6 +163,7 @@ h2 {
     justify-content: space-between;
 }
 
+/* Pengaturan blur di belakang popup */
 .blur-backdrop {
   position: fixed;
   inset: 0; /* Covers the entire screen */
@@ -150,6 +173,7 @@ h2 {
   z-index: 998; /* Places it just below the popup */
 }
 
+/* Pengaturan info pesan sukses dan gagal */
 #messages {
     position: fixed;
     display: flex;
@@ -158,6 +182,7 @@ h2 {
     inset: 0;
     margin: 1rem auto;
     z-index: 999;
+    pointer-events: none;
 }
 
 #message-success {
@@ -174,22 +199,4 @@ h2 {
     padding: 12px; 
     margin-bottom: 15px; 
     border-radius: 4px;
-}
-
-/* Tabel Bahan */
-td {
-    background-color: white;
-    border: 0.3rem solid #f9e58b;
-    border-radius: 0.5rem;
-}
-
-th, td {
-    padding: 0.3rem;
-}
-
-table {
-    width: 100%;
-    text-align: center;
-    border-collapse: separate;
-    border-spacing: 0 0.5rem;
 }
