@@ -1,0 +1,381 @@
+@import url('https://fonts.googleapis.com/css2?family=Sen:wght@400;500;600;700;800&display=swap');
+
+:root {
+    --ors-green-dark: #03695E;
+    --ors-green-soft: #80B088;
+    --ors-orange: #EE8252;
+    --ors-yellow: #E8CC63;
+    --ors-white: #FFFEFE;
+    --ors-ink: #2D241F;
+    --ors-muted: #7A746F;
+    --ors-line: #ECE7E2;
+    --ors-bg-soft: #F7F6F3;
+
+    --ors-green-tint: rgba(128, 176, 136, 0.18);
+    --ors-green-tint-strong: rgba(128, 176, 136, 0.32);
+    --ors-orange-tint: rgba(238, 130, 82, 0.14);
+    --ors-yellow-tint: rgba(232, 204, 99, 0.28);
+
+    --ors-radius-lg: 20px;
+    --ors-radius-sm: 10px;
+    --ors-shadow-card: 0 6px 20px rgba(3, 105, 94, 0.05);
+    --ors-shadow-hover: 0 8px 22px rgba(3, 105, 94, 0.1);
+
+    --bs-body-font-family: 'Sen', sans-serif;
+    --bs-body-color: var(--ors-ink);
+}
+
+
+body:has(.recipe-grid),
+body:has(.bookmark-page) {
+    font-family: 'Sen', sans-serif;
+    color: var(--ors-ink);
+    -webkit-font-smoothing: antialiased;
+}
+
+body:has(.recipe-grid) :is(button, input, select, textarea),
+body:has(.bookmark-page) :is(button, input, select, textarea) {
+    font-family: inherit;
+}
+
+body:has(.bookmark-page) {
+    --font-ui: 'Sen', system-ui, sans-serif;
+}
+
+.vote-actions,
+.vote-actions *,
+.nav-badge {
+    font-family: 'Sen', sans-serif;
+}
+
+
+.recipe-card {
+    background: var(--ors-white);
+    border: 1px solid var(--ors-line);
+    border-radius: var(--ors-radius-lg);
+    box-shadow: var(--ors-shadow-card);
+    overflow: hidden;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.recipe-card:hover {
+    transform: translateY(-3px);
+    border-color: var(--ors-green-tint-strong);
+    box-shadow: var(--ors-shadow-hover);
+}
+
+.recipe-card-open:focus-visible {
+    outline: 3px solid var(--ors-green-tint-strong);
+    outline-offset: -3px;
+    border-radius: var(--ors-radius-lg);
+}
+
+.recipe-card-media {
+    height: 180px;
+    background: var(--ors-bg-soft);
+}
+
+.recipe-img-placeholder {
+    color: var(--ors-muted);
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.recipe-card-content {
+    padding: 18px;
+    gap: 0;
+}
+
+.recipe-card-title {
+    margin: 0 0 6px;
+    color: var(--ors-green-dark);
+    font-size: 16px;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    line-height: 1.3;
+}
+
+.recipe-card-meta {
+    margin: 0 0 12px;
+    color: var(--ors-muted);
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.5;
+}
+
+.recipe-card-status {
+    padding: 4px 10px;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.recipe-status-viewed {
+    background: var(--ors-green-tint);
+    color: var(--ors-green-dark);
+}
+
+.recipe-status-completed {
+    background: var(--ors-orange-tint);
+    color: #B84D31;
+}
+
+.recipe-card-actions,
+#grid .recipe-card-actions {
+    margin-top: auto;
+    padding: 14px 18px 16px;
+    border-top: 1px solid var(--ors-line);
+}
+
+.badge-cocok {
+    border-radius: 999px;
+    color: var(--ors-green-dark);
+    font-weight: 700;
+}
+
+.recipe-card .badge {
+    padding: 5px 10px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0;
+}
+
+.recipe-card .badge.text-bg-dark {
+    background-color: var(--ors-green-dark) !important;
+    color: var(--ors-white) !important;
+}
+
+.recipe-card .badge.text-bg-light {
+    background-color: var(--ors-green-tint) !important;
+    color: var(--ors-green-dark) !important;
+    border-color: var(--ors-green-tint-strong) !important;
+}
+
+.recipe-card .badge.text-bg-secondary {
+    background-color: var(--ors-bg-soft) !important;
+    color: var(--ors-muted) !important;
+}
+
+.recipe-card .text-muted {
+    color: var(--ors-muted) !important;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.recipe-modal {
+    border-radius: var(--ors-radius-lg);
+    box-shadow: 0 24px 60px rgba(3, 105, 94, 0.18);
+}
+
+.recipe-modal-title {
+    color: var(--ors-green-dark);
+    font-weight: 800;
+    letter-spacing: -0.01em;
+}
+
+
+.bookmark-page {
+    width: 100%;
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 40px 12px 56px;
+    color: var(--ors-ink);
+}
+
+.bookmark-hero {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    margin-bottom: 28px;
+}
+
+.bookmark-hero-text h1 {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 0;
+    color: var(--ors-green-dark);
+    font-size: 40px;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+}
+
+.bookmark-hero-text p {
+    margin: 6px 0 0;
+    color: var(--ors-muted);
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 1.5;
+}
+
+.bookmark-page .nav-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 32px;
+    height: 32px;
+    padding: 0 10px;
+    border-radius: 999px;
+    background: var(--ors-yellow);
+    color: var(--ors-green-dark);
+    font-size: 15px;
+    font-weight: 800;
+    letter-spacing: 0;
+}
+
+.bookmark-filter-card {
+    margin-bottom: 28px;
+    padding: 22px 24px;
+    background: var(--ors-white);
+    border: 1px solid var(--ors-line);
+    border-radius: var(--ors-radius-lg);
+    box-shadow: var(--ors-shadow-card);
+}
+
+.bookmark-page .form-label {
+    margin-bottom: 6px;
+    color: var(--ors-muted);
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.bookmark-page .form-control,
+.bookmark-page .form-select {
+    min-height: 42px;
+    border: 1px solid var(--ors-line);
+    border-radius: var(--ors-radius-sm);
+    background-color: var(--ors-white);
+    color: var(--ors-ink);
+    font-size: 14px;
+    font-weight: 600;
+    box-shadow: none;
+}
+
+.bookmark-page .form-control::placeholder {
+    color: var(--ors-muted);
+    font-weight: 400;
+}
+
+.bookmark-page .form-control:focus,
+.bookmark-page .form-select:focus {
+    border-color: var(--ors-green-soft);
+    box-shadow: 0 0 0 3px var(--ors-green-tint);
+}
+
+.bookmark-btn,
+.bookmark-btn-soft {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 40px;
+    padding: 10px 20px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 800;
+    line-height: 1.2;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.bookmark-btn {
+    border: none;
+    background: var(--ors-orange);
+    color: var(--ors-white);
+    box-shadow: 0 6px 14px rgba(238, 130, 82, 0.22);
+}
+
+.bookmark-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 18px rgba(238, 130, 82, 0.3);
+}
+
+.bookmark-btn-soft {
+    border: 1px solid var(--ors-green-tint-strong);
+    background: var(--ors-green-tint);
+    color: var(--ors-green-dark);
+}
+
+.bookmark-btn-soft:hover {
+    background: var(--ors-green-tint-strong);
+}
+
+.bookmark-btn:active,
+.bookmark-btn-soft:active {
+    transform: scale(0.98);
+}
+
+.bookmark-btn:focus-visible,
+.bookmark-btn-soft:focus-visible {
+    outline: 3px solid var(--ors-green-tint-strong);
+    outline-offset: 2px;
+}
+
+.bookmark-page #loading,
+.bookmark-page #empty {
+    padding: 48px 20px !important;
+    background: var(--ors-white);
+    border: 1px dashed var(--ors-line);
+    border-radius: var(--ors-radius-lg);
+    color: var(--ors-muted) !important;
+    font-weight: 600;
+}
+
+.bookmark-page #empty-link {
+    color: var(--ors-green-dark);
+    font-weight: 800;
+}
+
+.bookmark-page .alert-danger {
+    border: 1px solid var(--ors-orange-tint);
+    border-radius: var(--ors-radius-sm);
+    background: var(--ors-orange-tint);
+    color: #B84D31;
+    font-weight: 600;
+}
+
+/* Pagination */
+.bookmark-page .page-link {
+    border: 1px solid var(--ors-line);
+    border-radius: 999px;
+    margin: 0 4px;
+    padding: 8px 16px;
+    background: var(--ors-white);
+    color: var(--ors-green-dark);
+    font-size: 13px;
+    font-weight: 700;
+    box-shadow: none;
+}
+
+.bookmark-page .page-item:first-child .page-link,
+.bookmark-page .page-item:last-child .page-link {
+    border-radius: 999px;
+}
+
+.bookmark-page .page-link:hover:not(:disabled) {
+    background: var(--ors-green-tint);
+    border-color: var(--ors-green-tint-strong);
+}
+
+.bookmark-page .page-item.disabled .page-link {
+    background: transparent;
+    border-color: transparent;
+    color: var(--ors-muted);
+}
+
+@media (max-width: 700px) {
+    .bookmark-page {
+        padding: 28px 4px 44px;
+    }
+
+    .bookmark-hero-text h1 {
+        font-size: 30px;
+    }
+
+    .bookmark-filter-card {
+        padding: 18px;
+    }
+}
