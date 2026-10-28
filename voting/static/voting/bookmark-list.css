@@ -1,12 +1,3 @@
-/* ==========================================================
-   OLAHRASA — RECIPE CARD & BOOKMARK THEME
-   Menyamakan font + desain kartu resep dan halaman bookmark
-   dengan halaman Tracker (token warna, radius, shadow, font Sen).
-
-   Dimuat SETELAH recipe.css / recipe-card-modal.css / Bootstrap
-   supaya aturan di sini yang menang.
-========================================================== */
-
 @import url('https://fonts.googleapis.com/css2?family=Sen:wght@400;500;600;700;800&display=swap');
 
 :root {
@@ -30,15 +21,11 @@
     --ors-shadow-card: 0 6px 20px rgba(3, 105, 94, 0.05);
     --ors-shadow-hover: 0 8px 22px rgba(3, 105, 94, 0.1);
 
-    /* Bootstrap (halaman bookmark) ikut memakai font Sen */
     --bs-body-font-family: 'Sen', sans-serif;
     --bs-body-color: var(--ors-ink);
 }
 
-/* ----------------------------------------------------------
-   FONT — halaman resep & bookmark memakai Sen seperti Tracker.
-   Navbar/footer tetap Montserrat (diatur di style.css).
----------------------------------------------------------- */
+
 body:has(.recipe-grid),
 body:has(.bookmark-page) {
     font-family: 'Sen', sans-serif;
@@ -51,9 +38,6 @@ body:has(.bookmark-page) :is(button, input, select, textarea) {
     font-family: inherit;
 }
 
-/* Tombol vote/bookmark, skor, dan modal ikut Sen HANYA di halaman bookmark.
-   (--font-ui didefinisikan di voting.css; di-override di sini supaya
-   halaman lain yang juga memuat voting.css tidak berubah.) */
 body:has(.bookmark-page) {
     --font-ui: 'Sen', system-ui, sans-serif;
 }
@@ -64,9 +48,7 @@ body:has(.bookmark-page) {
     font-family: 'Sen', sans-serif;
 }
 
-/* ----------------------------------------------------------
-   KARTU RESEP (halaman Resep + Bookmark)
----------------------------------------------------------- */
+
 .recipe-card {
     background: var(--ors-white);
     border: 1px solid var(--ors-line);
@@ -139,7 +121,6 @@ body:has(.bookmark-page) {
 
 .recipe-card-actions,
 #grid .recipe-card-actions {
-    /* #grid dipakai supaya menang dari aturan "Khusus halaman bookmark" di recipe-card-modal.css */
     margin-top: auto;
     padding: 14px 18px 16px;
     border-top: 1px solid var(--ors-line);
@@ -151,7 +132,6 @@ body:has(.bookmark-page) {
     font-weight: 700;
 }
 
-/* Badge Bootstrap di dalam kartu bookmark */
 .recipe-card .badge {
     padding: 5px 10px;
     border-radius: 999px;
@@ -182,7 +162,6 @@ body:has(.bookmark-page) {
     font-weight: 600;
 }
 
-/* Modal detail resep */
 .recipe-modal {
     border-radius: var(--ors-radius-lg);
     box-shadow: 0 24px 60px rgba(3, 105, 94, 0.18);
@@ -194,9 +173,7 @@ body:has(.bookmark-page) {
     letter-spacing: -0.01em;
 }
 
-/* ----------------------------------------------------------
-   HALAMAN BOOKMARK
----------------------------------------------------------- */
+
 .bookmark-page {
     width: 100%;
     max-width: 1180px;
@@ -249,7 +226,6 @@ body:has(.bookmark-page) {
     letter-spacing: 0;
 }
 
-/* Kartu filter */
 .bookmark-filter-card {
     margin-bottom: 28px;
     padding: 22px 24px;
@@ -289,7 +265,6 @@ body:has(.bookmark-page) {
     box-shadow: 0 0 0 3px var(--ors-green-tint);
 }
 
-/* Tombol — sama seperti .tracker-btn (utama) & .tracker-set-target-btn (sekunder) */
 .bookmark-btn,
 .bookmark-btn-soft {
     display: inline-flex;
@@ -339,7 +314,6 @@ body:has(.bookmark-page) {
     outline-offset: 2px;
 }
 
-/* Status: loading / kosong / error */
 .bookmark-page #loading,
 .bookmark-page #empty {
     padding: 48px 20px !important;
