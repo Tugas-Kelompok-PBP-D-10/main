@@ -1,3 +1,13 @@
+@import url('https://fonts.googleapis.com/css2?family=Sen:wght@400..800&display=swap');
+
+/* =================================================== */
+/* Global / Base Font Setup                           */
+/* =================================================== */
+
+body, button, input, textarea, select {
+    font-family: 'Sen', sans-serif;
+}
+
 /* =================================================== */
 /* 1. Bagian pembuka                                   */
 /* =================================================== */
@@ -62,7 +72,7 @@
 
 .btn-secondary,
 .btn-primary {
-    font-family: inherit;
+    font-family: 'Sen', sans-serif;
     font-size: 14px;
     outline: none;
 }
@@ -737,7 +747,7 @@
     border-radius: 8px;
     background: #e87a5d;
     color: #ffffff;
-    font: inherit;
+    font-family: 'Sen', sans-serif;
     font-size: 14px;
     font-weight: 700;
     cursor: pointer;

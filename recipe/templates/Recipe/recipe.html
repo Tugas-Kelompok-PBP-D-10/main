@@ -9,60 +9,24 @@
 <section class="recipe-hero-section">
     <h1 class="recipe-hero-title">OlahRasa • Katalog Resep &amp; Nutrisi</h1>
     <p class="recipe-hero-subtitle">
-        Masukkan bahan sisa, lalu pilih resep yang paling cocok untuk kebutuhanmu.
+        Temukan inspirasi masak dan bagikan menu favoritmu bersama komunitas.
     </p>
-
-    <div class="recipe-search-container">
-        <input type="text" placeholder="Tambah bahan" class="recipe-input-field" readonly>
-        <div class="recipe-btn-group">
-            <button type="button" class="btn-secondary">Lihat favorit</button>
-            <button type="button" class="btn-primary">Tambah bahan</button>
-        </div>
-    </div>
 </section>
 
-<section class="inventory-section">
-    <div class="inventory-container">
-        <div class="inventory-info">
-            <h2 class="inventory-title">Masukkan Bahan Sisa</h2>
-            <p class="inventory-subtitle">
-                Tulis bahan yang tersedia untuk mengelola bahan sisa di katalog.
-            </p>
-        </div>
-
-        <form method="POST" action="" class="inventory-form">
-            {% csrf_token %}
-            <div class="form-group">
-                <label for="ingredient_name" class="form-label">Bahan</label>
-                <input
-                    type="text"
-                    id="ingredient_name"
-                    name="ingredient_name"
-                    placeholder="Contoh: bayam, ayam, tomat"
-                    class="form-input"
-                    required
-                >
-                <span class="form-hint">Pisahkan dengan koma jika lebih dari satu.</span>
-            </div>
-
-            <div class="form-group">
-                <label for="quantity" class="form-label">Jumlah (opsional)</label>
-                <input
-                    type="text"
-                    id="quantity"
-                    name="quantity"
-                    placeholder="Contoh: 200 g atau 1 sdt"
-                    class="form-input"
-                >
-                <span class="form-hint">Isi jika jumlah bahan perlu dicatat.</span>
-            </div>
-
-            <div class="form-btn-group">
-                <button type="reset" class="btn-reset">Reset</button>
-                <button type="submit" class="btn-submit">Tambah bahan</button>
-            </div>
-        </form>
+<section class="recipe-submission-section" aria-labelledby="recipeSubmissionInviteTitle">
+    <div class="recipe-submission-invite">
+        <h2 id="recipeSubmissionInviteTitle">Punya rekomendasi menu?</h2>
+        <p>Yuk, bagikan resep favoritmu! Siapa tahu bisa jadi inspirasi masak buat yang lain.</p>
     </div>
+    {% if request.user.is_authenticated %}
+        <button type="button" id="openRecipeSubmission" class="recipe-submission-open">
+            + Tambah Menu
+        </button>
+    {% else %}
+        <a href="{{ recipe_login_url }}" class="recipe-submission-open">
+            + Tambah Menu
+        </a>
+    {% endif %}
 </section>
 
 <section class="recipe-grid-section">
@@ -71,11 +35,6 @@
         <p class="recipe-grid-subtitle">
             Pilih resep untuk melihat detail, bahan, langkah memasak, dan nutrisi yang tersedia.
         </p>
-
-        <div class="recipe-grid-actions">
-            <button type="button" class="btn-grid-filter">Filter</button>
-            <button type="button" class="btn-grid-add">Tambah bahan</button>
-        </div>
 
         <div class="recipe-grid">
             {% for recipe in recipes %}
@@ -113,7 +72,7 @@
                                 ✓ Dilihat
                             </span>
                             <span class="recipe-card-status recipe-status-completed" {% if not recipe.interaction_completed %}hidden{% endif %}>
-                                ✓ Sudah dimasak
+                                ✓ Sudah dimasak {{ recipe.cooking_count }} kali
                             </span>
                         </div>
                     </button>
@@ -136,6 +95,153 @@
         </div>
     </div>
 </section>
+
+<div
+    id="recipeSubmissionOverlay"
+    class="recipe-modal-overlay"
+    aria-hidden="true"
+    hidden
+>
+    <section
+        class="recipe-modal recipe-submission-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="recipeSubmissionTitle"
+        tabindex="-1"
+    >
+        <div class="recipe-modal-header">
+            <h2 id="recipeSubmissionTitle" class="recipe-modal-title">Bagikan resep</h2>
+            <button
+                type="button"
+                id="closeRecipeSubmission"
+                class="recipe-modal-close"
+                aria-label="Tutup formulir resep"
+            >
+                &times;
+            </button>
+        </div>
+        <p id="recipeSubmissionStatus" class="recipe-modal-status" role="status" aria-live="polite">
+            Isi resepnya, nanti langsung muncul di katalog setelah dikirim.
+        </p>
+        <div id="recipeSubmissionErrors" class="recipe-modal-error" role="alert" hidden></div>
+
+        <form
+            id="recipeSubmissionForm"
+            method="post"
+            enctype="multipart/form-data"
+            data-submit-url="{{ recipe_submission_url }}"
+            novalidate
+        >
+            {% csrf_token %}
+            <input type="hidden" name="submission_id" id="recipeSubmissionId">
+            <input type="hidden" name="ingredients" id="recipeSubmissionIngredients">
+            <input type="hidden" name="instructions" id="recipeSubmissionInstructions">
+
+            <label class="recipe-form-field">
+                <span>Nama Resep <span aria-hidden="true">*</span></span>
+                <input
+                    type="text"
+                    name="title"
+                    id="submissionTitle"
+                    maxlength="255"
+                    placeholder="Contoh: Sate Ayam"
+                    required
+                >
+            </label>
+            <label class="recipe-form-field">
+                <span>Deskripsi</span>
+                <textarea
+                    name="description"
+                    id="submissionDescription"
+                    rows="3"
+                    placeholder="Ceritakan sedikit tentang resep ini."
+                ></textarea>
+            </label>
+            <div class="recipe-form-field">
+                <label for="submissionImage">Foto Menu</label>
+                <input
+                    type="file"
+                    name="image"
+                    id="submissionImage"
+                    accept="image/*"
+                    aria-describedby="submissionImageHint"
+                >
+                <span id="submissionImageHint" class="recipe-form-hint">Format gambar, maksimal 5 MB.</span>
+                <img id="submissionImagePreview" class="recipe-submission-preview" alt="Pratinjau foto resep" hidden>
+            </div>
+            <label class="recipe-form-field recipe-servings-field">
+                <span>Jumlah Porsi <span aria-hidden="true">*</span></span>
+                <input
+                    type="number"
+                    name="servings"
+                    id="submissionServings"
+                    min="1"
+                    max="32767"
+                    step="1"
+                    inputmode="numeric"
+                    value="2"
+                    required
+                >
+            </label>
+
+            <fieldset class="recipe-dynamic-fieldset">
+                <legend>Bahan Makanan <span aria-hidden="true">*</span></legend>
+                <div id="recipeIngredientRows" class="recipe-dynamic-rows">
+                    <div class="recipe-ingredient-row" data-ingredient-row>
+                        <label>
+                            <span>Nama Bahan</span>
+                            <input type="text" data-ingredient-name maxlength="100" placeholder="Contoh: daging ayam" required>
+                        </label>
+                        <label>
+                            <span>Jumlah</span>
+                            <input type="number" data-ingredient-amount min="0.000001" step="any" inputmode="decimal" placeholder="500" required>
+                        </label>
+                        <label>
+                            <span>Satuan</span>
+                            <select data-ingredient-unit required>
+                                <option value="">Pilih satuan</option>
+                                <option value="gram">gram</option>
+                                <option value="kg">kg</option>
+                                <option value="ml">ml</option>
+                                <option value="liter">liter</option>
+                                <option value="sdm">sdm</option>
+                                <option value="sdt">sdt</option>
+                                <option value="butir">butir</option>
+                                <option value="siung">siung</option>
+                                <option value="buah">buah</option>
+                                <option value="pcs">pcs</option>
+                                <option value="lainnya">Lainnya</option>
+                            </select>
+                            <input type="text" data-ingredient-unit-other placeholder="Tulis satuan" hidden>
+                        </label>
+                        <button type="button" class="recipe-remove-row" data-remove-ingredient aria-label="Hapus bahan">Hapus</button>
+                    </div>
+                </div>
+                <button type="button" id="addRecipeIngredient" class="recipe-add-row">+ Tambah Bahan</button>
+            </fieldset>
+
+            <fieldset class="recipe-dynamic-fieldset">
+                <legend>Langkah Memasak <span aria-hidden="true">*</span></legend>
+                <div id="recipeCookingSteps" class="recipe-dynamic-rows">
+                    <div class="recipe-step-row" data-step-row>
+                        <span class="recipe-step-number" aria-hidden="true">1.</span>
+                        <label>
+                            <span class="visually-hidden">Langkah 1</span>
+                            <textarea data-cooking-step rows="2" placeholder="Tulis langkah pertama" required></textarea>
+                        </label>
+                        <button type="button" class="recipe-remove-row" data-remove-step aria-label="Hapus langkah">Hapus</button>
+                    </div>
+                </div>
+                <button type="button" id="addRecipeStep" class="recipe-add-row">+ Tambah Langkah</button>
+            </fieldset>
+
+            <div class="recipe-submission-actions">
+                <button type="button" id="cancelRecipeSubmission" class="recipe-submission-cancel">Batal</button>
+                <button type="submit" id="submitRecipeButton" class="recipe-submission-submit">Kirim Resep!</button>
+            </div>
+        </form>
+    </section>
+</div>
 
 <div
     id="nutritionModal"
@@ -248,6 +354,8 @@
         </div>
     </section>
 </div>
+
+<div id="recipeToastRegion" class="recipe-toast-region" role="status" aria-live="polite" aria-atomic="true"></div>
 
 <script src="{% static 'voting/voting.js' %}"></script>
 <script src="{% static 'JS/recipe.js' %}" defer></script>

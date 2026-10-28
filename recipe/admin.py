@@ -1,10 +1,12 @@
 from django.contrib import admin
 
-from .models import Ingredient, Recipe, RecipeInteraction
+from .forms import RecipeAdminForm
+from .models import Ingredient, Recipe, RecipeCookingEvent, RecipeInteraction
 
 
 @admin.register(Recipe)
 class RecipeAdmin(admin.ModelAdmin):
+    form = RecipeAdminForm
     list_display = (
         "title",
         "source_type",
@@ -83,6 +85,21 @@ class RecipeInteractionAdmin(admin.ModelAdmin):
         "updated_at",
     )
     ordering = ("-updated_at",)
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+
+@admin.register(RecipeCookingEvent)
+class RecipeCookingEventAdmin(admin.ModelAdmin):
+    list_display = ("recipe", "user", "completed_at", "request_id")
+    list_filter = ("completed_at",)
+    search_fields = ("recipe__title", "user__username", "request_id")
+    readonly_fields = ("user", "recipe", "request_id", "completed_at")
+    ordering = ("-completed_at", "-pk")
 
     def has_add_permission(self, request):
         return False
