@@ -1,0 +1,178 @@
+.profile-page,
+.account-manage {
+    font-family: "Montserrat", Arial, sans-serif;
+    color: #263c37;
+}
+
+.profile-page {
+    padding: 36px 0 60px;
+}
+
+.profile-hero {
+    background: #2d685d;
+    color: white;
+    border-radius: 14px;
+    padding: 28px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 24px;
+}
+
+.profile-avatar {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    background: #c7dc7d;
+    color: #285e51;
+    font-size: 32px;
+    font-weight: 800;
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+}
+
+.profile-hero h1 {
+    margin: 0 0 6px;
+    font-size: 28px;
+}
+
+.profile-hero p {
+    margin: 0;
+    font-size: 14px;
+}
+
+.profile-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 24px;
+}
+
+.profile-card {
+    background: white;
+    border: 1px solid #e8ece9;
+    border-radius: 12px;
+    padding: 28px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+}
+
+.profile-card h2 {
+    margin: 0 0 24px;
+    font-size: 21px;
+    color: #28675c;
+}
+
+.profile-label {
+    color: #84918d;
+    font-size: 12px;
+    margin: 18px 0 5px;
+}
+
+.profile-value {
+    font-size: 15px;
+    font-weight: 600;
+    overflow-wrap: anywhere;
+    margin: 0;
+}
+
+.profile-status {
+    color: #25815e;
+}
+
+.profile-actions {
+    display: grid;
+    gap: 12px;
+}
+
+.profile-actions a {
+    color: #28675c;
+    background: #f6f9f7;
+    border: 1px solid #e3ebe7;
+    padding: 15px;
+    border-radius: 8px;
+    text-decoration: none;
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    font-weight: 600;
+}
+
+.profile-actions a:hover {
+    background: #e8f1ed;
+}
+
+.profile-logout {
+    margin-top: 24px;
+}
+
+.profile-logout button {
+    background: #e68454;
+    color: white;
+    border: none;
+    border-radius: 7px;
+    padding: 12px 24px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+/* Tampilan HP */
+@media (max-width: 700px) {
+    .profile-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .profile-hero {
+        padding: 22px;
+    }
+
+    .profile-card {
+        padding: 22px;
+    }
+}
+
+.account-nav-back {
+    color: white;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.account-manage {
+    width: min(100% - 32px, 650px);
+    margin: 40px auto 60px;
+}
+
+.account-form-card h1 {
+    color: #28675c;
+    font-size: 26px;
+    margin-top: 0;
+}
+
+.account-form-card form {
+    display: grid;
+    gap: 14px;
+}
+
+.account-form-card input:not([type="checkbox"]):not([type="radio"]),
+.account-form-card select {
+    width: 100%;
+    max-width: 100%;
+    min-height: 40px;
+    padding: 10px;
+    border: 1px solid #d9e4df;
+    border-radius: 6px;
+}
+
+.account-form-card button[type="submit"] {
+    background: #e68454;
+    color: white;
+    border: 0;
+    border-radius: 7px;
+    padding: 11px 18px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.account-form-card a {
+    color: #28675c;
+}
