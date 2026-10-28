@@ -1,0 +1,39 @@
+
+{% extends "auth_base.html" %}
+
+{% block title %}Welcome | OlahRasa{% endblock %}
+
+{% block form_content %}
+
+<div class="text-center">
+
+    <h2 class="auth-heading fw-bold mb-3">
+        Selamat Datang!
+    </h2>
+
+    <p class="auth-muted mb-4">
+        Masuk atau daftar untuk menemukan inspirasi resep
+        dari bahan yang kamu miliki.
+    </p>
+
+    <div class="d-grid gap-3">
+
+        <a href="{% url 'authentication:login' %}"
+           class="btn auth-primary-btn fw-bold">
+            LOG IN
+        </a>
+
+        <a href="{% url 'authentication:register' %}"
+           class="btn btn-outline-success auth-secondary-btn fw-bold">
+            SIGN UP
+        </a>
+
+    </div>
+
+    <p class="auth-muted small mt-4">
+        Kurangi food waste, mulai dari dapurmu.
+    </p>
+
+</div>
+
+{% endblock %}

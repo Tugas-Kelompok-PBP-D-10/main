@@ -9,10 +9,10 @@ https://docs.djangoproject.com/en/6.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.1/ref/settings/
 """
+
 import os
 from pathlib import Path
 from dotenv import load_dotenv
-
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -29,7 +29,15 @@ SECRET_KEY = 'django-insecure-5nw4m*_1af7#(nmoai+9fb7u=&@*j4hiew(=7bqbvap4q!a(g7
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["hafiza-nurul-olahrasa.pws.cs.ui.ac.id"]
+ALLOWED_HOSTS = [
+    "hafiza-nurul-olahrasa.pws.cs.ui.ac.id",
+]
+
+CSRF_TRUSTED_ORIGINS = [
+    "https://hafiza-nurul-olahrasa.pws.cs.ui.ac.id",
+]
+
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 
 # Application definition
@@ -43,24 +51,24 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
-    # Google OAuth
+   # Modul kelompok
+    'tracker.apps.TrackerConfig',
+    'authentication',
+    'inventori',
+    'recipe',
+    'voting',
+  
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
     'allauth.socialaccount.providers.google',
 
-    # Modul kelompok
-    'tracker.apps.TrackerConfig',
-    'authentication',
-    'inventori',
-    'recipe',
 ]
 
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
-    'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -147,6 +155,10 @@ STATICFILES_DIRS = [
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 WHITENOISE_USE_FINDERS = True
 
+# Penyimpanan foto resep yang diunggah melalui Django Admin.
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
+
 
 # Email
 # https://docs.djangoproject.com/en/6.1/topics/email/#topic-email-configuration
@@ -157,12 +169,12 @@ MAILERS = {
     },
 }
 
-LOGIN_REDIRECT_URL = "/dashboard/"
+LOGIN_REDIRECT_URL = "/tracker/"
 
 SOCIALACCOUNT_PROVIDERS = {
-    "google" : {
+    "google": {
         "APP": {
-            "client_id" : os.getenv("GOOGLE_CLIENT_ID"),
+            "client_id": os.getenv("GOOGLE_CLIENT_ID"),
             "secret": os.getenv("GOOGLE_CLIENT_SECRET"),
             "key": "",
         },
@@ -170,9 +182,9 @@ SOCIALACCOUNT_PROVIDERS = {
             "profile",
             "email",
         ],
-        "AUTH_PARAMS" : {
-            "access_type" : "online",
+        "AUTH_PARAMS": {
+            "access_type": "online",
         },
-        "OAUTH_PKCE_ENABLED" : True,
+        "OAUTH_PKCE_ENABLED": True,
     }
 }

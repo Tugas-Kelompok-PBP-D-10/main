@@ -1,0 +1,41 @@
+<div id="tambah-bahan-modal"
+     class="form-modal"
+     popover="auto"
+     role="dialog"
+     aria-modal="true">
+    
+    <div class="form-modal__content">
+        <div class="modal-title">
+            <h3>Tambah Bahan</h3>
+            <button type="button"
+                    id="hide-popup"
+                    class="button"
+                    popovertarget="tambah-bahan-modal"
+                    onclick="hidePopup()">×</button>
+        </div>
+        
+        <form id="tambah-bahan-form"
+              method="post"
+              class="form">
+            {% csrf_token %}
+            {% for field in form %}
+                <div class="form-group">
+                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    <br>
+                    {{ field }}
+                    {% for error in field.errors %}
+                        <p class="form-error">{{ error }}</p>
+                    {% endfor %}
+                </div>
+            {% endfor %}  
+            <div class="form-modal__actions">
+                <button type="button"
+                        class="button"
+                        id="hide-popup"
+                        popovertarget="tambah-bahan-modal"
+                        onclick="hidePopup()">Batal</button>
+                <button type="submit" class="button">Tambah</button>
+            </div>  
+        </form>
+    </div>
+</div>
