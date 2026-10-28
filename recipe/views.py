@@ -14,6 +14,7 @@ from django.views.decorators.http import require_GET, require_POST
 from .forms import RecipeSubmissionForm
 from .models import Recipe, RecipeCookingEvent, RecipeInteraction
 from .services import (
+    calculate_and_store_recipe_nutrition,
     get_recipe_by_id,
     get_recipe_detail,
     get_recipe_image_url,
@@ -236,6 +237,12 @@ def submit_recipe(request):
             "Pengiriman tidak dapat diproses. Muat ulang formulir dan coba lagi.",
             409,
         )
+
+    # Analisis eksternal berjalan setelah commit dan tidak boleh membatalkan kiriman.
+    try:
+        calculate_and_store_recipe_nutrition(recipe)
+    except Exception:
+        pass
 
     return _recipe_submission_response(recipe)
 

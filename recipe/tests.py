@@ -3,9 +3,12 @@ import os
 import base64
 import tempfile
 import uuid
+from decimal import Decimal
 from io import BytesIO
-from unittest.mock import patch
+from unittest.mock import Mock, patch
+from types import SimpleNamespace
 
+from django.contrib import admin as django_admin
 from django.contrib.auth import get_user_model
 from django.core.cache import cache
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -17,9 +20,13 @@ from PIL import Image
 from voting.models import Bookmark
 
 from .forms import RecipeAdminForm
+from .admin import RecipeAdmin, recalculate_missing_recipe_nutrition
 from .models import Recipe, RecipeCookingEvent, RecipeInteraction
 from .services import (
+    SpoonacularError,
     analyze_recipe_with_spoonacular,
+    calculate_and_store_recipe_nutrition,
+    get_recipe_detail,
     get_spoonacular_recipe,
     scale_ingredient_quantities,
 )
@@ -108,7 +115,7 @@ class RecipePageTests(TestCase):
             payload["instructions"],
             ["Rebus air.", "Masukkan sayuran."],
         )
-        self.assertEqual(payload["external"]["status"], "not_configured")
+        self.assertEqual(payload["external"]["status"], "stored")
 
     @patch(
         "recipe.services.get_spoonacular_recipe",
@@ -183,6 +190,14 @@ class RecipePageTests(TestCase):
         },
     )
     def test_detail_merges_spoonacular_data_without_rendering_html(self, _spoonacular):
+        self.recipe.source_type = "spoonacular"
+        self.recipe.spoonacular_id = 42
+        self.recipe.preparation_time = 10
+        self.recipe.calories = "180"
+        self.recipe.carbohydrates = "21"
+        self.recipe.fat = "5"
+        self.recipe.additional_nutrition = {"Fiber": {"value": 4, "unit": "g"}}
+        self.recipe.save()
         response = self.client.get(
             reverse("recipe:api_detail", args=(self.recipe.pk,))
         )
@@ -206,34 +221,19 @@ class RecipePageTests(TestCase):
             ["Rebus air.", "Masukkan sayuran."],
         )
 
-    @patch(
-        "recipe.services.get_spoonacular_recipe",
-        return_value={
-            "status": "ok",
-            "message": "",
-            "data": {
-                "id": 77,
-                "servings": 4,
-                "nutrition": {
-                    "nutrients": [
-                        {"name": "Calories", "amount": 210, "unit": "kcal"},
-                        {"name": "Protein", "amount": 11, "unit": "g"},
-                    ]
-                },
-                "extendedIngredients": [
-                    {
-                        "name": "tomato",
-                        "original": "2 medium tomatoes",
-                        "amount": 2,
-                        "unit": "medium",
-                    },
-                    {"name": "salt", "original": "salt"},
-                ],
-            },
-        },
-    )
-    def test_servings_and_numeric_ingredient_quantities_are_returned(self, _spoonacular):
-        recipe = Recipe.objects.create(title="Tomato soup", servings=None)
+    def test_detail_displays_stored_nutrition_and_numeric_ingredients(self):
+        recipe = Recipe.objects.create(
+            title="Tomato soup",
+            servings=4,
+            source_type="local",
+            ingredients=[
+                {"name": "tomato", "amount": 2, "unit": "piece"},
+                {"name": "salt", "amount": 1, "unit": "g"},
+            ],
+            calories="210",
+            protein="11",
+            nutrition_basis="per_serving",
+        )
 
         response = self.client.get(reverse("recipe:api_detail", args=(recipe.pk,)))
 
@@ -241,18 +241,40 @@ class RecipePageTests(TestCase):
         payload = response.json()
         self.assertEqual(payload["recipe"]["servings"], 4)
         self.assertEqual(payload["nutrition"]["basis"], "per_serving")
+        self.assertEqual(payload["nutrition"]["calories"], {"value": 210, "unit": "kcal"})
+        self.assertEqual(payload["nutrition"]["protein"], {"value": 11, "unit": "g"})
         self.assertEqual(
             payload["ingredients"],
             [
-                {
-                    "name": "tomato",
-                    "amount": 2,
-                    "unit": "medium",
-                    "original": "2 medium tomatoes",
-                },
-                {"name": "salt", "amount": None, "unit": "", "original": "salt"},
+                {"name": "tomato", "amount": 2, "unit": "piece", "original": "tomato"},
+                {"name": "salt", "amount": 1, "unit": "g", "original": "salt"},
             ],
         )
+
+    def test_complete_detail_does_not_call_spoonacular_when_modal_opens(self):
+        recipe = Recipe.objects.create(
+            title="Resep lengkap",
+            source_type="spoonacular",
+            spoonacular_id=7654321,
+            description="Deskripsi lokal",
+            preparation_time=5,
+            cooking_time=10,
+            servings=2,
+            image_url="https://images.example.test/recipe.jpg",
+            ingredients=[{"name": "kentang", "amount": 200, "unit": "g"}],
+            instructions="Rebus kentang.",
+            calories="120",
+            protein="4",
+            fat="2",
+            carbohydrates="20",
+            nutrition_basis="per_serving",
+        )
+
+        with patch("recipe.services.get_spoonacular_recipe") as spoonacular:
+            payload = get_recipe_detail(recipe)
+
+        spoonacular.assert_not_called()
+        self.assertEqual(payload["nutrition"]["calories"], {"value": 120, "unit": "kcal"})
 
     def test_local_recipe_does_not_search_for_an_unrelated_api_recipe(self):
         local_recipe = Recipe.objects.create(
@@ -365,6 +387,7 @@ class RecipePageTests(TestCase):
 
 class RecipeSubmissionTests(TestCase):
     def setUp(self):
+        cache.clear()
         self.user = get_user_model().objects.create_user(
             username="menu-contributor",
             password="test-password",
@@ -383,13 +406,20 @@ class RecipeSubmissionTests(TestCase):
             "instructions": "Potong ayam.\nBakar hingga matang.",
         }
 
+    def tearDown(self):
+        cache.clear()
+
     def test_anonymous_user_cannot_submit_recipe(self):
         response = self.client.post(self.url, self.payload)
 
         self.assertEqual(response.status_code, 401)
         self.assertEqual(Recipe.objects.count(), 0)
 
-    def test_authenticated_submission_saves_recipe_and_steps_for_recipe_grid(self):
+    @patch(
+        "recipe.views.calculate_and_store_recipe_nutrition",
+        return_value={"status": "not_configured", "updated": []},
+    )
+    def test_authenticated_submission_saves_recipe_and_steps_for_recipe_grid(self, _nutrition):
         self.client.force_login(self.user)
         response = self.client.post(self.url, self.payload)
         page = self.client.get(reverse("recipe:home"))
@@ -411,6 +441,90 @@ class RecipeSubmissionTests(TestCase):
         self.assertIsNone(recipe.calories)
         self.assertEqual(recipe.nutrition_basis, "unknown")
         self.assertContains(page, "Sate Ayam Rumahan")
+
+    @patch("recipe.services._request_spoonacular")
+    def test_submission_persists_spoonacular_nutrition_per_serving(self, request_api):
+        self.client.force_login(self.user)
+        request_api.return_value = {
+            "nutrition": {
+                "nutrients": [
+                    {"name": "Calories", "amount": 360.5, "unit": "kcal"},
+                    {"name": "Protein", "amount": 24.75, "unit": "g"},
+                    {"name": "Fat", "amount": 12, "unit": "g"},
+                    {"name": "Carbohydrates", "amount": 40, "unit": "g"},
+                ]
+            }
+        }
+
+        with patch.dict(os.environ, {"SPOONACULAR_API_KEY": "test-key"}):
+            response = self.client.post(self.url, self.payload)
+
+        self.assertEqual(response.status_code, 201)
+        recipe = Recipe.objects.get(pk=response.json()["recipe"]["id"])
+        self.assertEqual(recipe.calories, Decimal("360.50"))
+        self.assertEqual(recipe.protein, Decimal("24.75"))
+        self.assertEqual(recipe.fat, Decimal("12.00"))
+        self.assertEqual(recipe.carbohydrates, Decimal("40.00"))
+        self.assertEqual(recipe.nutrition_basis, "per_serving")
+        self.assertEqual(
+            request_api.call_args.kwargs["body"]["ingredients"],
+            ["500 g Daging ayam", "2.5 tbsp Kecap manis"],
+        )
+
+    @patch("recipe.services._request_spoonacular")
+    def test_spoonacular_failure_does_not_block_submission_or_invent_nutrition(self, request_api):
+        self.client.force_login(self.user)
+        request_api.side_effect = SpoonacularError("timeout", "API timeout")
+
+        with patch.dict(os.environ, {"SPOONACULAR_API_KEY": "test-key"}):
+            response = self.client.post(self.url, self.payload)
+
+        self.assertEqual(response.status_code, 201)
+        recipe = Recipe.objects.get(pk=response.json()["recipe"]["id"])
+        self.assertIsNone(recipe.calories)
+        self.assertIsNone(recipe.protein)
+        self.assertIsNone(recipe.fat)
+        self.assertIsNone(recipe.carbohydrates)
+        detail = self.client.get(reverse("recipe:api_detail", args=(recipe.pk,)))
+        self.assertEqual(detail.json()["nutrition"]["calories"], None)
+        self.assertEqual(detail.json()["nutrition"]["basis"], "unknown")
+
+    @patch("recipe.services._request_spoonacular")
+    def test_new_admin_recipe_calculates_nutrition_without_overwriting_manual_value(self, request_api):
+        recipe = Recipe(
+            title="Resep Admin Berprotein",
+            source_type="local",
+            servings=2,
+            ingredients=[{"name": "tempe", "amount": 200, "unit": "gram"}],
+            instructions="Goreng tempe.",
+            protein="18.5",
+            nutrition_basis="per_serving",
+        )
+        request_api.return_value = {
+            "nutrition": {
+                "nutrients": [
+                    {"name": "Calories", "amount": 220, "unit": "kcal"},
+                    {"name": "Protein", "amount": 99, "unit": "g"},
+                    {"name": "Fat", "amount": 10, "unit": "g"},
+                    {"name": "Carbohydrates", "amount": 15, "unit": "g"},
+                ]
+            }
+        }
+        request = SimpleNamespace()
+        with patch.dict(os.environ, {"SPOONACULAR_API_KEY": "test-key"}):
+            RecipeAdmin(Recipe, django_admin.site).save_model(
+                request,
+                recipe,
+                form=None,
+                change=False,
+            )
+
+        recipe.refresh_from_db()
+        self.assertEqual(recipe.calories, Decimal("220.00"))
+        self.assertEqual(recipe.protein, Decimal("18.5"))
+        self.assertEqual(recipe.fat, Decimal("10.00"))
+        self.assertEqual(recipe.carbohydrates, Decimal("15.00"))
+        self.assertEqual(recipe.nutrition_basis, "per_serving")
 
     def test_submission_id_makes_retries_idempotent_and_private_to_owner(self):
         self.client.force_login(self.user)
@@ -480,6 +594,29 @@ class RecipeSubmissionTests(TestCase):
         self.assertEqual(saved.ingredients[0]["unit"], "gram")
         self.assertEqual(saved.instructions.splitlines(), ["Kupas kentang.", "Rebus sampai empuk."])
 
+    def test_admin_form_accepts_manual_nutrition_values_and_basis(self):
+        form = RecipeAdminForm(data={
+            "title": "Sup Admin Bernutrisi",
+            "source_type": "local",
+            "is_published": "on",
+            "servings": "2",
+            "nutrition_basis": "whole_recipe",
+            "calories": "450.50",
+            "protein": "20",
+            "fat": "12.25",
+            "carbohydrates": "60",
+            "ingredients": json.dumps([{"name": "kentang", "amount": 300, "unit": "g"}]),
+            "instructions": "Rebus kentang.",
+            "additional_nutrition": "{}",
+        })
+
+        self.assertTrue(form.is_valid(), form.errors)
+        recipe = form.save()
+        recipe.refresh_from_db()
+        self.assertEqual(recipe.calories, Decimal("450.50"))
+        self.assertEqual(recipe.protein, Decimal("20.00"))
+        self.assertEqual(recipe.nutrition_basis, "whole_recipe")
+
 
 class RecipeServiceUtilityTests(TestCase):
     def test_scale_helper_changes_numeric_amounts_without_mutating_base_list(self):
@@ -493,6 +630,109 @@ class RecipeServiceUtilityTests(TestCase):
         self.assertEqual(result[0]["amount"], 200)
         self.assertEqual(result[1]["amount"], None)
         self.assertEqual(ingredients[0]["amount"], 400)
+
+    @patch("recipe.services._request_spoonacular")
+    def test_nutrition_analysis_persists_supported_values_and_units(self, request_api):
+        cache.clear()
+        recipe = Recipe.objects.create(
+            title="Sup Analisis Terukur",
+            source_type="local",
+            servings=3,
+            ingredients=[
+                {"name": "kentang", "amount": 300, "unit": "gram"},
+                {"name": "susu", "amount": 200, "unit": "ml"},
+                {"name": "garam", "amount": 1, "unit": "sdt"},
+            ],
+        )
+        request_api.return_value = {
+            "nutrition": {
+                "nutrients": [
+                    {"name": "Calories", "amount": 125.456, "unit": "kcal"},
+                    {"name": "Protein", "amount": 5.25, "unit": "g"},
+                    {"name": "Fat", "amount": 2.5, "unit": "g"},
+                    {"name": "Carbohydrates", "amount": 18, "unit": "g"},
+                ]
+            }
+        }
+
+        with patch.dict(os.environ, {"SPOONACULAR_API_KEY": "test-key"}):
+            result = calculate_and_store_recipe_nutrition(recipe)
+
+        recipe.refresh_from_db()
+        self.assertEqual(result["status"], "ok")
+        self.assertEqual(recipe.calories, Decimal("125.46"))
+        self.assertEqual(recipe.protein, Decimal("5.25"))
+        self.assertEqual(recipe.fat, Decimal("2.50"))
+        self.assertEqual(recipe.carbohydrates, Decimal("18.00"))
+        self.assertEqual(recipe.nutrition_basis, "per_serving")
+        self.assertEqual(
+            request_api.call_args.kwargs["body"]["ingredients"],
+            ["300 g kentang", "200 ml susu", "1 tsp garam"],
+        )
+        self.assertEqual(request_api.call_args.kwargs["body"]["servings"], 3)
+        self.assertEqual(request_api.call_args.args[1]["includeNutrition"], "true")
+
+    @patch("recipe.services._request_spoonacular")
+    def test_nutrition_analysis_requires_measured_ingredients_and_servings(self, request_api):
+        recipe = Recipe.objects.create(
+            title="Bahan tanpa takaran",
+            source_type="local",
+            servings=2,
+            ingredients=[{"name": "garam", "amount": None, "unit": "secukupnya"}],
+        )
+        with patch.dict(os.environ, {"SPOONACULAR_API_KEY": "test-key"}):
+            result = calculate_and_store_recipe_nutrition(recipe)
+
+        self.assertEqual(result["status"], "insufficient_data")
+        self.assertIsNone(recipe.calories)
+        request_api.assert_not_called()
+
+    @patch("recipe.services._request_spoonacular")
+    def test_admin_action_recalculates_only_when_manually_triggered(self, request_api):
+        recipe = Recipe.objects.create(
+            title="Resep Lama Tanpa Nutrisi",
+            source_type="local",
+            servings=2,
+            ingredients=[{"name": "tempe", "amount": 200, "unit": "g"}],
+        )
+        request_api.return_value = {
+            "nutrition": {"nutrients": [
+                {"name": "Calories", "amount": 250, "unit": "kcal"},
+                {"name": "Protein", "amount": 20, "unit": "g"},
+                {"name": "Fat", "amount": 12, "unit": "g"},
+                {"name": "Carbohydrates", "amount": 8, "unit": "g"},
+            ]}
+        }
+        modeladmin = SimpleNamespace(message_user=Mock())
+
+        with patch.dict(os.environ, {"SPOONACULAR_API_KEY": "test-key"}):
+            recalculate_missing_recipe_nutrition(
+                modeladmin,
+                SimpleNamespace(),
+                Recipe.objects.filter(pk=recipe.pk),
+            )
+
+        recipe.refresh_from_db()
+        self.assertEqual(recipe.calories, Decimal("250.00"))
+        self.assertEqual(recipe.nutrition_basis, "per_serving")
+        modeladmin.message_user.assert_called_once()
+
+    def test_manual_or_whole_recipe_values_are_not_overwritten_by_per_serving_analysis(self):
+        recipe = Recipe.objects.create(
+            title="Resep dengan basis manual",
+            servings=2,
+            ingredients=[{"name": "telur", "amount": 2, "unit": "piece"}],
+            calories="300",
+            nutrition_basis="whole_recipe",
+        )
+        with patch("recipe.services.analyze_recipe_with_spoonacular") as analyze:
+            result = calculate_and_store_recipe_nutrition(recipe)
+
+        self.assertEqual(result["status"], "manual_values_preserved")
+        analyze.assert_not_called()
+        recipe.refresh_from_db()
+        self.assertEqual(recipe.calories, Decimal("300.00"))
+        self.assertEqual(recipe.nutrition_basis, "whole_recipe")
 
     @patch("recipe.services._request_spoonacular")
     def test_custom_recipe_analysis_is_explicit_and_passes_local_data(self, request_api):

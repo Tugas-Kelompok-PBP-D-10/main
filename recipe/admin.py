@@ -1,12 +1,41 @@
-from django.contrib import admin
+from django.contrib import admin, messages
 
 from .forms import RecipeAdminForm
 from .models import Ingredient, Recipe, RecipeCookingEvent, RecipeInteraction
+from .services import (
+    calculate_and_store_recipe_nutrition,
+    recipe_has_missing_nutrition,
+)
+
+
+@admin.action(description="Hitung ulang nutrisi yang masih kosong dari Spoonacular")
+def recalculate_missing_recipe_nutrition(modeladmin, request, queryset):
+    updated = 0
+    skipped = 0
+    for recipe in queryset:
+        if not recipe_has_missing_nutrition(recipe):
+            skipped += 1
+            continue
+        try:
+            result = calculate_and_store_recipe_nutrition(recipe)
+        except Exception:
+            result = {"status": "upstream_error", "updated": []}
+        if result.get("status") == "ok":
+            updated += 1
+        else:
+            skipped += 1
+
+    modeladmin.message_user(
+        request,
+        f"Nutrisi diperbarui untuk {updated} resep; {skipped} resep tetap tanpa perubahan.",
+        level=messages.INFO,
+    )
 
 
 @admin.register(Recipe)
 class RecipeAdmin(admin.ModelAdmin):
     form = RecipeAdminForm
+    actions = (recalculate_missing_recipe_nutrition,)
     list_display = (
         "title",
         "source_type",
@@ -60,6 +89,22 @@ class RecipeAdmin(admin.ModelAdmin):
         ),
         ("Metadata", {"fields": ("created_at",), "classes": ("collapse",)}),
     )
+
+    def save_model(self, request, obj, form, change):
+        super().save_model(request, obj, form, change)
+        # Pembuatan resep baru di admin menghitung nutrisi sekali; data lama
+        # hanya dihitung ulang melalui action yang dipilih secara eksplisit.
+        if not change and recipe_has_missing_nutrition(obj):
+            try:
+                result = calculate_and_store_recipe_nutrition(obj)
+            except Exception:
+                result = {"status": "upstream_error", "updated": []}
+            if result.get("status") not in {"ok", "complete"}:
+                self.message_user(
+                    request,
+                    "Resep tersimpan. Nutrisi belum tersedia; gunakan action hitung ulang jika diperlukan.",
+                    level=messages.INFO,
+                )
 
 
 @admin.register(Ingredient)
