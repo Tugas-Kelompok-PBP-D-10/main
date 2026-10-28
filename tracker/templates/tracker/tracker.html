@@ -152,6 +152,31 @@
                     class="tracker-bookmarks-list"
                     aria-live="polite"
                 >
+                    {% for bookmark in bookmarks %}
+                    <div class="tracker-bookmark-item">
+                      <a href="{% url 'recipe:home' %}?recipe_id={{ bookmark.recipe.id }}&from=tracker"
+                      class="tracker-bookmark-link">
+                            <div class="tracker-bookmark-icon">
+                                <i data-lucide="bookmark-check" aria-hidden="true"></i>
+                            </div>
+
+                            <div class="tracker-bookmark-info">
+                                <span class="tracker-bookmark-name">
+                                    {{ bookmark.recipe.title }}
+                                </span>
+
+                                <span class="tracker-bookmark-meta">
+                                    Resep tersimpan
+                                </span>
+                            </div>
+
+                            <span class="tracker-bookmark-status">
+                                Saved
+                            </span>
+
+                        </a>
+                    </div>
+                {% empty %}
                     <div class="tracker-bookmarks-empty">
                         <i data-lucide="bookmark"></i>
 
@@ -160,15 +185,20 @@
                         </p>
 
                         <p class="tracker-bookmarks-description">
-                            Your saved recipes will appear here
-                            once bookmarks are connected.
+                            Save recipes to see them here.
                         </p>
                     </div>
+                {% endfor %}
                 </div>
 
+                <!-- VIEW ALL BOOKMARKS -->
+                <a href="{% url 'voting:bookmark_list' %}"
+                  class="tracker-bookmark-view-all">
+                    View All Bookmarks
+                    <i data-lucide="arrow-right" aria-hidden="true"></i>
+                </a>
+
             </div>
-        </aside>
-    </div>
 
 <!-- SET WEEKLY NUTRITION TARGET -->
 <dialog
