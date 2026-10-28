@@ -4,6 +4,7 @@ from django.db import models
 
 # Create your models here.
 class Inventori(models.Model):
+    # Setiap inventori terkait dengan satu user
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="inventori")
 
 

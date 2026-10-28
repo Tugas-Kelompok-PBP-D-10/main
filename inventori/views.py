@@ -6,7 +6,7 @@ from .forms import BahanForm
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 
-# Create your views here.
+
 def get_bahan_json(request):
     bahan2 = Bahan.objects.filter(inventory=request.user.inventori)
     data = []

@@ -2,7 +2,7 @@
 {% load static %}
 
 {% block meta %}
-<title>Inventori | OlahRasa</title>
+<title>Update Inventori | OlahRasa</title>
 {% endblock meta %}
 
 {% block extra_css %}
@@ -10,6 +10,9 @@
 {% endblock %}
 
 {% block content %}
+
+
+<!-- Untuk menampilkan pesan sukses dan error -->
 {% if messages %}
     <div id="messages">
         {% for message in messages %}
@@ -19,6 +22,7 @@
         {% endfor %}
     </div>
 {% endif %}
+
     <h1>Update Inventori</h1>
     <div id="bahan-form-grid">
         <form method="post" id="bahan-form" action="{% url 'update_inventori' %}">
@@ -28,9 +32,7 @@
             {% for form in formset %}
                 <div class="bahan-form" id="row-{{ forloop.counter0 }}">
                     {{ form.id }}
-                    <div style="display: none;">
-                        {{ form.DELETE }}
-                    </div>
+                    <!-- Tombol untuk men-submit form delete -->
                     <button type="submit" form="delete-form-{{ form.instance.id }}" class="button button-danger" onclick="return confirm('Are you sure?');">-</button>
                     {{ form.name }}
                     {{ form.stock }} 
@@ -41,17 +43,19 @@
         </form>
     </div>
 
+    <!-- Memastikan tidak ada form di dalam form -->
     {% for form in formset %}
     {% if form.instance.id %}
         <form id="delete-form-{{ form.instance.id }}" method="post" action="{% url 'delete_bahan' form.instance.id %}" style="display: none;">
             {% csrf_token %}
         </form>
     {% endif %}
-{% endfor %}
+    {% endfor %}
+
 
 <script>
     setTimeout(() => {
         document.getElementById('messages').style.display = 'none';
-    }, 5000);
+    }, 3000);
 </script>
 {% endblock content %}
