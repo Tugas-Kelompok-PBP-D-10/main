@@ -2,6 +2,7 @@ import hashlib
 import json
 import math
 import os
+import re
 import socket
 from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
 from html.parser import HTMLParser
@@ -16,6 +17,66 @@ from .models import Recipe
 
 SPOONACULAR_API_BASE = "https://api.spoonacular.com"
 SPOONACULAR_TIMEOUT = 6
+SPOONACULAR_SEARCH_PAGE_SIZE = 12
+SPOONACULAR_SEARCH_CACHE_SECONDS = 15 * 60
+
+_INDONESIAN_RECIPE_TERMS = {
+    "daging ayam": "chicken",
+    "ayam": "chicken",
+    "daging sapi": "beef",
+    "sapi": "beef",
+    "daging kambing": "lamb",
+    "kambing": "lamb",
+    "ikan": "fish",
+    "udang": "shrimp",
+    "cumi": "squid",
+    "telur": "egg",
+    "tahu": "tofu",
+    "tempe": "tempeh",
+    "nasi": "rice",
+    "mie": "noodles",
+    "mi": "noodles",
+    "sayur": "vegetables",
+    "sayuran": "vegetables",
+    "kentang": "potato",
+    "bayam": "spinach",
+    "kangkung": "water spinach",
+    "wortel": "carrot",
+    "bawang putih": "garlic",
+    "bawang merah": "shallot",
+    "bawang bombai": "onion",
+    "tomat": "tomato",
+    "jagung": "corn",
+    "santan": "coconut milk",
+    "kelapa": "coconut",
+    "cabai": "chili",
+    "cabe": "chili",
+    "sambal": "chili sauce",
+    "kecap manis": "sweet soy sauce",
+    "kecap": "soy sauce",
+    "roti": "bread",
+    "sup": "soup",
+    "goreng": "fried",
+    "bakar": "grilled",
+    "rebus": "boiled",
+    "tumis": "stir fry",
+    "kukus": "steamed",
+}
+
+
+def normalize_indonesian_recipe_query(query):
+    """Terjemahkan istilah masak umum; kata di luar glosarium tetap apa adanya."""
+    normalized = str(query or "").strip()
+    for source, target in sorted(
+        _INDONESIAN_RECIPE_TERMS.items(), key=lambda item: len(item[0]), reverse=True
+    ):
+        normalized = re.sub(
+            rf"(?<!\w){re.escape(source)}(?!\w)",
+            target,
+            normalized,
+            flags=re.IGNORECASE,
+        )
+    return " ".join(normalized.split())
 
 
 class SpoonacularError(Exception):
@@ -250,6 +311,267 @@ def _service_error(error):
         "status": "invalid_response",
         "message": "Data resep Spoonacular tidak valid.",
         "data": None,
+    }
+
+
+def _complex_search_payload(api_key, query, parameters):
+    request_parameters = {"query": query, **parameters}
+    cache_key = "recipe:spoonacular:complex-search:" + hashlib.sha256(
+        json.dumps(request_parameters, sort_keys=True).encode("utf-8")
+    ).hexdigest()
+    cached_payload = cache.get(cache_key)
+    if cached_payload is not None:
+        return cached_payload
+    payload = _request_spoonacular(
+        "recipes/complexSearch",
+        request_parameters,
+        api_key,
+    )
+    if not isinstance(payload, dict):
+        raise SpoonacularError(
+            "invalid_response",
+            "Hasil pencarian Spoonacular tidak sesuai format.",
+        )
+    cache.set(cache_key, payload, SPOONACULAR_SEARCH_CACHE_SECONDS)
+    return payload
+
+
+def search_spoonacular_recipes(query, offset=0):
+    """Cari beberapa resep, urutkan protein tinggi, dan cache tiap halaman."""
+    query = " ".join(str(query or "").split())
+    normalized_query = normalize_indonesian_recipe_query(query)
+    try:
+        offset = int(offset)
+    except (TypeError, ValueError):
+        return {"status": "invalid_offset", "message": "Halaman pencarian tidak valid."}
+    if not query or len(query) < 2 or len(query) > 100:
+        return {"status": "invalid_query", "message": "Ketik minimal 2 karakter untuk mencari."}
+    if offset < 0 or offset > 900 or offset % SPOONACULAR_SEARCH_PAGE_SIZE:
+        return {"status": "invalid_offset", "message": "Halaman pencarian tidak valid."}
+
+    api_key = os.environ.get("SPOONACULAR_API_KEY", "").strip()
+    if not api_key:
+        return {
+            "status": "not_configured",
+            "message": "Kunci API Spoonacular belum dikonfigurasi.",
+        }
+
+    parameters = {
+        "number": SPOONACULAR_SEARCH_PAGE_SIZE,
+        "offset": offset,
+        "sort": "protein",
+        "sortDirection": "desc",
+        "instructionsRequired": "true",
+    }
+    try:
+        payload = _complex_search_payload(api_key, normalized_query, parameters)
+        raw_results = payload.get("results", [])
+        if not isinstance(raw_results, list):
+            raise SpoonacularError(
+                "invalid_response",
+                "Hasil pencarian Spoonacular tidak sesuai format.",
+            )
+        results = []
+        for item in raw_results:
+            if not isinstance(item, dict):
+                continue
+            try:
+                spoonacular_id = int(item.get("id"))
+            except (TypeError, ValueError):
+                continue
+            if spoonacular_id < 1:
+                continue
+            results.append(
+                {
+                    "id": spoonacular_id,
+                    "title": _plain_text(item.get("title")) or "Resep Spoonacular",
+                    "image": _safe_image_url(item.get("image")),
+                    "cooking_time": _positive_integer(item.get("readyInMinutes")),
+                    "servings": _positive_integer(item.get("servings")),
+                    "protein": _search_protein(item),
+                }
+            )
+        try:
+            total_results = max(0, int(payload.get("totalResults", offset + len(results))))
+        except (TypeError, ValueError):
+            total_results = offset + len(results)
+        next_offset = offset + SPOONACULAR_SEARCH_PAGE_SIZE
+        has_more = bool(results) and offset < 900 and next_offset < total_results
+        return {
+            "status": "ok",
+            "query": query,
+            "normalized_query": normalized_query,
+            "translation_status": "partial",
+            "results": results,
+            "offset": offset,
+            "next_offset": next_offset if has_more else None,
+            "total_results": total_results,
+            "has_more": has_more,
+        }
+    except (SpoonacularError, TypeError, ValueError) as error:
+        service_error = _service_error(error)
+        return {"status": service_error["status"], "message": service_error["message"]}
+
+
+def get_spoonacular_recipe_detail(spoonacular_id):
+    """Ambil dan normalkan detail API ke payload yang dipakai modal resep."""
+    try:
+        spoonacular_id = int(spoonacular_id)
+    except (TypeError, ValueError):
+        return {"status": "not_found", "message": "Resep tidak ditemukan.", "data": None}
+    if spoonacular_id < 1:
+        return {"status": "not_found", "message": "Resep tidak ditemukan.", "data": None}
+
+    api_key = os.environ.get("SPOONACULAR_API_KEY", "").strip()
+    if not api_key:
+        return {
+            "status": "not_configured",
+            "message": "Kunci API Spoonacular belum dikonfigurasi.",
+            "data": None,
+        }
+    cache_key = f"recipe:spoonacular:search-detail:{spoonacular_id}:nutrition"
+    cached_payload = cache.get(cache_key)
+    if cached_payload is not None:
+        return {"status": "ok", "message": "", "data": cached_payload}
+    try:
+        data = _request_spoonacular(
+            f"recipes/{spoonacular_id}/information",
+            {"includeNutrition": "true"},
+            api_key,
+        )
+        if not isinstance(data, dict) or int(data.get("id", 0)) != spoonacular_id:
+            raise SpoonacularError(
+                "invalid_response",
+                "Detail resep Spoonacular tidak sesuai format.",
+            )
+        recipe = _recipe_from_spoonacular_data(data)
+        detail = get_recipe_detail(recipe, spoonacular_data=data)
+        detail["translation_status"] = "unavailable"
+        cache.set(cache_key, detail, 60 * 60 * 6)
+        return {"status": "ok", "message": "", "data": detail}
+    except (SpoonacularError, TypeError, ValueError) as error:
+        service_error = _service_error(error)
+        return {"status": service_error["status"], "message": service_error["message"], "data": None}
+
+
+def import_high_protein_spoonacular_recipes(query, limit=10):
+    """Impor resep baru dengan protein API >=30 g/porsi; resep yang ada tetap utuh."""
+    query = " ".join(str(query or "").split())
+    normalized_query = normalize_indonesian_recipe_query(query)
+    try:
+        limit = int(limit)
+    except (TypeError, ValueError):
+        return {
+            "status": "invalid_limit",
+            "message": "Batas impor harus berupa angka 1 sampai 50.",
+            "created": 0,
+            "duplicates": 0,
+            "skipped": 0,
+        }
+    if not query or len(query) < 2 or len(query) > 100 or not 1 <= limit <= 50:
+        return {
+            "status": "invalid_request",
+            "message": "Gunakan kata kunci 2–100 karakter dan batas impor 1–50.",
+            "created": 0,
+            "duplicates": 0,
+            "skipped": 0,
+        }
+
+    api_key = os.environ.get("SPOONACULAR_API_KEY", "").strip()
+    if not api_key:
+        return {
+            "status": "not_configured",
+            "message": "Kunci API Spoonacular belum dikonfigurasi.",
+            "created": 0,
+            "duplicates": 0,
+            "skipped": 0,
+        }
+    parameters = {
+        "number": limit,
+        "offset": 0,
+        "minProtein": 30,
+        "sort": "protein",
+        "sortDirection": "desc",
+        "instructionsRequired": "true",
+        "addRecipeInformation": "true",
+        "addRecipeInstructions": "true",
+        "addRecipeNutrition": "true",
+    }
+    try:
+        payload = _complex_search_payload(api_key, normalized_query, parameters)
+        raw_results = payload.get("results", [])
+        if not isinstance(raw_results, list):
+            raise SpoonacularError(
+                "invalid_response",
+                "Hasil impor Spoonacular tidak sesuai format.",
+            )
+    except (SpoonacularError, TypeError, ValueError) as error:
+        service_error = _service_error(error)
+        return {
+            "status": service_error["status"],
+            "message": service_error["message"],
+            "created": 0,
+            "duplicates": 0,
+            "skipped": 0,
+        }
+
+    created = duplicates = skipped = 0
+    for data in raw_results:
+        if not isinstance(data, dict):
+            skipped += 1
+            continue
+        try:
+            spoonacular_id = int(data.get("id"))
+        except (TypeError, ValueError):
+            skipped += 1
+            continue
+        try:
+            recipe = _recipe_from_spoonacular_data(data)
+        except (TypeError, ValueError):
+            skipped += 1
+            continue
+        if recipe.protein is None or recipe.protein < Decimal("30") or not recipe.title:
+            skipped += 1
+            continue
+        defaults = {
+            "title": recipe.title,
+            "description": recipe.description,
+            "preparation_time": recipe.preparation_time,
+            "cooking_time": recipe.cooking_time,
+            "servings": recipe.servings,
+            "image_url": recipe.image_url,
+            "source_type": "spoonacular",
+            "source_name": "Spoonacular (teks sumber; belum diterjemahkan)",
+            "is_published": True,
+            "calories": recipe.calories,
+            "protein": recipe.protein,
+            "carbohydrates": recipe.carbohydrates,
+            "fat": recipe.fat,
+            "nutrition_basis": recipe.nutrition_basis,
+            "additional_nutrition": recipe.additional_nutrition,
+            "ingredients": recipe.ingredients,
+            "instructions": recipe.instructions,
+        }
+        try:
+            _saved_recipe, was_created = Recipe.objects.get_or_create(
+                spoonacular_id=spoonacular_id,
+                defaults=defaults,
+            )
+        except (TypeError, ValueError):
+            skipped += 1
+            continue
+        if was_created:
+            created += 1
+        else:
+            duplicates += 1
+    return {
+        "status": "ok",
+        "query": query,
+        "normalized_query": normalized_query,
+        "message": "",
+        "created": created,
+        "duplicates": duplicates,
+        "skipped": skipped,
     }
 
 
@@ -548,32 +870,39 @@ def get_recipe_image_url(recipe, spoonacular_data=None):
     return ""
 
 
-def get_recipe_detail(recipe):
+def get_recipe_detail(recipe, spoonacular_data=None):
     """Susun detail dari DB; minta API hanya untuk metadata yang benar-benar hilang."""
-    local_ingredients = get_recipe_ingredients(recipe)
-    needs_external_metadata = bool(
-        recipe.spoonacular_id
-        and recipe.source_type != "local"
-        and (
-            not recipe.description
-            or recipe.preparation_time is None
-            or recipe.cooking_time is None
-            or not _stored_image_url(recipe) and not recipe.image_url
-            or not local_ingredients
-            or not recipe.instructions
-        )
-    )
-    if needs_external_metadata:
-        spoonacular_result = get_spoonacular_recipe(
-            recipe,
-            include_nutrition=False,
-        )
-    else:
+    if isinstance(spoonacular_data, dict):
         spoonacular_result = {
-            "status": "local" if recipe.source_type == "local" else "stored",
-            "message": "Data resep dari database ditampilkan.",
-            "data": None,
+            "status": "ok",
+            "message": "",
+            "data": spoonacular_data,
         }
+    else:
+        local_ingredients = get_recipe_ingredients(recipe)
+        needs_external_metadata = bool(
+            recipe.spoonacular_id
+            and recipe.source_type != "local"
+            and (
+                not recipe.description
+                or recipe.preparation_time is None
+                or recipe.cooking_time is None
+                or not _stored_image_url(recipe) and not _safe_image_url(recipe.image_url)
+                or not local_ingredients
+                or not recipe.instructions
+            )
+        )
+        if needs_external_metadata:
+            spoonacular_result = get_spoonacular_recipe(
+                recipe,
+                include_nutrition=False,
+            )
+        else:
+            spoonacular_result = {
+                "status": "local" if recipe.source_type == "local" else "stored",
+                "message": "Data resep dari database ditampilkan.",
+                "data": None,
+            }
     api_data = spoonacular_result.get("data")
     if not isinstance(api_data, dict):
         api_data = None
@@ -623,6 +952,11 @@ def get_recipe_detail(recipe):
         "nutrition": get_recipe_nutrition(recipe),
         "ingredients": get_recipe_ingredients(recipe, api_data),
         "instructions": get_recipe_instructions(recipe, api_data),
+        "translation_status": (
+            "unavailable"
+            if recipe.source_type == "spoonacular" or api_data
+            else "not_needed"
+        ),
         "external": {
             "status": spoonacular_result.get("status", "not_configured"),
             "message": spoonacular_result.get("message", ""),
@@ -782,6 +1116,104 @@ def _nutrition_decimal(nutrient, expected_unit):
     if value > Decimal("999999.99"):
         return None
     return value
+
+
+def _positive_integer(value):
+    number = _number(value)
+    if number is None or number < 1 or not float(number).is_integer() or number > 32767:
+        return None
+    return int(number)
+
+
+def _search_protein(recipe_data):
+    nutrition = recipe_data.get("nutrition")
+    nutrients = nutrition.get("nutrients", []) if isinstance(nutrition, dict) else []
+    if not isinstance(nutrients, list):
+        return None
+    for nutrient in nutrients:
+        if isinstance(nutrient, dict) and str(nutrient.get("name", "")).casefold() == "protein":
+            value = _nutrition_decimal(nutrient, "g")
+            return _number(value)
+    return None
+
+
+def _recipe_from_spoonacular_data(data):
+    """Buat model Recipe transient dari response resmi tanpa menebak data."""
+    try:
+        spoonacular_id = int(data.get("id"))
+    except (AttributeError, TypeError, ValueError):
+        spoonacular_id = None
+    if spoonacular_id is None or spoonacular_id < 1:
+        raise ValueError("ID resep Spoonacular tidak valid.")
+
+    nutrition = data.get("nutrition") if isinstance(data, dict) else None
+    nutrients = nutrition.get("nutrients", []) if isinstance(nutrition, dict) else []
+    if not isinstance(nutrients, list):
+        nutrients = []
+    api_nutrients = {
+        str(item.get("name", "")).strip().casefold(): item
+        for item in nutrients
+        if isinstance(item, dict)
+    }
+    fields = {
+        "calories": ("calories", "kcal"),
+        "protein": ("protein", "g"),
+        "fat": ("fat", "g"),
+        "carbohydrates": ("carbohydrates", "g"),
+    }
+    stored_nutrients = {
+        field: _nutrition_decimal(api_nutrients.get(api_name), unit)
+        for field, (api_name, unit) in fields.items()
+    }
+    additional_nutrition = {}
+    for item in nutrients:
+        if not isinstance(item, dict):
+            continue
+        name = str(item.get("name", "")).strip()
+        if not name or name.casefold() in fields:
+            continue
+        value = _number(item.get("amount"))
+        if value is not None:
+            additional_nutrition[name] = {
+                "value": value,
+                "unit": str(item.get("unit") or "").strip(),
+            }
+
+    transient = Recipe(ingredients=[], instructions="")
+    ingredients = get_recipe_ingredients(transient, data)
+    instructions = get_recipe_instructions(transient, data)
+    servings = _positive_integer(data.get("servings"))
+    preparation_time = _positive_integer(data.get("preparationMinutes"))
+    cooking_time = _positive_integer(
+        data.get("cookingMinutes") or data.get("readyInMinutes")
+    )
+    source_name = _plain_text(data.get("sourceName"))
+    if not source_name:
+        source_name = "Spoonacular (teks sumber; belum diterjemahkan)"
+    return Recipe(
+        pk=spoonacular_id,
+        spoonacular_id=spoonacular_id,
+        title=_plain_text(data.get("title")) or "Resep Spoonacular",
+        description=_plain_text(data.get("summary")),
+        preparation_time=preparation_time,
+        cooking_time=cooking_time,
+        servings=servings,
+        image_url=_safe_image_url(data.get("image")),
+        source_type="spoonacular",
+        source_name=source_name,
+        calories=stored_nutrients["calories"],
+        protein=stored_nutrients["protein"],
+        fat=stored_nutrients["fat"],
+        carbohydrates=stored_nutrients["carbohydrates"],
+        nutrition_basis=(
+            "per_serving"
+            if any(value is not None for value in stored_nutrients.values())
+            else "unknown"
+        ),
+        additional_nutrition=additional_nutrition,
+        ingredients=ingredients,
+        instructions="\n".join(instructions),
+    )
 
 
 def calculate_and_store_recipe_nutrition(recipe):

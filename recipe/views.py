@@ -18,6 +18,8 @@ from .services import (
     get_recipe_by_id,
     get_recipe_detail,
     get_recipe_image_url,
+    get_spoonacular_recipe_detail,
+    search_spoonacular_recipes,
 )
 
 from tracker.integrations import (
@@ -296,9 +298,61 @@ def recipe_home(request):
             "recipes": recipes,
             "recipe_login_url": _login_url(request),
             "recipe_submission_url": reverse("recipe:api_submit"),
+            "recipe_search_url": reverse("recipe:api_spoonacular_search"),
             "voting_routes_available": _voting_routes_available(),
         },
     )
+
+
+@require_GET
+def spoonacular_recipe_search_api(request):
+    result = search_spoonacular_recipes(
+        request.GET.get("q", ""),
+        offset=request.GET.get("offset", 0),
+    )
+    if result.get("status") != "ok":
+        status = 400 if result.get("status", "").startswith("invalid_") else 503
+        return JsonResponse(
+            {
+                "error": {
+                    "code": result.get("status", "search_failed"),
+                    "message": result.get("message", "Pencarian resep gagal."),
+                }
+            },
+            status=status,
+        )
+    for item in result["results"]:
+        item["detail_url"] = reverse(
+            "recipe:api_spoonacular_detail",
+            args=(item["id"],),
+        )
+    return JsonResponse(result)
+
+
+@require_GET
+def spoonacular_recipe_detail_api(request, spoonacular_id):
+    result = get_spoonacular_recipe_detail(spoonacular_id)
+    if result.get("status") != "ok" or not result.get("data"):
+        status = 404 if result.get("status") == "not_found" else 503
+        return JsonResponse(
+            {
+                "error": {
+                    "code": result.get("status", "detail_failed"),
+                    "message": result.get("message", "Detail resep gagal dimuat."),
+                }
+            },
+            status=status,
+        )
+    payload = result["data"]
+    payload["interaction"] = {
+        "authenticated": False,
+        "viewed": False,
+        "completed": False,
+        "viewed_at": None,
+        "completed_at": None,
+        "cooking_count": 0,
+    }
+    return JsonResponse(payload)
 
 
 @require_GET

@@ -29,12 +29,44 @@
     {% endif %}
 </section>
 
+<section class="recipe-search-section" aria-label="Cari resep dari Spoonacular">
+    <form
+        id="recipeSearchForm"
+        class="recipe-search-form"
+        data-search-url="{{ recipe_search_url }}"
+        role="search"
+    >
+        <label for="recipeSearchInput">Cari Menu</label>
+        <div class="recipe-search-controls">
+            <input
+                type="search"
+                id="recipeSearchInput"
+                class="recipe-input-field"
+                name="q"
+                minlength="2"
+                maxlength="100"
+                autocomplete="off"
+                placeholder="Contoh: ayam, tofu, atau sup tomat"
+            >
+            <button type="submit" class="recipe-search-submit">Cari</button>
+        </div>
+        <p class="recipe-search-note">
+            Kata masakan Indonesia yang umum dinormalisasi untuk pencarian. Resep Spoonacular dapat tetap tampil dalam bahasa sumber.
+        </p>
+    </form>
+</section>
+
 <section class="recipe-grid-section">
     <div class="recipe-grid-container">
         <h2 class="recipe-grid-main-title">Daftar Resep</h2>
         <p class="recipe-grid-subtitle">
             Pilih resep untuk melihat detail, bahan, langkah memasak, dan nutrisi yang tersedia.
         </p>
+
+        <p id="recipeSearchStatus" class="recipe-search-status" role="status" aria-live="polite" hidden></p>
+        <button type="button" id="recipeSearchLoadMore" class="recipe-search-load-more" hidden>
+            Muat Lebih Banyak
+        </button>
 
         <div class="recipe-grid">
             {% for recipe in recipes %}

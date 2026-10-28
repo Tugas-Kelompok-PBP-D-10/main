@@ -1075,6 +1075,91 @@
     transition: opacity .22s ease, transform .22s ease;
 }
 
+.recipe-search-section {
+    width: min(calc(100% - 32px), 1180px);
+    margin: -14px auto 30px;
+    box-sizing: border-box;
+}
+
+.recipe-search-form {
+    max-width: 1000px;
+    margin: 0 auto;
+    display: grid;
+    gap: 8px;
+    text-align: left;
+}
+
+.recipe-search-form > label {
+    color: #0d5c46;
+    font-size: 16px;
+    font-weight: 800;
+}
+
+.recipe-search-controls {
+    display: flex;
+    width: min(100%, 620px);
+    gap: 10px;
+}
+
+.recipe-search-controls .recipe-input-field {
+    min-width: 0;
+    min-height: 44px;
+    background: #fff;
+}
+
+.recipe-search-submit,
+.recipe-search-load-more {
+    min-height: 44px;
+    padding: 10px 20px;
+    border: 0;
+    border-radius: 9px;
+    background: #0d5c46;
+    color: #fff;
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.recipe-search-submit:hover,
+.recipe-search-load-more:hover:not(:disabled) {
+    background: #094936;
+}
+
+.recipe-search-submit:disabled,
+.recipe-search-load-more:disabled {
+    cursor: wait;
+    opacity: .65;
+}
+
+.recipe-search-note {
+    max-width: 680px;
+    margin: 0;
+    color: #6b7280;
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.recipe-search-status {
+    margin: 0 0 16px;
+    color: #4b5563;
+    font-size: 14px;
+    text-align: left;
+}
+
+.recipe-search-status[data-state="error"] {
+    color: #b42318;
+}
+
+.recipe-search-load-more {
+    display: block;
+    margin: 0 auto 24px;
+    background: #e87a5d;
+}
+
+.recipe-search-load-more:hover:not(:disabled) {
+    background: #d6694c;
+}
+
 @keyframes recipe-toast-enter {
     from { opacity: 0; transform: translateY(8px); }
     to { opacity: 1; transform: translateY(0); }
@@ -1091,6 +1176,25 @@
     .recipe-submission-open {
         width: 100%;
         box-sizing: border-box;
+    }
+
+    .recipe-search-section {
+        margin-top: -8px;
+        margin-bottom: 22px;
+    }
+
+    .recipe-search-controls {
+        width: 100%;
+    }
+
+    .recipe-search-controls .recipe-input-field {
+        padding-right: 10px;
+        padding-left: 10px;
+    }
+
+    .recipe-search-submit {
+        padding-right: 14px;
+        padding-left: 14px;
     }
 
     .recipe-ingredient-row {
