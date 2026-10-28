@@ -3,7 +3,7 @@ import json
 import math
 import os
 import socket
-from decimal import Decimal, InvalidOperation
+from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
 from html.parser import HTMLParser
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlencode, urlsplit
@@ -253,7 +253,7 @@ def _service_error(error):
     }
 
 
-def get_spoonacular_recipe(recipe):
+def get_spoonacular_recipe(recipe, include_nutrition=True):
     """Ambil detail API untuk resep bertipe otomatis atau Spoonacular."""
     if recipe.source_type == "local":
         return {
@@ -284,14 +284,17 @@ def get_spoonacular_recipe(recipe):
                 "data": None,
             }
 
-        details_cache_key = f"{cache_key}:details:{spoonacular_id}"
+        details_cache_key = (
+            f"{cache_key}:details:{spoonacular_id}:"
+            f"nutrition:{int(bool(include_nutrition))}"
+        )
         cached_details = cache.get(details_cache_key)
         if cached_details is not None:
             return {"status": "ok", "message": "", "data": cached_details}
 
         details = _request_spoonacular(
             f"recipes/{int(spoonacular_id)}/information",
-            {"includeNutrition": "true"},
+            {"includeNutrition": "true" if include_nutrition else "false"},
             api_key,
         )
         if not isinstance(details, dict) or not details.get("id"):
@@ -546,8 +549,31 @@ def get_recipe_image_url(recipe, spoonacular_data=None):
 
 
 def get_recipe_detail(recipe):
-    """Susun respons detail untuk satu resep dan gabungkan API bila diizinkan."""
-    spoonacular_result = get_spoonacular_recipe(recipe)
+    """Susun detail dari DB; minta API hanya untuk metadata yang benar-benar hilang."""
+    local_ingredients = get_recipe_ingredients(recipe)
+    needs_external_metadata = bool(
+        recipe.spoonacular_id
+        and recipe.source_type != "local"
+        and (
+            not recipe.description
+            or recipe.preparation_time is None
+            or recipe.cooking_time is None
+            or not _stored_image_url(recipe) and not recipe.image_url
+            or not local_ingredients
+            or not recipe.instructions
+        )
+    )
+    if needs_external_metadata:
+        spoonacular_result = get_spoonacular_recipe(
+            recipe,
+            include_nutrition=False,
+        )
+    else:
+        spoonacular_result = {
+            "status": "local" if recipe.source_type == "local" else "stored",
+            "message": "Data resep dari database ditampilkan.",
+            "data": None,
+        }
     api_data = spoonacular_result.get("data")
     if not isinstance(api_data, dict):
         api_data = None
@@ -593,7 +619,8 @@ def get_recipe_detail(recipe):
             "source_type": recipe.source_type,
             "source_name": source_name,
         },
-        "nutrition": get_recipe_nutrition(recipe, api_data),
+        # Nutrisi modal selalu berasal dari nilai yang sudah tersimpan.
+        "nutrition": get_recipe_nutrition(recipe),
         "ingredients": get_recipe_ingredients(recipe, api_data),
         "instructions": get_recipe_instructions(recipe, api_data),
         "external": {
@@ -613,26 +640,81 @@ def analyze_recipe_with_spoonacular(recipe, include_nutrition=False):
             "data": None,
         }
 
-    ingredients = []
-    for ingredient in get_recipe_ingredients(recipe):
-        if ingredient.get("amount") is not None:
-            amount = ingredient["amount"]
-            unit = ingredient.get("unit", "")
-            name = ingredient.get("name", "")
-            ingredients.append(f"{amount} {unit} {name}".strip())
-        else:
-            ingredients.append(ingredient.get("original") or ingredient.get("name", ""))
-    ingredients = [item for item in ingredients if item]
-    if not ingredients:
+    try:
+        servings = Decimal(str(recipe.servings))
+    except (InvalidOperation, TypeError, ValueError):
+        servings = None
+    if (
+        include_nutrition
+        and (servings is None or not servings.is_finite() or servings < 1)
+    ):
         return {
             "status": "insufficient_data",
-            "message": "Analisis memerlukan daftar bahan resep.",
+            "message": "Analisis nutrisi memerlukan jumlah porsi yang valid.",
             "data": None,
         }
 
+    try:
+        normalized_ingredients = normalize_recipe_ingredients(
+            get_recipe_ingredients(recipe),
+            require_items=True,
+            require_quantities=include_nutrition,
+        )
+    except ValueError:
+        return {
+            "status": "insufficient_data",
+            "message": "Analisis nutrisi memerlukan takaran numerik dan satuan untuk setiap bahan.",
+            "data": None,
+        }
+
+    ingredients = []
+    unit_aliases = {
+        "gram": "g",
+        "grams": "g",
+        "kilogram": "kg",
+        "kilograms": "kg",
+        "milliliter": "ml",
+        "milliliters": "ml",
+        "liter": "l",
+        "liters": "l",
+        "sdm": "tbsp",
+        "sendok makan": "tbsp",
+        "sendok makan penuh": "tbsp",
+        "sdt": "tsp",
+        "sendok teh": "tsp",
+        "butir": "piece",
+        "buah": "piece",
+        "pcs": "piece",
+        "biji": "piece",
+        "siung": "clove",
+        "ikat": "bunch",
+    }
+    for ingredient in normalized_ingredients:
+        amount = ingredient.get("amount")
+        unit = str(ingredient.get("unit") or "").strip()
+        name = ingredient.get("name", "")
+        if include_nutrition and (amount is None or not unit):
+            return {
+                "status": "insufficient_data",
+                "message": "Analisis nutrisi memerlukan takaran numerik dan satuan untuk setiap bahan.",
+                "data": None,
+            }
+        normalized_unit = unit_aliases.get(unit.casefold(), unit)
+        if amount is not None:
+            ingredients.append(f"{amount} {normalized_unit} {name}".strip())
+        else:
+            ingredients.append(ingredient.get("original") or name)
+
+    servings_value = None
+    if servings is not None:
+        servings_value = (
+            int(servings)
+            if servings == servings.to_integral_value()
+            else float(servings)
+        )
     body = {
         "title": recipe.title,
-        "servings": recipe.servings,
+        "servings": servings_value,
         "ingredients": ingredients,
         "instructions": recipe.instructions,
     }
@@ -662,3 +744,100 @@ def analyze_recipe_with_spoonacular(recipe, include_nutrition=False):
         return {"status": "ok", "message": "", "data": data}
     except (SpoonacularError, TypeError, ValueError) as error:
         return _service_error(error)
+
+
+def recipe_has_missing_nutrition(recipe):
+    return any(
+        getattr(recipe, field) is None
+        for field in ("calories", "protein", "fat", "carbohydrates")
+    )
+
+
+def _nutrition_decimal(nutrient, expected_unit):
+    if not isinstance(nutrient, dict):
+        return None
+    try:
+        value = Decimal(str(nutrient.get("amount")))
+    except (InvalidOperation, TypeError, ValueError):
+        return None
+    if not value.is_finite() or value < 0:
+        return None
+
+    unit = str(nutrient.get("unit") or expected_unit).strip().casefold()
+    if expected_unit == "kcal":
+        if unit in {"cal", "calorie", "calories"}:
+            value /= Decimal("1000")
+        elif unit not in {"kcal", "kilocalorie", "kilocalories"}:
+            return None
+    elif unit in {"mg", "milligram", "milligrams"}:
+        value /= Decimal("1000")
+    elif unit not in {"g", "gram", "grams"}:
+        return None
+
+    try:
+        value = value.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+    except InvalidOperation:
+        return None
+    # Recipe fields use max_digits=8 and decimal_places=2.
+    if value > Decimal("999999.99"):
+        return None
+    return value
+
+
+def calculate_and_store_recipe_nutrition(recipe):
+    """Isi nutrisi yang kosong dari analisis Spoonacular per porsi.
+
+    Nilai manual tidak pernah ditimpa. Data dengan basis yang belum jelas atau
+    total resep tidak dicampur dengan hasil API yang dihitung per porsi.
+    """
+    if not recipe_has_missing_nutrition(recipe):
+        return {"status": "complete", "updated": []}
+
+    fields = {
+        "calories": ("Calories", "kcal"),
+        "protein": ("Protein", "g"),
+        "fat": ("Fat", "g"),
+        "carbohydrates": ("Carbohydrates", "g"),
+    }
+    existing_values = [getattr(recipe, field) for field in fields]
+    has_existing_values = any(value is not None for value in existing_values)
+    if has_existing_values and recipe.nutrition_basis != "per_serving":
+        return {"status": "manual_values_preserved", "updated": []}
+
+    try:
+        result = analyze_recipe_with_spoonacular(recipe, include_nutrition=True)
+    except Exception:
+        # External service failures must not undo a saved recipe.
+        return {"status": "upstream_error", "updated": []}
+    if result.get("status") != "ok" or not isinstance(result.get("data"), dict):
+        return {"status": result.get("status", "invalid_response"), "updated": []}
+
+    nutrition = result["data"].get("nutrition")
+    nutrients = nutrition.get("nutrients", []) if isinstance(nutrition, dict) else []
+    if not isinstance(nutrients, list):
+        return {"status": "invalid_response", "updated": []}
+    api_nutrients = {
+        str(item.get("name", "")).strip().casefold(): item
+        for item in nutrients
+        if isinstance(item, dict)
+    }
+
+    updates = {}
+    updated_fields = []
+    for field, (api_name, unit) in fields.items():
+        if getattr(recipe, field) is not None:
+            continue
+        nutrient = api_nutrients.get(api_name.casefold())
+        value = _nutrition_decimal(nutrient, unit)
+        if value is not None:
+            updates[field] = value
+            updated_fields.append(field)
+
+    if not updates:
+        return {"status": "nutrition_unavailable", "updated": []}
+
+    updates["nutrition_basis"] = "per_serving"
+    for field, value in updates.items():
+        setattr(recipe, field, value)
+    recipe.save(update_fields=(*updated_fields, "nutrition_basis"))
+    return {"status": "ok", "updated": updated_fields}

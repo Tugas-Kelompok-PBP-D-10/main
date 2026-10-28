@@ -23,6 +23,22 @@ class RecipeAdminForm(RecipeIngredientsValidationMixin, forms.ModelForm):
         model = Recipe
         fields = "__all__"
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if not self.is_bound and not self.instance.pk:
+            # Resep yang dibuat langsung di admin merupakan data lokal.
+            self.initial["source_type"] = "local"
+        if "calories" in self.fields:
+            self.fields["calories"].help_text = "Masukkan kilokalori (kcal)."
+        for field in ("protein", "fat", "carbohydrates"):
+            if field in self.fields:
+                self.fields[field].help_text = "Masukkan gram (g)."
+        if "nutrition_basis" in self.fields:
+            self.fields["nutrition_basis"].help_text = (
+                "Pilih apakah nilai berlaku per porsi, untuk seluruh resep, "
+                "atau biarkan belum diketahui."
+            )
+
 
 class RecipeSubmissionForm(RecipeIngredientsValidationMixin, forms.ModelForm):
     ingredients = forms.JSONField(widget=forms.HiddenInput())
