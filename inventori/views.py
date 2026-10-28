@@ -37,9 +37,9 @@ def update_inventori(request):
             formset.save()
             return redirect("inventori")
         else:
-            messages.error(request, "Gagal menyimpan perubahan. Pastikan stok tidak kurang dari 1.")
-    
-    formset = BahanFormSet(queryset=bahan2)
+            messages.error(request, "Gagal menyimpan: Pastikan stok tidak 0")
+    else:
+        formset = BahanFormSet(queryset=bahan2)
     context = {
         "formset": formset,
     }

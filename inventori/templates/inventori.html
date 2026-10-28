@@ -35,7 +35,7 @@
                 popovertarget="tambah-bahan-modal">
             <span aria-hidden="true">+</span>    
         </button>
-        <a href="{% url 'update_inventori' %}" class="href-button">Update Inventori</a>
+        <a href="{% url 'update_inventori' %}" class="href-button">Edit Inventori</a>
     </div>
 </div>
 
@@ -123,9 +123,9 @@
                 bahanForm.reset();
                 closeBahanModal();
                 fetchBahan();
-                showMessage('message-success', 'message-error', 'Berhasil menambahkan bahan!');
+                showMessage('message-success', 'message-error');
             } else {
-                showMessage('message-error', 'message-success', 'Gagal menambahkan bahan. Pastikan stok tidak kurang dari 1.');
+                showMessage('message-error', 'message-success');
             }
         } catch (error) {
             console.error('Error menambahkan bahan:', error);
@@ -134,14 +134,14 @@
         }
     }
 
-    function showMessage(toShow, toHide, message) {
+    function showMessage(toShow, toHide) {
         document.getElementById('messages').style.display = 'flex';
         document.getElementById(toHide).hidden = true;
-        document.getElementById(toShow).innerHTML = message;
+        document.getElementById(toShow).innerHTML = 'Gagal menambahkan bahan. Pastikan stok tidak 0.';
         setTimeout(() => {
             document.getElementById('messages').style.display = 'none';
             document.getElementById(toHide).hidden = false;
-        }, 3000);
+        }, 5000);
     }
 
 

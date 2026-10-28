@@ -158,7 +158,6 @@ h2 {
     inset: 0;
     margin: 1rem auto;
     z-index: 999;
-    pointer-events: none;
 }
 
 #message-success {
