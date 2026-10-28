@@ -76,3 +76,22 @@ Pembagian Peran Utama Masing - Masing Anggota :
  3. NAUFAL KHAIRIY ZULKARNAIN SORMIN : Frontend & UIUX
  4. VELICIA WILLY : Backend & API
  5. NARENDRA RAMA PRAWIRA : Backend & API
+
+
+ CP 2 
+
+# Link Figma & Deploy PWS
+ link figma : https://www.figma.com/design/EKcWsMfWjaPVRe7VPFysq5/PBP-D-KEL-10--OlahRasa-?node-id=0-1&t=ulklVKoTZ9z7jOvy-1
+ link deploy pws : https://hafiza-nurul-olahrasa.pws.cs.ui.ac.id/
+
+Pada Checkpoint 2, tim mulai mengimplementasikan template dasar dan design system yang telah disepakati bersama. Design system digunakan sebagai acuan dalam membangun tampilan antarmuka agar halaman-halaman dalam website OlahRasa memiliki visual yang konsisten.
+Selain itu, website kelompok berhasil melakukan deployment pertama ke PWS. Pada tahap ini, deployment belum mencakup seluruh modul yang ada dalam project karena beberapa fitur masih dalam tahap pengembangan.
+
+## Design System
+Design system OlahRasa mencakup beberapa komponen utama yang digunakan secara bersama dalam website, yaitu:
+- **Color Palette** — palet warna utama yang digunakan untuk memberikan identitas visual OlahRasa.
+- **Typography** — penggunaan font dan pengaturan teks yang konsisten.
+- **Navbar** — navigasi utama yang digunakan untuk mengakses berbagai modul dalam website.
+- **Layout** — struktur dan spacing halaman yang digunakan sebagai dasar tampilan setiap modul.
+- **Button & UI Components** — komponen antarmuka yang digunakan secara konsisten pada berbagai halaman.
+

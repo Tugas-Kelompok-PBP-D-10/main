@@ -43,24 +43,24 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
-    # Google OAuth
+   # Modul kelompok
+    'tracker.apps.TrackerConfig',
+    'authentication',
+    'inventori',
+    'recipe',
+    'voting',
+  
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
     'allauth.socialaccount.providers.google',
 
-    # Modul kelompok
-    'tracker.apps.TrackerConfig',
-    'authentication',
-    'inventori',
-    'recipe',
 ]
 
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
-    'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
