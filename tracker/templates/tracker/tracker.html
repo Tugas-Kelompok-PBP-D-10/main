@@ -19,8 +19,6 @@
     data-history-url="{% url 'tracker:history_api' %}"
     data-nutrition-target-url="{% url 'tracker:nutrition_target_api' %}"
 >
-
-    
     <section class="tracker-hero">
         <div class="tracker-avatar">
             {% if user.profile.photo %}
@@ -118,10 +116,14 @@
                         <p>Loading nutrition data...</p>
                     </div>
                 </div>
-
             </div>
+            <section class="tracker-history-section">
+            <h2>Cooking History</h2>
 
-           
+              <div id="history-container">
+                  <p>Loading cooking history...</p>
+              </div>
+          </section>
         </section>
 
         
@@ -271,6 +273,15 @@
             >
                 Save Target
             </button>
+          <button
+          type="button"
+          id="delete-target-btn"
+          class="tracker-target-delete"
+          data-url="{% url 'tracker:nutrition_target_api' %}"
+      >
+          <i data-lucide="trash-2" aria-hidden="true"></i>
+          Delete Target
+      </button>
         </div>
     </form>
 </dialog>

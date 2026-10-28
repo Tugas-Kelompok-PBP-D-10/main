@@ -12,5 +12,4 @@ urlpatterns = [
     path("api/nutrition-target/",views.nutrition_target_api,name="nutrition_target_api",),
 
 
-
 ]

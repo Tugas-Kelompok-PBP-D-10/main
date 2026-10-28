@@ -40,6 +40,9 @@ class CookingStreak(models.Model):
 
     @property
     def active_streak(self):
+
+      # menghitung apakah tepat 1 hari sebelumnya user memiliki aktivitas memasak, apabila iya maka streak akan bertambah 1 dr yg sebelumnya
+      # namun jika tepat 1 hari sebelumnya ia tidak memasak maka streak akan dimulai lg dr awal 
       
         if not self.last_cooked_on:
             return 0
