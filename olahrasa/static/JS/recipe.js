@@ -177,15 +177,27 @@
         function renderInteraction(recipeId, interaction) {
             const state = interaction || {};
             const isAuthenticated = Boolean(state.authenticated);
+
             completionPanel.hidden = !isAuthenticated;
             loginPrompt.hidden = isAuthenticated;
+
             updateCardIndicators(recipeId, state);
+
+            // Setiap aktivitas memasak harus dikonfirmasi ulang.
+            completionConfirm.checked = false;
+            completionConfirm.disabled = !isAuthenticated;
+
+            // Tombol aktif hanya setelah checkbox dicentang.
+            completionButton.disabled = true;
+
+            completionButton.textContent = "Tandai sudah dimasak";
+
             if (state.completed) {
-                completionConfirm.checked = true;
-                completionConfirm.disabled = true;
-                completionButton.disabled = true;
-                completionButton.textContent = "Resep sudah dimasak";
-                completionStatus.textContent = "Resep ini sudah tercatat sebagai selesai.";
+                completionStatus.textContent =
+                    "Resep ini pernah dimasak. Kamu bisa memasaknya lagi.";
+            } else {
+                completionStatus.textContent =
+                    "Centang konfirmasi setelah selesai memasak resep.";
             }
         }
 
@@ -563,11 +575,30 @@
             renderNutrition(currentNutrition);
         });
 
+
+        let pendingCookingRequest = null;
+
         completionButton.addEventListener("click", async function () {
             if (!activeCard || !completionConfirm.checked || completionButton.disabled) {
                 return;
             }
+            
             const card = activeCard;
+            const recipeId = card.dataset.recipeId;
+
+            if (
+                !pendingCookingRequest ||
+                pendingCookingRequest.recipeId !== recipeId
+            ) {
+                pendingCookingRequest = {
+                    recipeId: recipeId,
+                    requestId: crypto.randomUUID()
+                };
+            }
+
+            const requestId = pendingCookingRequest.requestId;
+
+            completionButton.disabled = true;
             completionButton.disabled = true;
             completionStatus.textContent = "Menyimpan status resep…";
             try {
@@ -577,8 +608,13 @@
                         "Content-Type": "application/json",
                         "X-CSRFToken": getCookie("csrftoken"),
                     },
-                    body: JSON.stringify({ confirmed: true }),
+                    body: JSON.stringify({
+                        confirmed: true,
+                        request_id: requestId
+                    }),
                 });
+
+                pendingCookingRequest = null;
                 updateCardIndicators(card.dataset.recipeId, interaction);
                 if (activeCard === card) {
                     renderInteraction(card.dataset.recipeId, interaction);

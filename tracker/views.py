@@ -81,8 +81,17 @@ def _nutrients(user, monday):
 
 
 @login_required
-@require_http_methods(["GET", "POST"])
+@require_http_methods(["GET", "POST", "DELETE"])
 def nutrition_target_api(request):
+
+    if request.method == "DELETE":
+        deleted_count, _ = NutritionTarget.objects.filter(user=request.user).delete()
+
+        return JsonResponse({
+            "success": True,
+            "message": "Nutrition Target berhasil dihapus.",
+            "deleted": deleted_count > 0
+        })
 
     if request.method == "GET":
         target = NutritionTarget.objects.filter(
@@ -99,7 +108,7 @@ def nutrition_target_api(request):
             } if target else None,
         })
 
-    try:
+    try:    
         data = json.loads(request.body)
     except (json.JSONDecodeError, UnicodeDecodeError):
         return JsonResponse({
@@ -193,7 +202,6 @@ def _badges(user, streak):
     )
 
     return items
-
 
 
 @login_required
@@ -323,5 +331,3 @@ def cooking_history_api(request):
         "success": True,
         "history": history
     })
-
-
