@@ -55,7 +55,7 @@
     document.getElementById('messages').style.display = 'none';
 
     // Membuat elemen <tr> untuk suatu objek Bahan
-    function buildBahanCard(bahan) {
+    function buildBahanRow(bahan) {
         const elem = document.createElement('tr');
         elem.className = "bahan-card";
         elem.innerHTML = '';
@@ -94,7 +94,7 @@
             `;
             // Buat dan append table row untuk setiap objek Bahan
             bahanData.forEach(bahan => {
-                bahanGrid.appendChild(buildBahanCard(bahan));
+                bahanGrid.appendChild(buildBahanRow(bahan));
             });
         }
     }
