@@ -1,4 +1,5 @@
-@import url('https://fonts.googleapis.com/css2?family=Sen:wght@400;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Sen:wght@400;500;600;700;800&display=swap');
+
 
 :root {
     --green-dark: #03695E;
@@ -12,6 +13,36 @@
     --muted: #7A746F;
     --line: #ECE7E2;
     --bg-soft: #F7F6F3;
+
+    /* Tint turunan dari palette */
+    --green-tint: rgba(128, 176, 136, 0.18);
+    --green-tint-strong: rgba(128, 176, 136, 0.32);
+    --orange-tint: rgba(238, 130, 82, 0.14);
+    --yellow-tint: rgba(232, 204, 99, 0.28);
+
+    /* Radius */
+    --radius-lg: 20px;
+    --radius-md: 14px;
+    --radius-sm: 10px;
+    --radius-pill: 999px;
+
+    /* Spacing */
+    --space-1: 6px;
+    --space-2: 10px;
+    --space-3: 14px;
+    --space-4: 20px;
+    --space-5: 28px;
+
+    /* Type scale */
+    --fs-xs: 11px;
+    --fs-sm: 13px;
+    --fs-md: 15px;
+    --fs-lg: 20px;
+    --fs-xl: 28px;
+    --fs-xxl: 40px;
+
+    --shadow-card: 0 6px 20px rgba(3, 105, 94, 0.05);
+    --shadow-hover: 0 8px 22px rgba(3, 105, 94, 0.1);
 }
 
 * {
@@ -19,32 +50,44 @@
 }
 
 body {
+    margin: 0;
     font-family: 'Sen', sans-serif;
     background: var(--white);
     color: var(--ink);
+    -webkit-font-smoothing: antialiased;
 }
 
-.tracker-page {
-    max-width: 1180px;
-    margin: 0 auto;
-    padding: 36px 24px 48px;
+button,
+input {
     font-family: 'Sen', sans-serif;
 }
 
-/* HERO */
+/* =========================================
+   PAGE & HERO
+========================================= */
+
+.tracker-page {
+    width: 100%;
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 40px 28px 56px;
+    font-family: 'Sen', sans-serif;
+}
+
 .tracker-hero {
     display: flex;
     align-items: center;
-    gap: 20px;
-    margin-bottom: 28px;
+    gap: var(--space-4);
+    margin-bottom: var(--space-5);
 }
 
 .tracker-avatar {
-    width: 82px;
-    height: 82px;
-    border-radius: 999px;
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
     overflow: hidden;
-    background: #ddd;
+    background: var(--bg-soft);
+    border: 2px solid var(--green-tint-strong);
     flex-shrink: 0;
 }
 
@@ -55,32 +98,48 @@ body {
 }
 
 .tracker-avatar-placeholder {
-    display: block;
+    display: grid;
+    place-items: center;
     width: 100%;
     height: 100%;
-    background: #D9D9D9;
+    background: var(--yellow-main);
+    color: var(--green-dark);
+    font-size: 32px;
+    font-weight: 800;
+    line-height: 1;
+    text-transform: uppercase;
+    user-select: none;
+}
+
+.tracker-hero-text {
+    min-width: 0;
 }
 
 .tracker-hero-text h1 {
     margin: 0;
-    color: var(--orange-main);
-    font-size: 48px;
+    color: var(--green-dark);
+    font-size: var(--fs-xxl);
     font-weight: 800;
-    line-height: 1.05;
+    letter-spacing: -0.03em;
+    line-height: 1.1;
 }
 
 .tracker-hero-text p {
-    margin: 6px 0 0;
-    color: var(--orange-main);
-    font-size: 16px;
-    font-weight: 700;
+    margin: var(--space-1) 0 0;
+    color: var(--muted);
+    font-size: var(--fs-md);
+    font-weight: 600;
+    line-height: 1.5;
 }
 
-/* LAYOUT */
+/* =========================================
+   LAYOUT
+========================================= */
+
 .tracker-layout {
     display: grid;
-    grid-template-columns: 2fr 1fr;
-    gap: 24px;
+    grid-template-columns: minmax(0, 1.75fr) minmax(300px, 1fr);
+    gap: var(--space-5);
     align-items: start;
 }
 
@@ -88,104 +147,149 @@ body {
 .tracker-right {
     display: flex;
     flex-direction: column;
-    gap: 22px;
+    gap: var(--space-4);
+    min-width: 0;
 }
 
 .tracker-card,
 .tracker-side-card {
     background: var(--white);
     border: 1px solid var(--line);
-    border-radius: 24px;
-    box-shadow: 0 10px 28px rgba(3, 105, 94, 0.06);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-card);
 }
 
-/* IMPACT CARD */
+/* =========================================
+   SECTION TITLE (SEMUA HEADLINE HIJAU)
+========================================= */
+
+.tracker-section-title {
+    margin: 0;
+    color: var(--green-dark);
+    font-size: var(--fs-lg);
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    line-height: 1.3;
+}
+
+/* =========================================
+   IMPACT CARD
+========================================= */
+
 .tracker-impact-card {
-    padding: 22px 24px;
+    padding: 28px;
 }
 
 .tracker-impact-content {
     display: grid;
-    grid-template-columns: 1.3fr 0.85fr;
-    gap: 18px;
-    align-items: stretch;
+    grid-template-columns: minmax(0, 1.2fr) minmax(220px, 0.9fr);
+    gap: var(--space-5);
+    align-items: center;
+}
+
+.tracker-impact-info {
+    min-width: 0;
 }
 
 .tracker-impact-info h2 {
-    margin: 0 0 14px;
-    color: var(--orange-main);
-    font-size: 52px;
-    line-height: 0.95;
+    margin: 0 0 var(--space-3);
+    color: var(--green-dark);
+    font-size: clamp(30px, 3.4vw, 42px);
     font-weight: 800;
     letter-spacing: -0.03em;
+    line-height: 1.05;
 }
 
 .tracker-streak-line {
-    margin: 0 0 10px;
+    margin: 0 0 var(--space-2);
     color: var(--green-dark);
-    font-size: 21px;
+    font-size: var(--fs-md);
     font-weight: 800;
+    line-height: 1.4;
 }
 
 .tracker-streak-line span {
+    color: var(--orange-main);
     font-weight: 800;
 }
 
 .tracker-streak-note {
-    margin: 0 0 18px;
-    color: var(--green-dark);
-    font-size: 15px;
-    line-height: 1.45;
-    font-weight: 700;
-    max-width: 430px;
+    margin: 0 0 var(--space-4);
+    max-width: 420px;
+    color: var(--muted);
+    font-size: var(--fs-sm);
+    font-weight: 600;
+    line-height: 1.6;
 }
 
 .tracker-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 40px;
+    padding: 10px 20px;
     border: none;
-    border-radius: 999px;
+    border-radius: var(--radius-pill);
     background: var(--orange-main);
     color: var(--white);
-    font-family: 'Sen', sans-serif;
+    font-size: var(--fs-sm);
     font-weight: 800;
-    font-size: 14px;
-    padding: 10px 18px;
     cursor: pointer;
-    box-shadow: 0 8px 16px rgba(238, 130, 82, 0.2);
+    box-shadow: 0 6px 14px rgba(238, 130, 82, 0.22);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
+.tracker-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 18px rgba(238, 130, 82, 0.3);
+}
+
+.tracker-btn:active {
+    transform: translateY(0);
+}
+
+.tracker-btn:focus-visible {
+    outline: 3px solid var(--orange-soft);
+    outline-offset: 3px;
+}
+
+/* WEEKLY CHART */
+
 .tracker-week-box {
-    background: #FCFCFA;
-    border: 1px solid var(--line);
-    border-radius: 20px;
-    padding: 16px;
     display: flex;
     align-items: center;
     justify-content: center;
+    min-height: 190px;
+    padding: var(--space-4) var(--space-3);
+    background: var(--bg-soft);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-md);
 }
 
 .tracker-week-chart {
-    width: 100%;
-    min-height: 178px;
     display: flex;
     align-items: flex-end;
     justify-content: space-between;
-    gap: 10px;
+    gap: var(--space-2);
+    width: 100%;
 }
 
 .tracker-week-col {
     display: flex;
+    flex: 1;
     flex-direction: column;
     align-items: center;
-    gap: 10px;
-    flex: 1;
+    gap: var(--space-2);
+    min-width: 0;
 }
 
 .tracker-week-track {
-    width: 18px;
-    height: 120px;
-    border-radius: 999px;
-    background: #EFEDE8;
     position: relative;
+    width: 14px;
+    height: 120px;
+    border-radius: var(--radius-pill);
+    background: var(--line);
     overflow: hidden;
 }
 
@@ -195,114 +299,142 @@ body {
     bottom: 0;
     width: 100%;
     height: var(--h);
-    border-radius: 999px;
+    border-radius: var(--radius-pill);
     background: var(--green-soft);
+    transition: height 0.4s ease;
 }
 
 .tracker-week-bar.is-empty {
-    background: #DCD8D1;
+    background: var(--line);
 }
 
 .tracker-week-label {
-    font-size: 12px;
     color: var(--muted);
+    font-size: var(--fs-xs);
     font-weight: 700;
-    transform: rotate(-32deg);
+    line-height: 1;
 }
 
-/* SECTION TITLE */
-.tracker-section-title {
-    margin: 2px 0 2px;
+/* =========================================
+   NUTRITION PROGRESS
+========================================= */
+
+.tracker-nutrition-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    margin-bottom: var(--space-4);
+}
+
+/* Judul section lain di kolom kiri (mis. Cooking History) ikut hijau */
+.tracker-history-section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    margin-top: var(--space-3);
+}
+
+.tracker-history-section h2,
+.tracker-left > h2,
+.tracker-left > h3,
+.tracker-left > .tracker-history-title {
+    margin: 0;
     color: var(--green-dark);
-    font-size: 20px;
+    font-size: var(--fs-lg);
     font-weight: 800;
+    letter-spacing: -0.01em;
+    line-height: 1.3;
 }
 
-/* NUTRITION */
 .tracker-progress-grid {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 18px;
+    gap: var(--space-3);
 }
 
-.tracker-mini-card {
-    padding: 18px;
-    min-height: 180px;
-}
-
+.tracker-mini-card,
 .tracker-progress-card {
     display: flex;
     flex-direction: column;
-    gap: 14px;
-    padding: 18px;
-    min-height: 190px;
+    gap: var(--space-3);
+    min-width: 0;
+    min-height: 210px;
+    padding: var(--space-4);
 }
 
 .tracker-progress-top {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    gap: 10px;
+    gap: var(--space-2);
 }
 
 .tracker-progress-icon {
-    width: 42px;
-    height: 42px;
-    border-radius: 12px;
-    display: grid;
-    place-items: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    flex-shrink: 0;
+    border-radius: var(--radius-sm);
+    background: var(--green-tint);
+    color: var(--green-dark);
     font-size: 18px;
     font-weight: 800;
+}
+
+.tracker-progress-icon svg {
+    width: 20px;
+    height: 20px;
+    stroke-width: 2px;
+}
+
+.tracker-progress-icon.icon-protein {
+    background: var(--green-tint);
     color: var(--green-dark);
 }
 
-.icon-protein {
-    background: rgba(128, 176, 136, 0.26);
+.tracker-progress-icon.icon-carbs {
+    background: var(--orange-tint);
+    color: var(--orange-main);
 }
 
-.icon-carbs {
-    background: rgba(238, 130, 82, 0.18);
-}
-
-.icon-fat {
-    background: rgba(232, 204, 99, 0.3);
+.tracker-progress-icon.icon-fat {
+    background: var(--yellow-tint);
+    color: var(--green-dark);
 }
 
 .tracker-progress-name {
     margin: 0;
-    font-size: 16px;
+    color: var(--green-dark);
+    font-size: var(--fs-md);
     font-weight: 800;
-    color: var(--ink);
 }
 
 .tracker-progress-ring-wrap {
     display: flex;
-    justify-content: center;
     align-items: center;
-    margin-top: 6px;
-    margin-bottom: 6px;
+    justify-content: center;
+    padding: var(--space-1) 0;
 }
 
 .tracker-progress-ring {
     --percent: 0;
     --ring-color: var(--orange-main);
-    width: 92px;
-    height: 92px;
-    border-radius: 50%;
-    background: conic-gradient(
-        var(--ring-color) calc(var(--percent) * 1%),
-        #ECE7E2 0
-    );
+    position: relative;
     display: grid;
     place-items: center;
-    position: relative;
+    width: 88px;
+    height: 88px;
+    border-radius: 50%;
+    background: conic-gradient(var(--ring-color) calc(var(--percent) * 1%), var(--line) 0);
 }
 
 .tracker-progress-ring::before {
     content: "";
     position: absolute;
-    width: 68px;
-    height: 68px;
+    width: 66px;
+    height: 66px;
     border-radius: 50%;
     background: var(--white);
 }
@@ -310,822 +442,127 @@ body {
 .tracker-progress-ring span {
     position: relative;
     z-index: 1;
-    font-size: 16px;
-    font-weight: 800;
     color: var(--ink);
+    font-size: var(--fs-md);
+    font-weight: 800;
 }
 
 .tracker-progress-meta {
     margin-top: auto;
+    text-align: center;
 }
 
 .tracker-progress-value {
-    margin: 0 0 6px;
-    font-size: 18px;
-    font-weight: 800;
+    margin: 0 0 4px;
     color: var(--green-dark);
+    font-size: var(--fs-md);
+    font-weight: 800;
 }
 
 .tracker-progress-target {
     margin: 0;
-    font-size: 14px;
     color: var(--muted);
+    font-size: var(--fs-xs);
     font-weight: 700;
 }
-
-/* SIDE CARD */
-.tracker-side-card {
-    padding: 20px;
-}
-
-.tracker-side-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    margin-bottom: 14px;
-}
-
-.tracker-side-header h3 {
-    margin: 0;
-    color: var(--orange-main);
-    font-size: 22px;
-    font-weight: 800;
-}
-
-.tracker-side-header span {
-    font-size: 13px;
-    font-weight: 700;
-    color: var(--muted);
-}
-
-.tracker-badge-list {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-
-.tracker-badge-item {
-    display: flex;
-    align-items: flex-start;
-    gap: 12px;
-    border: 1px solid var(--line);
-    border-radius: 16px;
-    padding: 14px;
-    background: #FCFCFA;
-}
-
-.tracker-badge-icon {
-    width: 44px;
-    height: 44px;
-    border-radius: 12px;
-    display: grid;
-    place-items: center;
-    background: rgba(238, 130, 82, 0.12);
-    font-size: 20px;
-    flex-shrink: 0;
-}
-
-.tracker-badge-content h4 {
-    margin: 0 0 4px;
-    font-size: 15px;
-    font-weight: 800;
-    color: var(--ink);
-}
-
-.tracker-badge-content p {
-    margin: 0 0 8px;
-    font-size: 13px;
-    color: var(--muted);
-    line-height: 1.4;
-}
-
-.tracker-badge-status {
-    display: inline-block;
-    font-size: 12px;
-    font-weight: 800;
-    border-radius: 999px;
-    padding: 6px 10px;
-}
-
-.tracker-badge-status.unlocked {
-    background: rgba(128, 176, 136, 0.22);
-    color: var(--green-dark);
-}
-
-.tracker-badge-status.locked {
-    background: rgba(238, 130, 82, 0.16);
-    color: var(--orange-main);
-}
-
-.tracker-placeholder-text {
-    margin: 0;
-    font-size: 14px;
-    color: var(--muted);
-    line-height: 1.5;
-    font-weight: 700;
-}
-
-
-/* =====================================
-   SHARE YOUR PROGRESS — COMPACT MODAL
-===================================== */
-
-.tracker-share-dialog {
-    width: min(410px, calc(100vw - 32px));
-    max-width: 410px;
-    max-height: 88vh;
-
-    margin: auto;
-    padding: 20px;
-
-    border: none;
-    border-radius: 20px;
-
-    background: #FFFEFE;
-    color: #03695E;
-
-    box-shadow: 0 20px 60px rgba(3, 105, 94, 0.18);
-    overflow-y: auto;
-}
-
-.tracker-share-dialog::backdrop {
-    background: rgba(20, 35, 30, 0.55);
-}
-
-.tracker-share-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    margin-bottom: 16px;
-}
-
-.tracker-share-header h2 {
-    margin: 0;
-    font-family: "Sen", sans-serif;
-    font-size: 18px;
-    font-weight: 800;
-    color: #03695E;
-}
-
-.tracker-share-close {
-    width: 34px;
-    height: 34px;
-    display: grid;
-    place-items: center;
-
-    border: none;
-    border-radius: 9px;
-    background: #F3F5F2;
-    color: #03695E;
-    cursor: pointer;
-}
-
-#tracker-share-canvas {
-    display: block;
-    width: 100%;
-    max-width: 350px;
-    height: auto;
-    margin: 0 auto;
-
-    border: 1px solid #ECE7E2;
-    border-radius: 14px;
-}
-
-.tracker-share-actions {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 9px;
-    margin-top: 16px;
-}
-
-.tracker-share-actions button {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 7px;
-
-    min-height: 42px;
-    padding: 9px;
-
-    border: 1px solid #DDEBE0;
-    border-radius: 10px;
-
-    background: #F7FAF7;
-    color: #03695E;
-
-    font-family: "Sen", sans-serif;
-    font-size: 11px;
-    font-weight: 800;
-    cursor: pointer;
-}
-
-.tracker-share-actions button:hover {
-    background: #DDEBE0;
-}
-
-.tracker-share-actions svg {
-    width: 16px;
-    height: 16px;
-}
-
-#tracker-share-message {
-    margin: 12px 0 0;
-    font-family: "Sen", sans-serif;
-    font-size: 12px;
-    color: #03695E;
-}
-
-@media (max-width: 420px) {
-    .tracker-share-dialog {
-        width: calc(100vw - 24px);
-        padding: 14px;
-    }
-
-    .tracker-share-header h2 {
-        font-size: 16px;
-    }
-}
-
-
-/* RESPONSIVE */
-@media (max-width: 1100px) {
-    .tracker-layout {
-        grid-template-columns: 1fr;
-    }
-
-    .tracker-impact-content {
-        grid-template-columns: 1fr;
-    }
-}
-
-@media (max-width: 768px) {
-    .tracker-page {
-        padding: 24px 16px 36px;
-    }
-
-    .tracker-hero {
-        align-items: flex-start;
-    }
-
-    .tracker-hero-text h1 {
-        font-size: 36px;
-    }
-
-    .tracker-impact-info h2 {
-        font-size: 38px;
-    }
-
-    .tracker-progress-grid {
-        grid-template-columns: 1fr;
-    }
-}
-
 
 /* =========================================
-   OLAHRASA — FIGMA POLISH V2
-   Font: Sen Bold / ExtraBold
+   SIDE PANEL (BADGES / HISTORY / BOOKMARKS)
 ========================================= */
 
-@import url('https://fonts.googleapis.com/css2?family=Sen:wght@400;500;600;700;800&display=swap');
-
-:root {
-  --figma-green: #03695E;
-  --figma-soft-green: #80B088;
-  --figma-orange: #EE8252;
-  --figma-yellow: #E8CC63;
-  --figma-white: #FFFEFE;
-  --figma-bg: #F8F9F8;
-  --figma-muted: #7D827F;
-}
-
-.tracker-page,
-.tracker-page * {
-  font-family: 'Sen', sans-serif;
-}
-
-.tracker-page {
-  max-width: 1281px;
-  width: 100%;
-  margin: 0 auto;
-  padding: 36px 30px 55px;
-}
-
-/* ===== GREETING ===== */
-
-.tracker-hero {
-  display: flex;
-  align-items: center;
-  gap: 18px;
-  margin-bottom: 35px;
-}
-
-.tracker-avatar {
-  width: 70px;
-  height: 70px;
-  border-radius: 50%;
-  background: #E5E5E5;
-}
-
-.tracker-hero-text h1 {
-  color: var(--figma-orange);
-  font-size: clamp(28px, 3vw, 40px);
-  font-weight: 800;
-  letter-spacing: -1.4px;
-  line-height: 1.1;
-  margin: 0;
-}
-
-.tracker-hero-text p {
-  color: var(--figma-orange);
-  font-size: 13px;
-  font-weight: 700;
-  margin-top: 5px;
-}
-
-/* ===== DESKTOP LAYOUT ===== */
-
-.tracker-layout {
-  display: grid;
-  grid-template-columns: minmax(0, 1.65fr) minmax(280px, 0.85fr);
-  gap: 22px;
-  align-items: start;
-}
-
-.tracker-left,
-.tracker-right {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  min-width: 0;
-}
-
-.tracker-card,
 .tracker-side-card {
-  background: var(--figma-white);
-  border: 1px solid #F0F0ED;
-  border-radius: 13px;
-  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.025);
-}
-
-/* ===== IMPACT CARD ===== */
-
-.tracker-impact-card {
-  padding: 22px;
-  min-height: 230px;
-}
-
-.tracker-impact-content {
-  display: grid;
-  grid-template-columns: minmax(0, 1.2fr) minmax(180px, 0.85fr);
-  gap: 16px;
-  align-items: center;
-}
-
-.tracker-impact-info h2 {
-  font-size: clamp(29px, 3.2vw, 43px);
-  color: var(--figma-orange);
-  font-weight: 800;
-  letter-spacing: -1.8px;
-  line-height: 0.98;
-  margin: 0 0 14px;
-}
-
-.tracker-streak-line {
-  color: var(--figma-green);
-  font-weight: 800;
-  font-size: 14px;
-  line-height: 1.4;
-}
-
-.tracker-streak-note {
-  color: var(--figma-green);
-  font-size: 12px;
-  font-weight: 700;
-  line-height: 1.5;
-  margin: 8px 0 0;
-}
-
-.tracker-btn {
-  margin-top: 17px;
-  padding: 7px 17px;
-  border-radius: 30px;
-  background: var(--figma-orange);
-  color: white;
-  font-weight: 800;
-  font-size: 12px;
-  border: none;
-}
-
-/* ===== WEEKLY STREAK GRAPH ===== */
-
-.tracker-week-box {
-  background: #FFFFFF;
-  border: 1px solid #EFEFED;
-  border-radius: 16px;
-  padding: 16px 14px;
-  min-height: 172px;
-}
-
-.tracker-week-chart {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-around;
-  gap: 8px;
-  min-height: 135px;
-}
-
-.tracker-week-col {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 9px;
-}
-
-.tracker-week-track {
-  width: 13px;
-  height: 112px;
-  border-radius: 15px;
-  background: #E9ECE9;
-  position: relative;
-  overflow: hidden;
-}
-
-.tracker-week-bar {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  height: var(--h);
-  background: var(--figma-soft-green);
-  border-radius: 15px;
-}
-
-.tracker-week-label {
-  font-size: 10px;
-  font-weight: 700;
-  color: #8B938D;
-  transform: rotate(-35deg);
-}
-
-/* ===== NUTRITION CARDS ===== */
-
-.tracker-section-title {
-  font-size: 17px;
-  font-weight: 800;
-  color: var(--figma-green);
-  margin: 0 0 10px;
-}
-
-.tracker-progress-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 13px;
-}
-
-.tracker-progress-card {
-  padding: 15px;
-  min-height: 165px;
-  border-radius: 12px;
-  gap: 8px;
-}
-
-.tracker-progress-top {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.tracker-progress-icon {
-  width: 34px;
-  height: 34px;
-  border-radius: 8px;
-  font-size: 16px;
-  flex-shrink: 0;
-}
-
-.tracker-progress-name {
-  font-size: 13px;
-  font-weight: 800;
-  color: var(--figma-green);
-}
-
-.tracker-progress-ring {
-  width: 77px;
-  height: 77px;
-}
-
-.tracker-progress-ring::before {
-  width: 58px;
-  height: 58px;
-}
-
-.tracker-progress-ring span {
-  font-size: 13px;
-  font-weight: 800;
-}
-
-.tracker-progress-value {
-  font-size: 13px;
-  color: var(--figma-green);
-  font-weight: 800;
-  margin: 0;
-}
-
-.tracker-progress-target {
-  font-size: 10px;
-  font-weight: 700;
-  color: #929892;
-}
-
-/* ===== RIGHT PANEL ===== */
-
-.tracker-side-card {
-  border: none;
-  box-shadow: none;
-  background: transparent;
-  padding: 0;
+    padding: 0;
+    background: transparent;
+    border: none;
+    box-shadow: none;
 }
 
 .tracker-side-header {
-  margin-bottom: 12px;
-  align-items: center;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    margin-bottom: var(--space-3);
 }
 
 .tracker-side-header h3 {
-  color: var(--figma-orange);
-  font-size: 22px;
-  font-weight: 800;
-  letter-spacing: -0.7px;
+    margin: 0;
+    color: var(--green-dark);
+    font-size: var(--fs-lg);
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    line-height: 1.3;
 }
 
 .tracker-side-header span {
-  color: var(--figma-green);
-  font-size: 11px;
-  font-weight: 700;
+    color: var(--muted);
+    font-size: var(--fs-xs);
+    font-weight: 700;
 }
 
-.tracker-badge-list {
-  display: flex;
-  flex-direction: column;
-  gap: 9px;
-}
+/* Item list yang seragam: badge, history, bookmark */
 
-.tracker-badge-item {
-  display: flex;
-  gap: 11px;
-  align-items: center;
-  background: #FFFFFF;
-  border: 1px solid #F1F1EE;
-  border-radius: 11px;
-  padding: 11px;
-  min-height: 76px;
-}
-
-.tracker-badge-icon {
-  width: 44px;
-  height: 44px;
-  border-radius: 9px;
-  background: #FFF1E9;
-  flex-shrink: 0;
-}
-
-.tracker-badge-content h4 {
-  font-size: 13px;
-  font-weight: 800;
-  color: var(--figma-green);
-  margin: 0 0 4px;
-}
-
-.tracker-badge-content p {
-  font-size: 10px;
-  line-height: 1.4;
-  margin: 0 0 6px;
-}
-
-.tracker-badge-status {
-  font-size: 10px;
-  padding: 4px 9px;
-}
-
-/* ===== HISTORY ===== */
-
-#history-container {
-  background: #FFFFFF;
-  border-radius: 12px;
-  padding: 14px;
-  min-height: 85px;
-}
-
-.tracker-placeholder-text {
-  font-size: 12px;
-  color: #909590;
-  font-weight: 600;
-}
-
-/* ===== TABLET ===== */
-
-@media (max-width: 1024px) {
-  .tracker-layout {
-    grid-template-columns: 1fr;
-  }
-
-  .tracker-right {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-/* ===== MOBILE ===== */
-
-@media (max-width: 650px) {
-  .tracker-page {
-    padding: 22px 16px 40px;
-  }
-
-  .tracker-hero {
-    gap: 12px;
-    margin-bottom: 25px;
-  }
-
-  .tracker-avatar {
-    width: 56px;
-    height: 56px;
-  }
-
-  .tracker-hero-text h1 {
-    font-size: 28px;
-  }
-
-  .tracker-hero-text p {
-    font-size: 11px;
-  }
-
-  .tracker-impact-card {
-    padding: 18px;
-  }
-
-  .tracker-impact-content {
-    grid-template-columns: 1fr;
-  }
-
-  .tracker-impact-info h2 {
-    font-size: 30px;
-  }
-
-  .tracker-progress-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 7px;
-  }
-
-  .tracker-progress-card {
-    padding: 10px 7px;
-    min-height: 155px;
-  }
-
-  .tracker-progress-top {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .tracker-progress-name {
-    font-size: 11px;
-  }
-
-  .tracker-progress-ring {
-    width: 62px;
-    height: 62px;
-  }
-
-  .tracker-progress-ring::before {
-    width: 47px;
-    height: 47px;
-  }
-
-  .tracker-progress-ring span {
-    font-size: 11px;
-  }
-
-  .tracker-right {
+.tracker-badge-list,
+.tracker-history-list,
+.tracker-bookmarks-list {
     display: flex;
     flex-direction: column;
-  }
+    gap: var(--space-2);
 }
 
-
-/* ==================================
-   COOKING HISTORY - FIGMA STYLE
-================================== */
-
-.tracker-history-list {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    background: transparent;
-    padding: 0;
+.tracker-badge-item,
+.tracker-history-item,
+.tracker-bookmark-item {
+    background: var(--white);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-md);
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
 }
 
+.tracker-badge-item,
 .tracker-history-item {
     display: flex;
     align-items: center;
-    gap: 12px;
-
-    background: #FFFEFE;
-    border: 1px solid #F0F0ED;
-    border-radius: 11px;
-    padding: 12px;
-
-    transition:
-        transform 0.2s ease,
-        box-shadow 0.2s ease;
+    gap: var(--space-3);
+    min-width: 0;
+    min-height: 80px;
+    padding: var(--space-3);
 }
 
-.tracker-history-item:hover {
+.tracker-badge-item:hover,
+.tracker-history-item:hover,
+.tracker-bookmark-item:hover {
     transform: translateY(-2px);
-    box-shadow: 0 5px 16px rgba(3, 105, 94, 0.08);
+    border-color: var(--green-tint-strong);
+    box-shadow: var(--shadow-hover);
 }
 
-.tracker-history-icon {
+/* Icon kotak yang seragam */
+
+.tracker-badge-icon,
+.tracker-history-icon,
+.tracker-bookmark-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
     width: 46px;
     height: 46px;
-    flex-shrink: 0;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    border-radius: 10px;
-    background: #FFF0E8;
-    font-size: 23px;
+    min-width: 46px;
+    border-radius: var(--radius-sm);
+    overflow: hidden;
 }
-
-.tracker-history-content {
-    min-width: 0;
-    flex: 1;
-}
-
-.tracker-history-content h4 {
-    margin: 0 0 5px;
-
-    font-family: 'Sen', sans-serif;
-    font-size: 14px;
-    font-weight: 800;
-
-    color: #03695E;
-    overflow-wrap: anywhere;
-}
-
-.tracker-history-date {
-    margin: 0 0 5px;
-    color: #858A85;
-    font-size: 11px;
-}
-
-.tracker-history-nutrients {
-    margin: 0;
-    color: #EE8252;
-    font-size: 11px;
-    font-weight: 700;
-}
-
-.tracker-history-status {
-    flex-shrink: 0;
-    padding: 5px 9px;
-
-    border-radius: 20px;
-    background: rgba(128, 176, 136, 0.18);
-
-    color: #03695E;
-    font-size: 10px;
-    font-weight: 800;
-}
-
-@media (max-width: 650px) {
-    .tracker-history-item {
-        gap: 9px;
-        padding: 10px;
-    }
-
-    .tracker-history-status {
-        font-size: 9px;
-        padding: 4px 7px;
-    }
-}
-
 
 .tracker-badge-icon {
-    width: 44px;
-    height: 44px;
-    border-radius: 10px;
-    background: #FFF1E9;
+    background: var(--orange-tint);
+    color: var(--orange-main);
+    font-size: 20px;
+}
 
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    overflow: hidden;
-    flex-shrink: 0;
+.tracker-badge-icon svg,
+.tracker-bookmark-icon svg {
+    width: 22px;
+    height: 22px;
+    stroke-width: 2px;
 }
 
 .tracker-badge-icon img {
@@ -1134,315 +571,230 @@ body {
     object-fit: contain;
 }
 
+.tracker-badge-item:has(.tracker-badge-status.locked) .tracker-badge-icon {
+    background: var(--bg-soft);
+    color: var(--muted);
+}
 
-/* SVG Icons — OlahRasa Figma Style */
+.tracker-history-icon {
+    background: var(--orange-tint);
+    font-size: 22px;
+}
 
-.tracker-progress-icon,
-.tracker-badge-icon {
+.tracker-bookmark-icon {
+    background: var(--green-tint);
+    color: var(--green-dark);
+}
+
+/* Teks */
+
+.tracker-badge-content,
+.tracker-history-content,
+.tracker-bookmark-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.tracker-badge-content h4,
+.tracker-history-content h4,
+.tracker-bookmark-name {
+    margin: 0 0 4px;
+    color: var(--green-dark);
+    font-size: var(--fs-sm);
+    font-weight: 800;
+    line-height: 1.4;
+    overflow-wrap: anywhere;
+}
+
+.tracker-badge-content p {
+    margin: 0 0 var(--space-1);
+    color: var(--muted);
+    font-size: var(--fs-xs);
+    line-height: 1.5;
+}
+
+.tracker-history-date,
+.tracker-bookmark-meta {
+    margin: 0 0 4px;
+    color: var(--muted);
+    font-size: var(--fs-xs);
+}
+
+.tracker-history-nutrients {
+    margin: 0;
+    color: var(--orange-main);
+    font-size: var(--fs-xs);
+    font-weight: 700;
+}
+
+/* Status pill */
+
+.tracker-badge-status,
+.tracker-history-status,
+.tracker-bookmark-status {
+    display: inline-block;
+    flex-shrink: 0;
+    padding: 5px 10px;
+    border-radius: var(--radius-pill);
+    font-size: 10px;
+    font-weight: 800;
+    line-height: 1.2;
+}
+
+.tracker-history-status,
+.tracker-bookmark-status,
+.tracker-badge-status.unlocked {
+    background: var(--green-tint);
+    color: var(--green-dark);
+}
+
+.tracker-badge-status.locked {
+    background: var(--orange-tint);
+    color: var(--orange-main);
+}
+
+.tracker-placeholder-text {
+    margin: 0;
+    color: var(--muted);
+    font-size: var(--fs-sm);
+    font-weight: 600;
+    line-height: 1.6;
+}
+
+#history-container {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    min-height: 85px;
+}
+
+.tracker-history-list {
+    gap: var(--space-3);
+}
+
+/* Bookmark link */
+
+.tracker-bookmark-item {
+    width: 100%;
+}
+
+.tracker-bookmark-item .tracker-bookmark-link {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    width: 100%;
+    min-height: 80px;
+    padding: var(--space-3);
+    color: inherit;
+    text-decoration: none;
+}
+
+.tracker-bookmark-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.tracker-bookmark-info .tracker-bookmark-name,
+.tracker-bookmark-info .tracker-bookmark-meta {
+    margin: 0;
+}
+
+.tracker-bookmark-link:hover .tracker-bookmark-name {
+    color: var(--ink);
+}
+
+/* Bookmark kosong */
+
+.tracker-bookmarks-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 200px;
+    padding: var(--space-5) var(--space-4);
+    text-align: center;
+    background: var(--bg-soft);
+    border: 1px dashed var(--green-tint-strong);
+    border-radius: var(--radius-md);
+}
+
+.tracker-bookmarks-empty svg {
+    width: 30px;
+    height: 30px;
+    margin-bottom: var(--space-2);
+    color: var(--green-soft);
+}
+
+.tracker-bookmarks-title {
+    margin: 0;
+    color: var(--green-dark);
+    font-size: var(--fs-md);
+    font-weight: 800;
+}
+
+.tracker-bookmarks-description {
+    max-width: 240px;
+    margin: 4px 0 0;
+    color: var(--muted);
+    font-size: var(--fs-sm);
+    line-height: 1.6;
+}
+
+/* View all bookmarks */
+
+.tracker-bookmark-view-all {
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 10px;
+    gap: 8px;
+    margin-top: var(--space-3);
+    padding: 12px 16px;
+    background: var(--green-tint);
+    color: var(--green-dark);
+    border: 1px solid var(--green-tint-strong);
+    border-radius: var(--radius-sm);
+    font-size: var(--fs-sm);
+    font-weight: 800;
+    text-decoration: none;
+    transition: background-color 0.2s ease;
 }
 
-.tracker-progress-icon svg,
-.tracker-badge-icon svg {
-    width: 22px;
-    height: 22px;
-    stroke-width: 2px;
+.tracker-bookmark-view-all:hover {
+    background: var(--green-tint-strong);
 }
 
-.tracker-progress-icon {
-    background: #DDEBE0;
-    color: #03695E;
+.tracker-bookmark-view-all svg {
+    width: 16px;
+    height: 16px;
 }
-
-.tracker-badge-icon {
-    background: #FCE8DD;
-    color: #EE8252;
-}
-
-.tracker-badge-item:has(.tracker-badge-status.locked)
-.tracker-badge-icon {
-    background: #F2F2EF;
-    color: #A3A8A3;
-}
-
-.tracker-progress-icon.icon-protein {
-    background: #DDEBE0;
-    color: #03695E;
-}
-
-.tracker-progress-icon.icon-carbs {
-    background: #FCE8DD;
-    color: #EE8252;
-}
-
-.tracker-progress-icon.icon-fat {
-    background: #FBF1CE;
-    color: #C29A35;
-}
-
 
 /* =========================================
-   TRACKER — MOBILE RESPONSIVE FIX
-   Khusus layar HP
+   SET TARGET BUTTON
 ========================================= */
 
-@media screen and (max-width: 650px) {
-
-    /* MAIN CONTAINER */
-    .tracker-page {
-        width: 100%;
-        max-width: 100%;
-        min-width: 0;
-        padding: 20px 14px 36px;
-        overflow-x: clip;
-    }
-
-    /* HERO */
-    .tracker-hero {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        margin-bottom: 24px;
-    }
-
-    .tracker-avatar {
-        width: 50px;
-        height: 50px;
-        flex-shrink: 0;
-    }
-
-    .tracker-hero-text {
-        min-width: 0;
-    }
-
-    .tracker-hero-text h1 {
-        font-size: 25px;
-        letter-spacing: -0.7px;
-        overflow-wrap: anywhere;
-    }
-
-    .tracker-hero-text p {
-        font-size: 11px;
-        line-height: 1.4;
-    }
-
-    /* ONE-COLUMN LAYOUT */
-    .tracker-layout {
-        display: grid;
-        grid-template-columns: minmax(0, 1fr);
-        gap: 24px;
-        width: 100%;
-        min-width: 0;
-    }
-
-    .tracker-left,
-    .tracker-right {
-        min-width: 0;
-        width: 100%;
-        gap: 20px;
-    }
-
-    /* IMPACT CARD */
-    .tracker-impact-card {
-        width: 100%;
-        min-width: 0;
-        padding: 18px 16px;
-        min-height: auto;
-    }
-
-    .tracker-impact-content {
-        display: grid;
-        grid-template-columns: minmax(0, 1fr);
-        gap: 22px;
-    }
-
-    .tracker-impact-info {
-        min-width: 0;
-    }
-
-    .tracker-impact-info h2 {
-        font-size: clamp(25px, 8vw, 32px);
-        line-height: 1.05;
-        letter-spacing: -0.8px;
-        overflow-wrap: normal;
-    }
-
-    .tracker-streak-line {
-        font-size: 13px;
-    }
-
-    .tracker-streak-note {
-        font-size: 11px;
-        line-height: 1.5;
-    }
-
-    /* WEEKLY STREAK GRAPH */
-    .tracker-week-box {
-        width: 100%;
-        min-width: 0;
-        padding: 14px 10px;
-        min-height: 150px;
-    }
-
-    .tracker-week-chart {
-        width: 100%;
-        min-height: 135px;
-        gap: 4px;
-        justify-content: space-around;
-    }
-
-    .tracker-week-col {
-        flex: 1;
-        min-width: 0;
-    }
-
-    .tracker-week-track {
-        width: 13px;
-        height: 105px;
-    }
-
-    .tracker-week-label {
-        font-size: 9px;
-    }
-
-    /* NUTRITION CARDS */
-    .tracker-progress-grid {
-        display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 8px;
-        width: 100%;
-    }
-
-    .tracker-progress-card {
-        min-width: 0;
-        padding: 12px 8px;
-        min-height: 160px;
-        gap: 10px;
-    }
-
-    .tracker-progress-top {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 7px;
-    }
-
-    .tracker-progress-icon {
-        width: 30px;
-        height: 30px;
-    }
-
-    .tracker-progress-icon svg {
-        width: 17px;
-        height: 17px;
-    }
-
-    .tracker-progress-name {
-        font-size: 11px;
-    }
-
-    .tracker-progress-ring {
-        width: 62px;
-        height: 62px;
-    }
-
-    .tracker-progress-ring::before {
-        width: 47px;
-        height: 47px;
-    }
-
-    .tracker-progress-ring span {
-        font-size: 11px;
-    }
-
-    .tracker-progress-value {
-        font-size: 12px;
-    }
-
-    .tracker-progress-target {
-        font-size: 9px;
-    }
-
-    /* BADGES AND HISTORY */
-    .tracker-right {
-        display: flex;
-        flex-direction: column;
-    }
-
-    .tracker-side-header h3 {
-        font-size: 20px;
-    }
-
-    .tracker-badge-item,
-    .tracker-history-item {
-        min-width: 0;
-        padding: 11px;
-    }
-
-    .tracker-badge-content,
-    .tracker-history-content {
-        min-width: 0;
-        flex: 1;
-    }
-
-    .tracker-badge-content h4,
-    .tracker-history-content h4 {
-        overflow-wrap: anywhere;
-    }
-
-    .tracker-history-status {
-        font-size: 9px;
-        padding: 4px 7px;
-    }
-}
-
-
-/* ==========================================
-   OLAHRASA — SET NUTRITION TARGET
-========================================== */
-
-/* Header Your Progress */
-.tracker-nutrition-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 16px;
-    margin-bottom: 18px;
-}
-
-/* Tombol Set Target */
 .tracker-set-target-btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
     flex-shrink: 0;
-
-    min-height: 38px;
-    padding: 8px 14px;
-
-    background: #EAF3ED;
-    color: #03695E;
-    border: 1px solid #C8DFCE;
-    border-radius: 10px;
-
-    font-family: "Sen", sans-serif;
-    font-size: 12px;
+    min-height: 40px;
+    padding: 8px 16px;
+    background: var(--green-tint);
+    color: var(--green-dark);
+    border: 1px solid var(--green-tint-strong);
+    border-radius: var(--radius-sm);
+    font-size: var(--fs-sm);
     font-weight: 700;
     line-height: 1.2;
-
     cursor: pointer;
-    transition:
-        background 0.2s ease,
-        border-color 0.2s ease,
-        transform 0.2s ease;
+    transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
 }
 
 .tracker-set-target-btn:hover {
-    background: #DCEBDD;
-    border-color: #80B088;
+    background: var(--green-tint-strong);
+    border-color: var(--green-soft);
     transform: translateY(-1px);
 }
 
@@ -1451,7 +803,7 @@ body {
 }
 
 .tracker-set-target-btn:focus-visible {
-    outline: 3px solid rgba(128, 176, 136, 0.45);
+    outline: 3px solid var(--green-tint-strong);
     outline-offset: 3px;
 }
 
@@ -1461,78 +813,79 @@ body {
     stroke-width: 2;
 }
 
-/* ==========================================
-   MODAL SET NUTRITION TARGET
-========================================== */
+/* =========================================
+   DIALOGS (SHARE & TARGET) — gaya seragam
+========================================= */
 
+.tracker-share-dialog,
 .tracker-target-dialog {
-    box-sizing: border-box;
-    width: min(410px, calc(100vw - 32px));
-    max-width: 410px;
+    width: min(420px, calc(100vw - 32px));
+    max-width: 420px;
     max-height: 88vh;
     margin: auto;
-    padding: 26px;
-
-    background: #FFFFFF;
-    color: #253F35;
-    border: 1px solid #E6EDE7;
-    border-radius: 20px;
-
-    font-family: "Sen", sans-serif;
-    box-shadow: 0 24px 70px rgba(3, 50, 44, 0.18);
+    padding: 24px;
+    background: var(--white);
+    color: var(--green-dark);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    box-shadow: 0 24px 70px rgba(3, 105, 94, 0.2);
     overflow-y: auto;
 }
 
+.tracker-share-dialog::backdrop,
 .tracker-target-dialog::backdrop {
-    background: rgba(19, 39, 34, 0.52);
+    background: rgba(45, 36, 31, 0.5);
     backdrop-filter: blur(3px);
 }
 
-/* Header Modal */
+.tracker-share-header,
 .tracker-target-header {
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
-    gap: 14px;
-    margin-bottom: 26px;
+    gap: var(--space-3);
+    margin-bottom: var(--space-4);
 }
 
+.tracker-share-header {
+    align-items: center;
+}
+
+.tracker-share-header h2,
 .tracker-target-header h2 {
     margin: 0;
-    color: #03695E;
-    font-family: "Sen", sans-serif;
-    font-size: 20px;
+    color: var(--green-dark);
+    font-size: var(--fs-lg);
     font-weight: 800;
     line-height: 1.3;
 }
 
 .tracker-target-header p {
-    margin: 6px 0 0;
-    color: #77877D;
-    font-size: 12px;
+    margin: var(--space-1) 0 0;
+    color: var(--muted);
+    font-size: var(--fs-xs);
     line-height: 1.5;
 }
 
-/* Tombol Close */
+.tracker-share-close,
 .tracker-target-close {
     display: grid;
     place-items: center;
     flex-shrink: 0;
-
-    width: 34px;
-    height: 34px;
+    width: 36px;
+    height: 36px;
     padding: 0;
-
-    background: #F0F5F1;
-    color: #03695E;
+    background: var(--bg-soft);
+    color: var(--green-dark);
     border: none;
-    border-radius: 9px;
-
+    border-radius: var(--radius-sm);
     cursor: pointer;
+    transition: background 0.2s ease;
 }
 
+.tracker-share-close:hover,
 .tracker-target-close:hover {
-    background: #DFEDE2;
+    background: var(--green-tint);
 }
 
 .tracker-target-close svg {
@@ -1540,14 +893,66 @@ body {
     height: 18px;
 }
 
-/* Form Layout */
+/* Share */
+
+#tracker-share-canvas {
+    display: block;
+    width: 100%;
+    max-width: 350px;
+    height: auto;
+    margin: 0 auto;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-md);
+}
+
+.tracker-share-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-2);
+    margin-top: var(--space-4);
+}
+
+.tracker-share-actions button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 44px;
+    padding: 10px;
+    background: var(--bg-soft);
+    color: var(--green-dark);
+    border: 1px solid var(--green-tint-strong);
+    border-radius: var(--radius-sm);
+    font-size: var(--fs-xs);
+    font-weight: 800;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.tracker-share-actions button:hover {
+    background: var(--green-tint);
+}
+
+.tracker-share-actions svg {
+    width: 16px;
+    height: 16px;
+}
+
+#tracker-share-message {
+    margin: var(--space-3) 0 0;
+    color: var(--green-dark);
+    font-size: var(--fs-xs);
+    line-height: 1.5;
+}
+
+/* Target form */
+
 .tracker-target-fields {
     display: flex;
     flex-direction: column;
-    gap: 18px;
+    gap: var(--space-4);
 }
 
-/* Setiap input */
 .tracker-target-field {
     display: flex;
     flex-direction: column;
@@ -1556,110 +961,94 @@ body {
 
 .tracker-target-field label {
     display: block;
-    color: #03695E;
-    font-family: "Sen", sans-serif;
-    font-size: 13px;
+    color: var(--green-dark);
+    font-size: var(--fs-sm);
     font-weight: 700;
 }
 
-/* Input angka */
 .tracker-target-field input {
-    box-sizing: border-box;
     display: block;
     width: 100%;
     height: 46px;
     padding: 0 14px;
-
-    background: #FAFCFA;
-    color: #253F35;
-    border: 1px solid #DDE8DF;
-    border-radius: 11px;
+    background: var(--bg-soft);
+    color: var(--ink);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
     outline: none;
-
-    font-family: "Sen", sans-serif;
-    font-size: 14px;
+    font-size: var(--fs-md);
     font-weight: 600;
-
-    transition:
-        border-color 0.2s ease,
-        box-shadow 0.2s ease;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
 }
 
 .tracker-target-field input::placeholder {
-    color: #A4B0A6;
+    color: var(--muted);
     font-weight: 400;
+    opacity: 0.7;
 }
 
 .tracker-target-field input:hover {
-    border-color: #80B088;
+    border-color: var(--green-soft);
 }
 
 .tracker-target-field input:focus {
-    background: #FFFFFF;
-    border-color: #03695E;
-    box-shadow: 0 0 0 3px rgba(128, 176, 136, 0.16);
+    background: var(--white);
+    border-color: var(--green-dark);
+    box-shadow: 0 0 0 3px var(--green-tint);
 }
 
-/* Pesan Error */
 .tracker-target-message {
     min-height: 18px;
-    margin: 12px 0 0;
-    color: #03695E;
-    font-size: 12px;
+    margin: var(--space-3) 0 0;
+    color: var(--green-dark);
+    font-size: var(--fs-xs);
     line-height: 1.5;
 }
 
 .tracker-target-message.is-error {
-    color: #B54738;
+    color: var(--orange-main);
+    font-weight: 700;
 }
 
-/* Tombol Cancel & Save */
 .tracker-target-actions {
     display: flex;
     justify-content: flex-end;
     align-items: center;
-    gap: 10px;
-    margin-top: 18px;
+    gap: var(--space-2);
+    margin-top: var(--space-4);
 }
 
 .tracker-target-actions button {
     display: inline-flex;
     justify-content: center;
     align-items: center;
-
-    min-height: 42px;
-    padding: 10px 18px;
-
-    border-radius: 10px;
-    font-family: "Sen", sans-serif;
-    font-size: 13px;
+    min-height: 44px;
+    padding: 10px 20px;
+    border-radius: var(--radius-sm);
+    font-size: var(--fs-sm);
     font-weight: 700;
     cursor: pointer;
-
-    transition:
-        background 0.2s ease,
-        border-color 0.2s ease;
+    transition: background 0.2s ease, border-color 0.2s ease;
 }
 
 .tracker-target-cancel {
-    background: #FFFFFF;
-    color: #03695E;
-    border: 1px solid #D8E5DA;
+    background: var(--white);
+    color: var(--green-dark);
+    border: 1px solid var(--green-tint-strong);
 }
 
 .tracker-target-cancel:hover {
-    background: #F0F5F1;
+    background: var(--bg-soft);
 }
 
 .tracker-target-save {
-    background: #03695E;
-    color: #FFFFFF;
-    border: 1px solid #03695E;
+    background: var(--green-dark);
+    color: var(--white);
+    border: 1px solid var(--green-dark);
 }
 
 .tracker-target-save:hover {
-    background: #05544B;
-    border-color: #05544B;
+    filter: brightness(0.9);
 }
 
 .tracker-target-save:disabled {
@@ -1667,255 +1056,275 @@ body {
     cursor: not-allowed;
 }
 
-/* Focus Keyboard */
 .tracker-target-actions button:focus-visible,
-.tracker-target-close:focus-visible {
-    outline: 3px solid rgba(128, 176, 136, 0.45);
+.tracker-target-close:focus-visible,
+.tracker-share-close:focus-visible,
+.tracker-share-actions button:focus-visible {
+    outline: 3px solid var(--green-tint-strong);
     outline-offset: 2px;
 }
 
-/* ==========================================
-   MOBILE RESPONSIVE
-========================================== */
+/* =========================================
+   RESPONSIVE — LAPTOP KECIL / TABLET
+========================================= */
 
-@media (max-width: 480px) {
+@media (max-width: 1100px) {
+    .tracker-layout {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    /* Panel kanan tetap 1 kolom agar lebarnya sama dengan Cooking History */
+    .tracker-right {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-4);
+        width: 100%;
+    }
+
+    .tracker-side-card,
+    .tracker-badge-list,
+    .tracker-bookmarks-list,
+    .tracker-badge-item,
+    .tracker-bookmark-item {
+        width: 100%;
+    }
+}
+
+@media (max-width: 900px) {
+    .tracker-impact-content {
+        grid-template-columns: minmax(0, 1fr);
+        gap: var(--space-4);
+    }
+
+    .tracker-streak-note {
+        max-width: none;
+    }
+}
+
+/* =========================================
+   RESPONSIVE — MOBILE
+========================================= */
+
+@media (max-width: 700px) {
+    .tracker-page {
+        padding: 24px 16px 40px;
+        overflow-x: clip;
+    }
+
+    .tracker-hero {
+        gap: var(--space-3);
+        margin-bottom: var(--space-4);
+    }
+
+    .tracker-avatar {
+        width: 56px;
+        height: 56px;
+    }
+
+    .tracker-hero-text h1 {
+        font-size: var(--fs-xl);
+        overflow-wrap: anywhere;
+    }
+
+    .tracker-hero-text p {
+        font-size: var(--fs-sm);
+    }
+
+    .tracker-layout {
+        grid-template-columns: minmax(0, 1fr);
+        gap: var(--space-4);
+        width: 100%;
+    }
+
+    .tracker-left,
+    .tracker-right {
+        width: 100%;
+        min-width: 0;
+    }
+
+    .tracker-right {
+        display: flex;
+        flex-direction: column;
+    }
+
     .tracker-nutrition-header {
-        gap: 10px;
+        margin-bottom: var(--space-3);
+    }
+
+    .tracker-avatar-placeholder {
+    font-size: 24px;
+}
+
+    /* Jarak antar card Cooking History & panel kanan di mobile */
+    #history-container,
+    .tracker-history-list {
+        gap: 14px;
+    }
+
+    .tracker-badge-list,
+    .tracker-bookmarks-list {
+        gap: 12px;
+    }
+
+    .tracker-impact-card {
+        padding: var(--space-4);
+    }
+
+    .tracker-impact-info h2 {
+        font-size: clamp(26px, 8vw, 32px);
+    }
+
+    .tracker-streak-line {
+        font-size: var(--fs-sm);
+    }
+
+    .tracker-streak-note {
+        font-size: var(--fs-xs);
+    }
+
+    .tracker-btn {
+        width: 100%;
+    }
+
+    .tracker-week-box {
+        min-height: 160px;
+        padding: var(--space-3) var(--space-2);
+    }
+
+    .tracker-week-track {
+        width: 12px;
+        height: 100px;
+    }
+
+    .tracker-section-title,
+    .tracker-side-header h3 {
+        font-size: 18px;
+    }
+
+    .tracker-progress-grid {
+        gap: var(--space-2);
+    }
+
+    .tracker-mini-card,
+    .tracker-progress-card {
+        min-height: 170px;
+        padding: var(--space-3) var(--space-2);
+        gap: var(--space-2);
+    }
+
+    .tracker-progress-top {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--space-1);
+    }
+
+    .tracker-progress-icon {
+        width: 30px;
+        height: 30px;
+    }
+
+    .tracker-progress-icon svg {
+        width: 16px;
+        height: 16px;
+    }
+
+    .tracker-progress-name {
+        font-size: var(--fs-xs);
+    }
+
+    .tracker-progress-ring {
+        width: 62px;
+        height: 62px;
+    }
+
+    .tracker-progress-ring::before {
+        width: 46px;
+        height: 46px;
+    }
+
+    .tracker-progress-ring span {
+        font-size: var(--fs-xs);
+    }
+
+    .tracker-progress-value {
+        font-size: var(--fs-sm);
+    }
+
+    .tracker-progress-target {
+        font-size: 10px;
+    }
+
+    .tracker-nutrition-header {
+        gap: var(--space-2);
     }
 
     .tracker-set-target-btn {
-        padding: 8px 11px;
-        font-size: 11px;
         min-height: 36px;
+        padding: 8px 12px;
+        font-size: var(--fs-xs);
     }
 
+    .tracker-badge-item,
+    .tracker-history-item,
+    .tracker-bookmark-item .tracker-bookmark-link {
+        gap: var(--space-2);
+        min-height: 72px;
+        padding: var(--space-2) var(--space-3);
+    }
+
+    .tracker-badge-icon,
+    .tracker-history-icon,
+    .tracker-bookmark-icon {
+        width: 40px;
+        height: 40px;
+        min-width: 40px;
+    }
+
+    .tracker-badge-status,
+    .tracker-history-status,
+    .tracker-bookmark-status {
+        padding: 4px 8px;
+        font-size: 9px;
+    }
+
+    .tracker-share-dialog,
     .tracker-target-dialog {
         width: calc(100vw - 24px);
-        padding: 20px;
-        border-radius: 16px;
+        padding: var(--space-4);
+        border-radius: var(--radius-md);
     }
 
-    .tracker-target-header {
-        margin-bottom: 20px;
-    }
-
+    .tracker-share-header h2,
     .tracker-target-header h2 {
         font-size: 18px;
     }
 
     .tracker-target-fields {
-        gap: 14px;
-    }
-
-    .tracker-target-actions button {
-        padding: 10px 14px;
-        font-size: 12px;
+        gap: var(--space-3);
     }
 }
 
+/* =========================================
+   ACCESSIBILITY
+========================================= */
+
 @media (prefers-reduced-motion: reduce) {
+    .tracker-btn,
     .tracker-set-target-btn,
+    .tracker-week-bar,
+    .tracker-badge-item,
+    .tracker-history-item,
+    .tracker-bookmark-item,
     .tracker-target-field input,
     .tracker-target-actions button {
         transition: none;
     }
 
-    .tracker-set-target-btn:hover {
+    .tracker-btn:hover,
+    .tracker-set-target-btn:hover,
+    .tracker-badge-item:hover,
+    .tracker-history-item:hover,
+    .tracker-bookmark-item:hover {
         transform: none;
     }
 }
-
-
-/* ==========================================
-   OLAHRASA — BOOKMARK PLACEHOLDER
-========================================== */
-
-.tracker-bookmarks-list {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-
-.tracker-bookmarks-empty {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-
-    min-height: 200px;
-    padding: 24px 18px;
-    text-align: center;
-
-    background: #F7FAF7;
-    border: 1px dashed #C8DFCE;
-    border-radius: 14px;
-}
-
-.tracker-bookmarks-empty svg {
-    width: 30px;
-    height: 30px;
-    color: #80B088;
-    margin-bottom: 8px;
-}
-
-.tracker-bookmarks-title {
-    margin: 0;
-    font-family: "Sen", sans-serif;
-    font-size: 15px;
-    font-weight: 800;
-    color: #03695E;
-}
-
-.tracker-bookmarks-description {
-    max-width: 220px;
-    margin: 4px 0 0;
-
-    font-family: "Sen", sans-serif;
-    font-size: 12px;
-    line-height: 1.6;
-    color: #71847A;
-}
-
-
-/* VIEW ALL BOOKMARKS */
-
-.tracker-bookmark-view-all {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-
-    margin-top: 16px;
-    padding: 12px 16px;
-
-    border: 1px solid #d1e5d8;
-    border-radius: 10px;
-
-    background: #f0fdf4;
-    color: #166534;
-
-    font-size: 13px;
-    font-weight: 600;
-    text-decoration: none;
-
-    transition: background-color 0.2s ease;
-}
-
-.tracker-bookmark-view-all:hover {
-    background: #dcfce7;
-    color: #14532d;
-}
-
-.tracker-bookmark-view-all svg {
-    width: 16px;
-    height: 16px;
-}
-
-
-/* ===================================== */
-/* BOOKMARK CARDS                        */
-/* ===================================== */
-
-.tracker-bookmarks-list {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-
-.tracker-bookmark-item {
-    width: 100%;
-    background: #ffffff;
-    border: 1px solid #e7e9e7;
-    border-radius: 12px;
-    transition: border-color 0.2s ease,
-                background-color 0.2s ease;
-}
-
-.tracker-bookmark-item:hover {
-    border-color: #a6d7bb;
-    background: #f9fdfb;
-}
-
-.tracker-bookmark-item .tracker-bookmark-link {
-    display: flex;
-    align-items: center;
-    gap: 11px;
-    width: 100%;
-    padding: 12px;
-    color: inherit;
-    text-decoration: none;
-}
-
-.tracker-bookmark-icon {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 42px;
-    height: 42px;
-    min-width: 42px;
-    border-radius: 10px;
-    color: #188454;
-    background: #e7f6ed;
-}
-
-.tracker-bookmark-icon svg {
-    width: 20px;
-    height: 20px;
-}
-
-.tracker-bookmark-info {
-    display: flex;
-    flex: 1;
-    flex-direction: column;
-    gap: 4px;
-    min-width: 0;
-}
-
-.tracker-bookmark-name {
-    color: #087262;
-    font-size: 13px;
-    font-weight: 700;
-    line-height: 1.4;
-    overflow-wrap: anywhere;
-}
-
-.tracker-bookmark-meta {
-    color: #838b88;
-    font-size: 11px;
-}
-
-.tracker-bookmark-status {
-    flex-shrink: 0;
-    padding: 5px 9px;
-    border-radius: 999px;
-    background: #e7f6ed;
-    color: #187247;
-    font-size: 10px;
-    font-weight: 700;
-}
-
-.tracker-bookmark-link:hover .tracker-bookmark-name {
-    color: #115e43;
-}
-
-@media (max-width: 480px) {
-    .tracker-bookmark-item .tracker-bookmark-link {
-        padding: 10px;
-        gap: 8px;
-    }
-
-    .tracker-bookmark-icon {
-        width: 36px;
-        height: 36px;
-        min-width: 36px;
-    }
-
-    .tracker-bookmark-status {
-        padding: 4px 7px;
-        font-size: 9px;
-    }
-}
-
-
-
-
