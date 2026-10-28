@@ -624,6 +624,8 @@
         completionButton.disabled = true;
         completionStatus.textContent = "Menyimpan aktivitas memasak…";
 
+        console.log("Request ID yang dikirim:", requestId);
+        
         try {
             const interaction = await requestJson(card.dataset.completeUrl, {
                 method: "POST",
