@@ -9,7 +9,7 @@ from django.http import JsonResponse
 from django.views.decorators.http import require_POST, require_http_methods
 from .services import record_cook
 from .models import Badge, CookingLog, CookingStreak, UserBadge, NutritionTarget
-
+from voting.models import Bookmark
 import uuid, json
 
 # Target nutrisi mingguan (sesuaikan dengan kebutuhan)
@@ -221,6 +221,14 @@ def tracker_view(request):
     current = streak.active_streak
     badges = _badges(user, streak)
 
+    # Mengambil 5 bookmark terbaru milik pengguna yang login
+    bookmarks = (
+        Bookmark.objects
+        .filter(user=user)
+        .select_related("recipe")
+        .order_by("-created_at")[:3]
+    )
+
     context = {
         "streak": {
             "current": current,
@@ -231,6 +239,7 @@ def tracker_view(request):
         "nutrients": _nutrients(user, monday),
         "badges": badges,
         "badges_earned": sum(1 for b in badges if b["earned"]),
+        "bookmarks": bookmarks,
     }
     return render(request, "tracker/tracker.html", context)
 
@@ -312,7 +321,7 @@ def tracker_dashboard_api(request):
 def cooking_history_api(request):
     logs = CookingLog.objects.filter(
         user=request.user
-    ).order_by("-cooked_on", "-id")[:10]
+    ).order_by("-cooked_on", "-id")[:3]
 
     history = []
 

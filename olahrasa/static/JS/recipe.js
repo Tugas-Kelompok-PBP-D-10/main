@@ -507,6 +507,15 @@
             if (previousFocus && typeof previousFocus.focus === "function") {
                 previousFocus.focus();
             }
+            const params = new URLSearchParams(window.location.search);
+
+                if (
+                    params.get("from") === "tracker" &&
+                    params.has("recipe_id")
+                ) {
+                    window.location.href = "/tracker/";
+                    return;
+                }
         }
 
         function visibleFocusTargets() {
@@ -525,6 +534,22 @@
                 openModal(card);
             }
         });
+
+        // Membuka detail resep otomatis dari link Bookmark Tracker
+            const params = new URLSearchParams(window.location.search);
+            const recipeIdFromUrl = params.get("recipe_id");
+
+            if (recipeIdFromUrl) {
+                const targetCard = Array.from(
+                    grid.querySelectorAll(".recipe-card-open")
+                ).find(function (card) {
+                    return card.dataset.recipeId === recipeIdFromUrl;
+                });
+
+                if (targetCard) {
+                    openModal(targetCard);
+                }
+            }
 
         closeButton.addEventListener("click", closeModal);
         overlay.addEventListener("click", function (event) {
