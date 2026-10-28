@@ -8,17 +8,23 @@
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 {# Potongan recipe.css (kartu + modal detail) tanpa aturan global yang bentrok dengan Bootstrap #}
 <link rel="stylesheet" href="{% static 'voting/recipe-card-modal.css' %}">
+{# Tema bersama (font Sen + desain kartu ala Tracker/Profile), harus dimuat paling akhir #}
+<link rel="stylesheet" href="{% static 'voting/recipe-theme.css' %}">
 
-<main class="container py-4">
-    <header class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
-        <h1 class="h3 mb-0">Bookmark Saya <span class="nav-badge" data-bookmark-count>{{ total }}</span></h1>
+<main class="bookmark-page">
+    <header class="bookmark-hero">
+        <div class="bookmark-hero-text">
+            <h1>Bookmark Saya <span class="nav-badge" data-bookmark-count>{{ total }}</span></h1>
+            <p>Resep favoritmu tersimpan di sini, siap dimasak kapan saja.</p>
+        </div>
         <button type="button" id="clear-button"
-            class="btn btn-outline-dark btn-sm rounded-pill{% if not total %} d-none{% endif %}">
+            class="bookmark-btn-soft{% if not total %} d-none{% endif %}">
             Hapus semua
         </button>
     </header>
 
-    <form id="bookmark-filter-form" class="row g-2 align-items-end mb-4">
+    <div class="bookmark-filter-card">
+    <form id="bookmark-filter-form" class="row g-3 align-items-end">
         <div class="col-12 col-md-4">
             <label class="form-label small mb-1" for="f-q">Cari judul</label>
             <input id="f-q" type="search" name="q" value="{{ filters.q }}" class="form-control"
@@ -64,10 +70,11 @@
             </select>
         </div>
         <div class="col-12 d-flex gap-2">
-            <button type="submit" class="btn btn-dark btn-sm rounded-pill">Terapkan</button>
-            <button type="button" id="reset-button" class="btn btn-outline-secondary btn-sm rounded-pill">Reset</button>
+            <button type="submit" class="bookmark-btn">Terapkan</button>
+            <button type="button" id="reset-button" class="bookmark-btn-soft">Reset</button>
         </div>
     </form>
+    </div>
 
     <!-- Loading State -->
     <div id="loading" class="text-center text-muted py-5 d-none">
