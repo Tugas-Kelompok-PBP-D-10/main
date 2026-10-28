@@ -21,10 +21,12 @@
 >
     <section class="tracker-hero">
         <div class="tracker-avatar">
-            {% if user.profile.photo %}
-                <img src="{{ user.profile.photo.url }}" alt="Foto {{ user.username }}">
+            {% if user.profile.avatar %}
+                <img src="{{ user.profile.avatar.url }}" alt="{{ user.username }}">
             {% else %}
-                <span class="tracker-avatar-placeholder"></span>
+                <span class="tracker-avatar-placeholder" aria-hidden="true">
+                    {{ user.username|first|upper }}
+                </span>
             {% endif %}
         </div>
 
@@ -199,6 +201,9 @@
                 </a>
 
             </div>
+
+        </aside>
+    </div>
 
 <!-- SET WEEKLY NUTRITION TARGET -->
 <dialog
