@@ -11,141 +11,327 @@
 
 {% block content %}
 
-<main class="tracker">
 
-  {% if coming_soon %}
-  <div class="soon-banner" role="status">
-    <span class="soon-pill">Coming Soon</span>
-    <p>
-      Fitur Tracker masih dalam pengembangan. Streak, nutrisi, dan badge
-      akan aktif setelah fitur "Selesai Memasak" di modul Resep tersambung.
-    </p>
-  </div>
-  {% endif %}
+<main
+    class="tracker-page"
+    id="tracker-dashboard"
+    data-api-url="{% url 'tracker:dashboard_api' %}"
+    data-history-url="{% url 'tracker:history_api' %}"
+    data-nutrition-target-url="{% url 'tracker:nutrition_target_api' %}"
+>
 
-  {# ===== Greeting ===== #}
-  <section class="tracker-greeting">
-    <div class="avatar">
-      {% if user.profile.photo %}
-        <img src="{{ user.profile.photo.url }}" alt="Foto {{ user.username }}">
-      {% else %}
-        <span class="avatar-placeholder" aria-hidden="true"></span>
-      {% endif %}
-    </div>
-
-    <div>
-      <h1 class="greeting-title">
-        Hi, {{ user.first_name|default:user.username|default:"Chef" }}!
-      </h1>
-      <p class="greeting-sub">Lets see your weekly progress</p>
-    </div>
-  </section>
-
-  <div class="tracker-grid">
-
-    {# ===== Kolom kiri: streak + nutrisi ===== #}
-    <div class="tracker-main">
-
-      <section
-        class="card streak-card{% if coming_soon %} is-soon{% endif %}"
-        aria-labelledby="streak-title"
-      >
-
-        {% if coming_soon %}
-          <span class="soon-pill soon-pill--corner">Coming Soon</span>
-        {% endif %}
-
-        <div class="streak-info">
-          <h2 id="streak-title" class="section-title section-title--orange">
-            Your Upcycling Impact
-          </h2>
-
-          <p class="streak-count">
-            <span class="streak-number">{{ streak.current }}</span>
-            hari memasak berturut-turut
-          </p>
-
-          {% if streak.is_record %}
-            <p class="streak-note">
-              New Record! This is your highest rescue streak this month. 🎉
-            </p>
-          {% else %}
-            <p class="streak-note">
-              Rekor terbaikmu {{ streak.longest }} hari.
-              Terus masak untuk mengalahkannya!
-            </p>
-          {% endif %}
-
-          <button
-            type="button"
-            class="btn btn-orange btn-sm"
-            {% if coming_soon %}disabled{% endif %}
-          >
-            Post
-          </button>
+    
+    <section class="tracker-hero">
+        <div class="tracker-avatar">
+            {% if user.profile.photo %}
+                <img src="{{ user.profile.photo.url }}" alt="Foto {{ user.username }}">
+            {% else %}
+                <span class="tracker-avatar-placeholder"></span>
+            {% endif %}
         </div>
 
-        <div
-          class="week-chart"
-          role="img"
-          aria-label="Aktivitas memasak 7 hari terakhir"
-        >
-          {% for day in week %}
-            <div class="week-col">
-              <div class="week-track">
-                <div
-                  class="week-bar{% if not day.cooked %} week-bar--empty{% endif %}"
-                  style="--h: {{ day.percent }}%"
-                ></div>
-              </div>
-              <span class="week-label">{{ day.label }}</span>
-            </div>
-          {% endfor %}
+        <div class="tracker-hero-text">
+            <h1>
+                Hi, {{ user.first_name|default:user.username|default:"Chef" }}!
+            </h1>
+            <p>Lets see your weekly progress</p>
         </div>
-
-      </section>
-
-          {# ===== Nutrient cards ===== #}
-          <section class="nutrient-row nutrient-coming-soon">
-
-        <article class="card coming-soon-card">
-            <span class="soon-pill">Coming Soon</span>
-
-            <h3>Nutrition Tracking</h3>
-
-            <p>
-                Track your protein, carbs, and fat intake
-                from the meals you cook.
-            </p>
-        </article>
-
     </section>
 
+    <div class="tracker-layout">
+       
+        <section class="tracker-left">
+            
+            <div class="tracker-card tracker-impact-card">
+                <div class="tracker-impact-content">
+                    <div class="tracker-impact-info">
+                        <h2>Your Upcycling Impact</h2>
+
+                        <p class="tracker-streak-line">
+                            <span id="streak-current">{{ streak.current }}</span>
+                            hari memasak berturut-turut
+                        </p>
+
+                        <p class="tracker-streak-note" id="streak-note">
+                            {% if streak.is_record %}
+                                New Record! This is your highest rescue streak this month. 🎉
+                            {% else %}
+                                Rekor terbaikmu {{ streak.longest }} hari. Terus masak untuk mengalahkannya!
+                            {% endif %}
+                        </p>
+                    <button
+                        type="button"
+                        class="tracker-btn"
+                        id="tracker-share-btn"
+                        aria-haspopup="dialog"
+                        aria-controls="tracker-share-dialog"
+                    >
+                        <i data-lucide="share-2" aria-hidden="true"></i>
+                        <span>Post</span>
+                    </button>
+                    </div>
+                    <div class="tracker-week-box">
+                        <div class="tracker-week-chart" id="week-chart">
+                            {% for day in week %}
+                            <div class="tracker-week-col">
+                                <div class="tracker-week-track">
+                                    <div
+                                        class="tracker-week-bar{% if not day.cooked %} is-empty{% endif %}"
+                                        style="--h: {{ day.percent }}%;"
+                                    ></div>
+                                </div>
+                                <span class="tracker-week-label">{{ day.label }}</span>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- YOUR PROGRESS / NUTRITION TRACKING -->
+            <div class="tracker-progress-section">
+
+                <div class="tracker-nutrition-header">
+
+                    <div class="tracker-section-title">
+                        Your Progress
+                    </div>
+
+                    <button
+                        type="button"
+                        class="tracker-set-target-btn"
+                        id="tracker-set-target-btn"
+                        aria-haspopup="dialog"
+                        aria-controls="tracker-target-dialog"
+                    >
+                        <i data-lucide="sliders-horizontal"></i>
+                        <span>Set Target</span>
+                    </button>
+
+                </div>
+
+                <div
+                    class="tracker-progress-grid"
+                    id="nutrition-container"
+                >
+                    <div class="tracker-card tracker-mini-card">
+                        <p>Loading nutrition data...</p>
+                    </div>
+                </div>
+
+            </div>
+
+           
+        </section>
+
+        
+        <aside class="tracker-right">
+            <div class="tracker-side-card">
+                <div class="tracker-side-header">
+                    <h3>Your Badges</h3>
+                    <span id="badge-summary">Loading...</span>
+                </div>
+
+                <div class="tracker-badge-list" id="badges-container">
+                    <p>Loading achievements...</p>
+                </div>
+            </div>
+
+            <!-- YOUR BOOKMARKS -->
+            <div class="tracker-side-card tracker-bookmark-card">
+
+                <div class="tracker-side-header">
+                    <h3>Your Bookmarks</h3>
+                    <i data-lucide="bookmark" aria-hidden="true"></i>
+                </div>
+
+                <div
+                    id="bookmarks-container"
+                    class="tracker-bookmarks-list"
+                    aria-live="polite"
+                >
+                    <div class="tracker-bookmarks-empty">
+                        <i data-lucide="bookmark"></i>
+
+                        <p class="tracker-bookmarks-title">
+                            No bookmarked recipes yet
+                        </p>
+
+                        <p class="tracker-bookmarks-description">
+                            Your saved recipes will appear here
+                            once bookmarks are connected.
+                        </p>
+                    </div>
+                </div>
+
+            </div>
+        </aside>
     </div>
 
-<aside class="tracker-side">
+<!-- SET WEEKLY NUTRITION TARGET -->
+<dialog
+    id="tracker-target-dialog"
+    class="tracker-target-dialog"
+    aria-labelledby="tracker-target-title"
+>
+    <div class="tracker-target-header">
+        <div>
+            <h2 id="tracker-target-title">
+                Set Nutrition Target
+            </h2>
+            <p>Set your weekly nutrition goals.</p>
+        </div>
 
-    <div class="side-head">
-        <h2 class="section-title section-title--orange">
-            Your Badges
+        <button
+            type="button"
+            id="tracker-target-close"
+            class="tracker-target-close"
+            aria-label="Close target settings"
+        >
+            <i data-lucide="x"></i>
+        </button>
+    </div>
+
+    <form id="tracker-target-form">
+        {% csrf_token %}
+
+        <div class="tracker-target-fields">
+            <div class="tracker-target-field">
+                <label for="tracker-target-protein">
+                    Protein (g)
+                </label>
+
+                <input
+                    type="number"
+                    id="tracker-target-protein"
+                    name="protein_g"
+                    min="1"
+                    max="10000"
+                    step="1"
+                    placeholder="Enter protein target"
+                    required
+                >
+            </div>
+
+            <div class="tracker-target-field">
+                <label for="tracker-target-carbs">
+                    Carbs (g)
+                </label>
+
+                <input
+                    type="number"
+                    id="tracker-target-carbs"
+                    name="carbs_g"
+                    min="1"
+                    max="10000"
+                    step="1"
+                    placeholder="Enter carbs target"
+                    required
+                >
+            </div>
+
+            <div class="tracker-target-field">
+                <label for="tracker-target-fat">
+                    Fat (g)
+                </label>
+
+                <input
+                    type="number"
+                    id="tracker-target-fat"
+                    name="fat_g"
+                    min="1"
+                    max="10000"
+                    step="1"
+                    placeholder="Enter fat target"
+                    required
+                >
+            </div>
+        </div>
+
+        <p
+            class="tracker-target-message"
+            id="tracker-target-message"
+            role="status"
+            aria-live="polite"
+        ></p>
+
+        <div class="tracker-target-actions">
+            <button
+                type="button"
+                class="tracker-target-cancel"
+                id="tracker-target-cancel"
+            >
+                Cancel
+            </button>
+
+            <button
+                type="submit"
+                class="tracker-target-save"
+                id="tracker-target-save"
+            >
+                Save Target
+            </button>
+        </div>
+    </form>
+</dialog>
+
+<!-- SHARE YOUR PROGRESS -->
+
+<dialog
+    id="tracker-share-dialog"
+    class="tracker-share-dialog"
+    aria-labelledby="tracker-share-title"
+>
+    <div class="tracker-share-header">
+        <h2 id="tracker-share-title">
+            Share Your Progress
         </h2>
+
+        <button
+            type="button"
+            id="tracker-share-close"
+            class="tracker-share-close"
+            aria-label="Close"
+        >
+            <i data-lucide="x"></i>
+        </button>
     </div>
 
-    <div class="card coming-soon-card">
-        <span class="soon-pill">Coming Soon</span>
+    <canvas
+        id="tracker-share-canvas"
+        width="1080"
+        height="1350"
+        aria-label="Preview kartu pencapaian OlahRasa"
+        role="img"
+    ></canvas>
 
-        <h3>Badges</h3>
-
-        <p>
-            Complete cooking challenges and earn badges
-            for your progress.
-        </p>
+    <div class="tracker-share-actions">
+        <button type="button" id="tracker-download-share">
+            <i data-lucide="download"></i>
+            Download PNG
+        </button>
+        <button type="button" id="tracker-native-share">
+            <i data-lucide="share-2"></i>
+            Share Image
+        </button>
+        <button type="button" id="tracker-whatsapp-share">
+            <i data-lucide="message-circle"></i>
+            WhatsApp
+        </button>
+        <button type="button" id="tracker-copy-share">
+            <i data-lucide="link"></i>
+            Copy Link
+        </button>
     </div>
 
-</aside>
-
-  </div>
-
+    <p id="tracker-share-message" role="status" aria-live="polite"></p>
+</dialog>
 </main>
 
+<script src="{% static 'tracker/share.js' %}" defer></script>
+<script src="{% static 'tracker/tracker.js' %}" defer></script>
+<script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js"></script>
+
+
+ 
 {% endblock content %}

@@ -1,70 +1,39 @@
-{% load static %}
 
-<!DOCTYPE html>
-<html lang="id">
+{% extends "auth_base.html" %}
 
-<head>
-    <meta charset="UTF-8">
+{% block title %}Welcome | OlahRasa{% endblock %}
 
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0">
+{% block form_content %}
 
-    <title>Welcome | OlahRasa</title>
+<div class="text-center">
 
-    <link rel="stylesheet"
-          href="{% static 'css/login.css' %}">
-</head>
+    <h2 class="auth-heading fw-bold mb-3">
+        Selamat Datang!
+    </h2>
 
-<body>
+    <p class="auth-muted mb-4">
+        Masuk atau daftar untuk menemukan inspirasi resep
+        dari bahan yang kamu miliki.
+    </p>
 
-    <main class="auth-card">
+    <div class="d-grid gap-3">
 
-        <div class="brand-header">
+        <a href="{% url 'authentication:login' %}"
+           class="btn auth-primary-btn fw-bold">
+            LOG IN
+        </a>
 
-            <div class="logo-icon">🍴</div>
+        <a href="{% url 'authentication:register' %}"
+           class="btn btn-outline-success auth-secondary-btn fw-bold">
+            SIGN UP
+        </a>
 
-            <h1>OlahRasa.</h1>
+    </div>
 
-            <p>Olah bahan sisa, jadi suatu rasa.</p>
+    <p class="auth-muted small mt-4">
+        Kurangi food waste, mulai dari dapurmu.
+    </p>
 
-        </div>
+</div>
 
-        <hr class="divider">
-
-        <h2>Selamat Datang!</h2>
-
-        <p class="description">
-            Masuk atau daftar untuk mulai menemukan
-            inspirasi resep sesuai bahan yang kamu miliki.
-        </p>
-
-        <div class="choice-list">
-
-            <a href="{% url 'authentication:login' %}"
-               class="choice choice-primary">
-
-                <span>➜</span>
-                Login
-                <span>›</span>
-
-            </a>
-
-            <a href="{% url 'authentication:register' %}"
-               class="choice choice-secondary">
-
-                <span>♙</span>
-                Daftar Akun
-                <span>›</span>
-
-            </a>
-
-        </div>
-
-        <p class="footer-text">
-            Kurangi food waste, mulai dari dapurmu.
-        </p>
-
-    </main>
-
-</body>
-</html>
+{% endblock %}
