@@ -19,6 +19,7 @@
         {% endfor %}
     </div>
 {% endif %}
+    <h1>Update Inventori</h1>
     <div id="bahan-form-grid">
         <form method="post" id="bahan-form" action="{% url 'update_inventori' %}">
             {% csrf_token %}
@@ -27,9 +28,6 @@
             {% for form in formset %}
                 <div class="bahan-form" id="row-{{ forloop.counter0 }}">
                     {{ form.id }}
-                    <div style="display: none;">
-                        {{ form.DELETE }}
-                    </div>
                     <button type="submit" form="delete-form-{{ form.instance.id }}" class="button button-danger" onclick="return confirm('Are you sure?');">-</button>
                     {{ form.name }}
                     {{ form.stock }} 
@@ -51,6 +49,6 @@
 <script>
     setTimeout(() => {
         document.getElementById('messages').style.display = 'none';
-    }, 5000);
+    }, 3000);
 </script>
 {% endblock content %}
