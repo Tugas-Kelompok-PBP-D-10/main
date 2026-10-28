@@ -10,6 +10,54 @@ from django.views.decorators.http import require_GET, require_POST
 from .models import Ingredient, Recipe, RecipeInteraction
 from .services import get_recipe_by_id, get_recipe_detail
 
+import uuid
+from decimal import Decimal, ROUND_HALF_UP
+
+from django.db import transaction
+
+from tracker.integrations import (
+    RecipeSnapshot,
+    complete_recipe_cooking,
+)
+
+
+def make_recipe_snapshot(recipe):
+    def convert_nutrient(value, field):
+        if value is None:
+            raise ValueError(
+                f"Data {field} pada resep belum tersedia."
+            )
+
+        number = Decimal(str(value))
+
+        if not number.is_finite() or number < 0:
+            raise ValueError(
+                f"Nilai {field} tidak valid."
+            )
+
+        return int(
+            number.quantize(
+                Decimal("1"),
+                rounding=ROUND_HALF_UP
+            )
+        )
+
+    return RecipeSnapshot(
+        name=recipe.title,
+        protein_g=convert_nutrient(
+            recipe.protein, "protein"
+        ),
+        carbs_g=convert_nutrient(
+            recipe.carbohydrates, "carbohydrates"
+        ),
+        fat_g=convert_nutrient(
+            recipe.fat, "fat"
+        ),
+        calories=convert_nutrient(
+            recipe.calories, "calories"
+        ),
+    )
+
 
 def _login_url(request, next_path=None):
     destination = next_path or request.get_full_path()
@@ -173,6 +221,7 @@ def record_recipe_view(request, recipe_id):
     return JsonResponse(_interaction_payload(request.user, recipe))
 
 
+
 @require_POST
 def complete_recipe(request, recipe_id):
     authentication_error = _authentication_error(request)
@@ -182,9 +231,10 @@ def complete_recipe(request, recipe_id):
     if request.content_type != "application/json":
         return _json_error(
             "invalid_confirmation",
-            "Konfirmasi memasak harus dikirim dalam format JSON.",
+            "Konfirmasi harus dalam format JSON.",
             400,
         )
+
     try:
         payload = json.loads(request.body or b"{}")
     except (TypeError, ValueError):
@@ -193,30 +243,88 @@ def complete_recipe(request, recipe_id):
             "Data konfirmasi tidak valid.",
             400,
         )
+
     if not isinstance(payload, dict) or payload.get("confirmed") is not True:
         return _json_error(
             "confirmation_required",
-            "Konfirmasi bahwa resep sudah dimasak terlebih dahulu.",
+            "Konfirmasi bahwa resep sudah dimasak.",
             400,
         )
 
+    # Ambil data resep dari database
     recipe = get_recipe_by_id(recipe_id)
+
     if recipe is None:
-        return _json_error("recipe_not_found", "Resep tidak ditemukan.", 404)
-    now = timezone.now()
-    interaction, created = RecipeInteraction.objects.get_or_create(
-        user=request.user,
-        recipe=recipe,
-        defaults={"viewed_at": now, "completed_at": now},
-    )
-    if not created:
-        update_fields = []
-        if not interaction.viewed_at:
-            interaction.viewed_at = now
-            update_fields.append("viewed_at")
-        if not interaction.completed_at:
-            interaction.completed_at = now
-            update_fields.append("completed_at")
-        if update_fields:
-            interaction.save(update_fields=(*update_fields, "updated_at"))
-    return JsonResponse(_interaction_payload(request.user, recipe))
+        return _json_error(
+            "recipe_not_found",
+            "Resep tidak ditemukan.",
+            404,
+        )
+
+    # Validasi ID aktivitas memasak
+    try:
+        request_id = uuid.UUID(str(payload.get("request_id")))
+    except (ValueError, TypeError, AttributeError):
+        return _json_error(
+            "invalid_request_id",
+            "Request ID harus berupa UUID valid.",
+            400,
+        )
+
+    # Konversi data Recipe menjadi RecipeSnapshot
+    try:
+        recipe_snapshot = make_recipe_snapshot(recipe)
+    except ValueError as error:
+        return _json_error(
+            "invalid_recipe_data",
+            str(error),
+            400,
+        )
+
+    # Simpan interaksi Recipe dan aktivitas Tracker
+    # dalam satu transaksi
+    with transaction.atomic():
+        now = timezone.now()
+
+        interaction, created = RecipeInteraction.objects.get_or_create(
+            user=request.user,
+            recipe=recipe,
+            defaults={
+                "viewed_at": now,
+                "completed_at": now,
+            },
+        )
+
+        if not created:
+            update_fields = []
+
+            if not interaction.viewed_at:
+                interaction.viewed_at = now
+                update_fields.append("viewed_at")
+
+            if not interaction.completed_at:
+                interaction.completed_at = now
+                update_fields.append("completed_at")
+
+            if update_fields:
+                interaction.save(
+                    update_fields=(*update_fields, "updated_at")
+                )
+
+        # INTEGRASI RECIPE KE TRACKER
+        new_badges = complete_recipe_cooking(
+            user=request.user,
+            recipe=recipe_snapshot,
+            request_id=request_id,
+        )
+
+    # Pertahankan data response Recipe yang lama
+    response_data = _interaction_payload(request.user, recipe)
+
+    # Tambahkan informasi untuk Tracker
+    response_data["tracker_recorded"] = True
+    response_data["new_badges"] = [
+        badge.name for badge in new_badges
+    ]
+
+    return JsonResponse(response_data)

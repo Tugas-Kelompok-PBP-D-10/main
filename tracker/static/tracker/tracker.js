@@ -12,6 +12,7 @@ const nutrientIcons = {
 
 document.addEventListener("DOMContentLoaded", () => {
     loadTrackerDashboard();
+    loadCookingHistory();
 });
 
 async function loadTrackerDashboard() {
@@ -74,13 +75,9 @@ async function loadTrackerDashboard() {
     }
 }
 
-
-
 // =======================
 // NUTRITION TRACKING
 // =======================
-
-
 function renderNutrition(nutrients) {
     const container = document.getElementById(
         "nutrition-container"
@@ -198,7 +195,6 @@ function renderNutrition(nutrients) {
         window.lucide.createIcons();
     }
 }
-
 
 // =======================
 // ACHIEVEMENT BADGES
@@ -346,7 +342,6 @@ function formatCookingDate(dateString) {
 }
 
 
-// Render Cooking History
 
 function renderCookingHistory(history) {
     const container = document.getElementById(
@@ -371,7 +366,7 @@ function renderCookingHistory(history) {
         const item = document.createElement("article");
         item.className = "tracker-history-item";
 
-        
+        // ICON
         const iconBox = document.createElement("div");
         iconBox.className = "tracker-history-icon";
 
@@ -379,7 +374,7 @@ function renderCookingHistory(history) {
         icon.setAttribute("data-lucide", "chef-hat");
         iconBox.appendChild(icon);
 
-       
+        // CONTENT
         const content = document.createElement("div");
         content.className = "tracker-history-content";
 
@@ -400,29 +395,29 @@ function renderCookingHistory(history) {
 
         content.append(title, date, nutrients);
 
-      
+        // STATUS
         const status = document.createElement("span");
         status.className = "tracker-history-status";
         status.textContent = "Completed";
 
+        // GABUNGKAN CARD
         item.append(iconBox, content, status);
         container.appendChild(item);
     });
 
-    
+    // Jalankan Lucide sekali setelah seluruh card dibuat
     if (window.lucide) {
         window.lucide.createIcons();
     }
 }
 
-
 /* ==========================================
    SET WEEKLY NUTRITION TARGET — AJAX
 ========================================== */
-
 document.addEventListener("DOMContentLoaded", () => {
     const dashboard = document.getElementById("tracker-dashboard");
     const openBtn = document.getElementById("tracker-set-target-btn");
+    const deleteBtn = document.getElementById("delete-target-btn");
     const dialog = document.getElementById("tracker-target-dialog");
     const closeBtn = document.getElementById("tracker-target-close");
     const cancelBtn = document.getElementById("tracker-target-cancel");
@@ -491,6 +486,61 @@ document.addEventListener("DOMContentLoaded", () => {
 
     closeBtn.addEventListener("click", closeDialog);
     cancelBtn.addEventListener("click", closeDialog);
+
+
+    // DELETE NUTRITION TARGET
+    if (deleteBtn) {
+        deleteBtn.addEventListener("click", async () => {
+            const confirmed = window.confirm(
+                "Yakin ingin menghapus Nutrition Target?"
+            );
+
+            if (!confirmed) return;
+
+            if (!csrfToken) {
+                showMessage("CSRF token tidak ditemukan.", true);
+                return;
+            }
+
+            deleteBtn.disabled = true;
+            showMessage("");
+
+            try {
+                const response = await fetch(targetUrl, {
+                    method: "DELETE",
+                    credentials: "same-origin",
+                    headers: {
+                        "X-CSRFToken": csrfToken
+                    }
+                });
+
+                const result = await response.json();
+
+                if (!response.ok || !result.success) {
+                    throw new Error(
+                        result.message || "Gagal menghapus target."
+                    );
+                }
+
+                // Kosongkan form target
+                proteinInput.value = "";
+                carbsInput.value = "";
+                fatInput.value = "";
+
+                // Tutup dialog
+                closeDialog();
+
+                // Ambil ulang dashboard setelah target dihapus
+                await loadTrackerDashboard();
+
+            } catch (error) {
+                console.error(error);
+                showMessage(error.message, true);
+            } finally {
+                deleteBtn.disabled = false;
+            }
+        });
+    }
 
     // Simpan target menggunakan AJAX
     form.addEventListener("submit", async (event) => {
