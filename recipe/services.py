@@ -6,7 +6,7 @@ import socket
 from decimal import Decimal, InvalidOperation
 from html.parser import HTMLParser
 from urllib.error import HTTPError, URLError
-from urllib.parse import urlencode
+from urllib.parse import urlencode, urlsplit
 from urllib.request import Request, urlopen
 
 from django.core.cache import cache
@@ -64,6 +64,73 @@ def _nutrition_value(value, unit):
     if number is None:
         return None
     return {"value": number, "unit": unit}
+
+
+def normalize_recipe_ingredients(
+    ingredients,
+    *,
+    require_items=False,
+    require_quantities=False,
+):
+    """Validasi bahan agar Admin dan form pengguna memakai format yang sama."""
+    if not isinstance(ingredients, list):
+        raise ValueError("Bahan harus berupa daftar.")
+
+    normalized = []
+    for index, ingredient in enumerate(ingredients, start=1):
+        if isinstance(ingredient, str):
+            name = ingredient.strip()
+            if name:
+                if require_quantities:
+                    raise ValueError(f"Jumlah bahan ke-{index} belum diisi.")
+                normalized.append(name)
+            continue
+        if not isinstance(ingredient, dict):
+            raise ValueError(f"Format bahan ke-{index} tidak valid.")
+
+        name = str(ingredient.get("name") or "").strip()
+        unit = str(ingredient.get("unit") or "").strip()
+        if not name:
+            raise ValueError(f"Nama bahan ke-{index} belum diisi.")
+        if len(name) > 100 or len(unit) > 40:
+            raise ValueError(f"Nama atau satuan bahan ke-{index} terlalu panjang.")
+
+        raw_amount = ingredient.get("amount")
+        if raw_amount in (None, ""):
+            if require_quantities:
+                raise ValueError(f"Jumlah bahan ke-{index} belum diisi.")
+            amount = None
+        else:
+            try:
+                decimal_amount = Decimal(str(raw_amount))
+            except (InvalidOperation, TypeError, ValueError):
+                raise ValueError(f"Jumlah bahan ke-{index} harus berupa angka.")
+            if (
+                not decimal_amount.is_finite()
+                or decimal_amount <= 0
+                or decimal_amount > Decimal("1000000000000")
+            ):
+                raise ValueError(f"Jumlah bahan ke-{index} harus lebih besar dari nol.")
+            amount = (
+                int(decimal_amount)
+                if decimal_amount == decimal_amount.to_integral_value()
+                else float(decimal_amount)
+            )
+            if isinstance(amount, float) and not math.isfinite(amount):
+                raise ValueError(f"Jumlah bahan ke-{index} tidak valid.")
+
+        if require_quantities and not unit:
+            raise ValueError(f"Satuan bahan ke-{index} belum dipilih.")
+
+        record = {"name": name, "amount": amount, "unit": unit}
+        original = str(ingredient.get("original") or "").strip()
+        if original:
+            record["original"] = original
+        normalized.append(record)
+
+    if require_items and not normalized:
+        raise ValueError("Tambahkan sedikitnya satu bahan yang valid.")
+    return normalized
 
 
 def _request_spoonacular(endpoint, params, api_key, method="GET", body=None):
@@ -433,9 +500,28 @@ def scale_ingredient_quantities(ingredients, original_servings, target_servings)
 
 def _safe_image_url(value):
     value = str(value or "").strip()
-    if value.startswith(("https://", "http://")):
-        return value
+    if not value or any(
+        character.isspace()
+        or ord(character) < 32
+        or ord(character) == 127
+        or character == "\\"
+        for character in value
+    ):
+        return ""
     if value.startswith("/") and not value.startswith("//"):
+        return value
+    try:
+        parsed = urlsplit(value)
+        port = parsed.port
+    except ValueError:
+        return ""
+    if (
+        parsed.scheme.casefold() in {"http", "https"}
+        and parsed.hostname
+        and not parsed.username
+        and not parsed.password
+        and (port is None or 0 < port < 65536)
+    ):
         return value
     return ""
 
@@ -449,6 +535,16 @@ def _stored_image_url(recipe):
         return ""
 
 
+def get_recipe_image_url(recipe, spoonacular_data=None):
+    """Pilih satu URL foto aman yang dapat dipakai kartu dan detail."""
+    image_url = _stored_image_url(recipe) or _safe_image_url(recipe.image_url)
+    if image_url:
+        return image_url
+    if isinstance(spoonacular_data, dict):
+        return _safe_image_url(spoonacular_data.get("image"))
+    return ""
+
+
 def get_recipe_detail(recipe):
     """Susun respons detail untuk satu resep dan gabungkan API bila diizinkan."""
     spoonacular_result = get_spoonacular_recipe(recipe)
@@ -460,9 +556,7 @@ def get_recipe_detail(recipe):
     if not description and api_data:
         description = _plain_text(api_data.get("summary"))
 
-    image_url = _stored_image_url(recipe) or _safe_image_url(recipe.image_url)
-    if not image_url and api_data:
-        image_url = _safe_image_url(api_data.get("image"))
+    image_url = get_recipe_image_url(recipe, api_data)
 
     preparation_time = recipe.preparation_time
     if preparation_time is None and api_data:

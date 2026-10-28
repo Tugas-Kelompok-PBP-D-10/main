@@ -7,7 +7,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('recipe', '0005_add_missing_columns'),
+        ('recipe', '0004_recipe_additional_nutrition_recipe_author_and_more'),
     ]
 
     operations = [

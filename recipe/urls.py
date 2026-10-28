@@ -8,6 +8,11 @@ app_name = "recipe"
 urlpatterns = [
     path("", views.recipe_home, name="home"),
     path(
+        "api/recipes/submit/",
+        views.submit_recipe,
+        name="api_submit",
+    ),
+    path(
         "api/recipes/<int:recipe_id>/",
         views.recipe_detail_api,
         name="api_detail",
