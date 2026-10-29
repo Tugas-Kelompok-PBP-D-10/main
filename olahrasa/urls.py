@@ -13,8 +13,8 @@ urlpatterns = [
 
     path('tracker/', include('tracker.urls')),
     # Ubah LoginView bawaan jadi redirect langsung ke tracker untuk testing lokal:
-    path('accounts/login/', lambda request: redirect('/tracker/'), name='login'),
-    path('', lambda request: redirect('/tracker/')),
+    path('accounts/login/', lambda request: redirect('/recipe/'), name='login'),
+    path('', lambda request: redirect('/recipe/')),
     # Path untuk modul Inventori
     path('inventori/', include("inventori.urls")),
     # Path Recipe

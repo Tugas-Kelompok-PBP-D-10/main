@@ -184,7 +184,7 @@ DEFAULT_FROM_EMAIL = os.getenv(
 
 EMAIL_TIMEOUT = 15
 
-LOGIN_REDIRECT_URL = "/tracker/"
+LOGIN_REDIRECT_URL = "/recipe/"
 
 SOCIALACCOUNT_PROVIDERS = {
     "google": {

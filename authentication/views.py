@@ -19,14 +19,14 @@ from .forms import RegisterForm
 def welcome(request):
 
     if request.user.is_authenticated:
-        return redirect("tracker:tracker")
+        return redirect("recipe:home")
 
     return render(request, 'welcome.html')
 
 def register_page(request):
 
     if request.user.is_authenticated:
-        return redirect("tracker:tracker")
+        return redirect("recipe:home")
 
     if request.method == "POST":
 
@@ -47,7 +47,7 @@ def register_page(request):
 def login_page(request):
 
     if request.user.is_authenticated:
-        return redirect("tracker:tracker")
+        return redirect("recipe:home")
 
     if request.method == "POST":
         form = AuthenticationForm(request, data=request.POST)
@@ -55,7 +55,7 @@ def login_page(request):
         if form.is_valid():
             user = form.get_user()
             auth_login(request,user)
-            return redirect("tracker:tracker")
+            return redirect("recipe:home")
 
     else:
         form = AuthenticationForm(request)
