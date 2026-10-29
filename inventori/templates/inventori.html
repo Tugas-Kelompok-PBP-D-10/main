@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load voting_tags %}
 
 {% block meta %}
 <title>Inventori | OlahRasa</title>
@@ -7,6 +8,8 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'inventori/css/inventori-style.css' %}">
+<link rel="stylesheet" href="{% static 'css/recipe.css' %}">
+<link rel="stylesheet" href="{% static 'voting/voting.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -18,36 +21,56 @@
 
 
 <div id="content">
-    <h1>Inventori</h1>
-    <h2>Rekomendasi Resep</h2>
+    <div class="inventori-col">
+        <h1>Inventori</h1>
+        <!-- Tempat menampung data bahan -->
+        <div id="bahan-grid">
+            <table id="bahan-table">
 
-    <!-- Tempat menampung data bahan -->
-    <div id="bahan-grid">
-        <table id="bahan-table">
+            </table>
+        </div>
 
-        </table>
+        <!-- Tempat meletakkan tombol + dan Update Inventori -->
+        <div class="buttons">
+            <button type="button"
+                    id="add-button"
+                    class="button"
+                    popovertarget="tambah-bahan-modal">
+                <span aria-hidden="true">+</span>    
+            </button>
+            <a href="{% url 'update_inventori' %}" class="href-button">Update Inventori</a>
+        </div>
     </div>
 
     <!-- Tempat menampung rekomendasi resep -->
-    <div id="recipe-grid">
-        <p>Coming Soon</p>
-    </div>
+    <section class="recipe-grid-section">
+        <div class="recipe-grid-container">
+            <h2 class="recipe-grid-main-title">Rekomendasi Resep</h2>
+            <p class="recipe-grid-subtitle">
+                Pilih resep untuk melihat detail, bahan, langkah memasak, dan nutrisi yang tersedia.
+            </p>
 
-    <!-- Tempat meletakkan tombol + dan Update Inventori -->
-    <div class="buttons">
-        <button type="button"
-                id="add-button"
-                class="button"
-                popovertarget="tambah-bahan-modal">
-            <span aria-hidden="true">+</span>    
-        </button>
-        <a href="{% url 'update_inventori' %}" class="href-button">Update Inventori</a>
-    </div>
+            <p id="recipeSearchStatus" class="recipe-search-status" role="status" aria-live="polite" hidden></p>
+            <button type="button" id="recipeSearchLoadMore" class="recipe-search-load-more" hidden>
+                Muat Lebih Banyak
+            </button>
+
+            <div id="recipe-grid-inventori" class="recipe-grid">
+                    
+                
+                    
+            </div>
+        </div>
+    </section>
 </div>
 
 <!-- Komponen popup tambah bahan dan backdrop blur -->
-<div class="blur-backdrop" id="backdrop"></div>
+<div class="blur-backdrop" id="backdrop"></div> 
 {% include "components/tambah_bahan_modal.html" %}
+{% include "components/recipe_detail_modal.html" %}
+
+<script src="{% static 'voting/voting.js' %}"></script>
+<script src="{% static 'JS/recipe.js' %}" defer></script>
 
 <script>
     // Setup awal (hide backdrop blur dan pesan error serta sukses)
@@ -61,7 +84,7 @@
         elem.innerHTML = '';
 
         elem.innerHTML = `
-            <td>${bahan.nama}</td>
+            <td class="nama-bahan">${bahan.nama}</td>
             <td>${bahan.stok}</td>
         `;
         return elem;
@@ -71,6 +94,7 @@
     // menyisipkan datanya ke dalam tabel bahan pada halaman html.
     async function fetchBahan() {
         const bahanGrid = document.getElementById('bahan-table');
+        const recipeGrid = document.getElementById('recipe-grid-inventori');
 
         // Fetch data Bahan
         const url = "{% url 'get_bahan_json' %}";
@@ -84,6 +108,11 @@
         bahanGrid.innerHTML = '';
         if (bahanData.length === 0) { // Tidak ada bahan dalam inventori
             bahanGrid.innerHTML = '<p>Tidak ada bahan dalam inventori</p>';
+            recipeGrid.innerHTML = `
+            <div class="recipe-empty-state">
+                <p>Belum ada resep yang tersedia.</p>
+            </div>
+            `;
         } else { // Ada bahan dalam inventori
             // Tampilkan table head
             bahanGrid.innerHTML = `
@@ -96,7 +125,97 @@
             bahanData.forEach(bahan => {
                 bahanGrid.appendChild(buildBahanRow(bahan));
             });
+            searchRecipesFromInventory();
         }
+    }
+
+    const INVENTORY_SEARCH_URL = "{% url 'api_recipe_search' %}";
+    // Fetch Rekomendasi Resep
+    async function searchRecipesFromInventory() {
+        const recipeGrid = document.getElementById('recipe-grid-inventori');
+        // 1. Get ingredient names from your DOM/Inventory state
+        // e.g., ["telur", "bawang putih", "nasi"]
+        const bahan2 = Array.from(document.querySelectorAll('.nama-bahan'))
+                                    .map(el => el.textContent.trim());
+
+        if (bahan2.length === 0) return;
+
+        // 2. Format into comma-separated string: "telur,bawang putih,nasi"
+        const queryString = encodeURIComponent(bahan2.join(','));
+
+        // 3. Call teammate's endpoint passing the ingredients in 'q'
+        const response = await fetch(`${INVENTORY_SEARCH_URL}?q=${queryString}`);
+        const data = await response.json();
+
+        if (data.results) {
+            recipeGrid.innerHTML = '';
+            data.results.forEach(resep => {
+                recipeGrid.appendChild(buildResepCard(resep));
+            });
+        }
+    }
+
+    function buildResepCard(resep) {
+        const elem = document.createElement('article');
+        elem.className = "recipe-card";
+        elem.innerHTML = '';
+        const resepId = resep.pk || resep.id;
+
+        const dataDetailUrl = "{% url 'recipe:api_spoonacular_detail' 999999 %}"
+            .replace('999999', resepId);
+
+        const imgSrcHtml = resep.card_image_url 
+            ? `<img src="${resep.card_image_url}" alt="${resep.title}" class="recipe-img">`
+            : '';
+        const recipeImgPlaceholderHidden = resep.card_image_url 
+            ? 'hidden' : '';
+
+        const prepTime = resep.preparation_time ? `Persiapan ${resep.preparation_time} menit` : '';
+        var cookingTime = '';
+        if (resep.cooking_time){
+            if (resep.preparation_time){
+                cookingTime = ` • Masak ${resep.cooking_time} menit`;
+            } else {
+                cookingTime = `Masak ${resep.cooking_time} menit`;
+            }
+        }
+        const servings = resep.servings ? ` • ${resep.servings} porsi` : '';
+        var recipeProtein = '';
+        if (resep.protein != null) {
+            if (resep.cooking_time) {
+                recipeProtein = ` • ${resep.protein} g protein`;
+            } else {
+                recipeProtein = `${resep.protein} g protein`;
+            }
+        }
+
+        elem.innerHTML = `
+            <button
+                type="button"
+                class="recipe-card-open"
+                aria-haspopup="dialog"
+                data-recipe-id="${resepId}"
+                data-detail-url="${dataDetailUrl}"
+            >
+                <div class="recipe-card-media">
+                    ${imgSrcHtml}
+                    <div class="recipe-img-placeholder" aria-hidden="true" ${recipeImgPlaceholderHidden}>
+                        Foto belum tersedia
+                    </div>
+                </div>
+
+                <div class="recipe-card-content">
+                    <h3 class="recipe-card-title">${resep.title}</h3>
+                    <p class="recipe-card-meta">
+                        ${prepTime}
+                        ${cookingTime}
+                        ${servings}
+                        ${recipeProtein}
+                    </p>
+                </div>
+            </button>
+        `;
+        return elem;
     }
 
     // Menutup popup Tambah Bahan

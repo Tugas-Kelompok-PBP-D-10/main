@@ -60,22 +60,22 @@ body {
     /* Grid Halaman */
     display: grid;
     grid-template-areas: 
-        "title-i title-r"
-        "inventori resep"
-        "button-i resep"; 
+        "inventori resep";
     grid-template-columns: 33fr 66fr;
     column-gap: 5rem;
 }
 
 h1 { /* Judul Inventori dan Update Inventori*/
-    grid-area: title-i;
     text-align: center;
     color: #ee8252;
     margin-bottom: 1rem;
 } 
 
-#bahan-grid{
+.inventori-col {
     grid-area: inventori;
+}
+
+#bahan-grid{
     padding: 2rem;
     padding-top: 0.7rem;
     background: #FFFEFE;
@@ -86,7 +86,6 @@ h1 { /* Judul Inventori dan Update Inventori*/
 }
 
 .buttons { /* Tombol + dan Update Inventori */
-    grid-area: button-i;
     display: grid;
     place-items: center;
     align-content: center;
@@ -97,10 +96,6 @@ h1 { /* Judul Inventori dan Update Inventori*/
     padding-bottom: 2rem;
     border-bottom-left-radius: 2rem;
     border-bottom-right-radius: 2rem;
-}
-
-h2 { /* Judul Rekomendasi Resep */
-    grid-area: title-r;
 }
 
 #recipe-grid {
@@ -160,7 +155,7 @@ table {
     margin-bottom: 0.5rem;
 }
 
-.form-group {
+.form-group-inventori {
     margin-bottom: 1rem;
 }
 
