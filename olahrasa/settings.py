@@ -30,7 +30,8 @@ SECRET_KEY = 'django-insecure-5nw4m*_1af7#(nmoai+9fb7u=&@*j4hiew(=7bqbvap4q!a(g7
 DEBUG = True
 
 ALLOWED_HOSTS = [
-     '127.0.0.1',"hafiza-nurul-olahrasa.pws.cs.ui.ac.id",
+    "hafiza-nurul-olahrasa.pws.cs.ui.ac.id",
+    "localhost", "127.0.0.1",
 ]
 
 CSRF_TRUSTED_ORIGINS = [
@@ -42,6 +43,7 @@ SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 # Application definition
 LOGIN_REDIRECT_URL = "recipe:home"
+
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -182,8 +184,6 @@ DEFAULT_FROM_EMAIL = os.getenv(
 )
 
 EMAIL_TIMEOUT = 15
-
-LOGIN_REDIRECT_URL = "/tracker/"
 
 SOCIALACCOUNT_PROVIDERS = {
     "google": {
