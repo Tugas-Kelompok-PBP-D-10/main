@@ -1,7 +1,10 @@
+import uuid
+
 from django.conf import settings
 from django.db import models
 from django.db.models import Q
 from django.core.validators import MinValueValidator
+from django.utils import timezone
 
 
 class Ingredient(models.Model):
@@ -39,6 +42,12 @@ class Recipe(models.Model):
         null=True,
         blank=True,
         related_name="recipes",
+    )
+    submission_key = models.UUIDField(
+        null=True,
+        blank=True,
+        unique=True,
+        editable=False,
     )
     title = models.CharField(max_length=255, verbose_name="Nama resep")
     description = models.TextField(blank=True, null=True, verbose_name="Deskripsi")
@@ -154,3 +163,26 @@ class RecipeInteraction(models.Model):
 
     def __str__(self):
         return f"{self.user} - {self.recipe}"
+
+
+class RecipeCookingEvent(models.Model):
+    """Satu kejadian memasak yang dapat dicatat berulang kali per resep."""
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="recipe_cooking_events",
+    )
+    recipe = models.ForeignKey(
+        Recipe,
+        on_delete=models.CASCADE,
+        related_name="cooking_events",
+    )
+    request_id = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
+    completed_at = models.DateTimeField(default=timezone.now, db_index=True)
+
+    class Meta:
+        ordering = ("-completed_at", "-pk")
+
+    def __str__(self):
+        return f"{self.user} memasak {self.recipe} ({self.completed_at})"

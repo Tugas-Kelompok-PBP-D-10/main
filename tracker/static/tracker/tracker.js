@@ -342,11 +342,8 @@ function formatCookingDate(dateString) {
 }
 
 
-
 function renderCookingHistory(history) {
-    const container = document.getElementById(
-        "history-container"
-    );
+    const container = document.getElementById("history-container");
 
     if (!container) return;
 
@@ -366,7 +363,6 @@ function renderCookingHistory(history) {
         const item = document.createElement("article");
         item.className = "tracker-history-item";
 
-        // ICON
         const iconBox = document.createElement("div");
         iconBox.className = "tracker-history-icon";
 
@@ -374,7 +370,6 @@ function renderCookingHistory(history) {
         icon.setAttribute("data-lucide", "chef-hat");
         iconBox.appendChild(icon);
 
-        // CONTENT
         const content = document.createElement("div");
         content.className = "tracker-history-content";
 
@@ -395,21 +390,19 @@ function renderCookingHistory(history) {
 
         content.append(title, date, nutrients);
 
-        // STATUS
         const status = document.createElement("span");
         status.className = "tracker-history-status";
         status.textContent = "Completed";
 
-        // GABUNGKAN CARD
         item.append(iconBox, content, status);
         container.appendChild(item);
     });
 
-    // Jalankan Lucide sekali setelah seluruh card dibuat
     if (window.lucide) {
         window.lucide.createIcons();
     }
 }
+
 
 /* ==========================================
    SET WEEKLY NUTRITION TARGET — AJAX

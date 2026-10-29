@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load voting_tags %}
 
 {% block meta %}
 <title>Inventori | OlahRasa</title>
@@ -7,9 +8,12 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'inventori/css/inventori-style.css' %}">
+<link rel="stylesheet" href="{% static 'css/recipe.css' %}">
+<link rel="stylesheet" href="{% static 'voting/voting.css' %}">
 {% endblock %}
 
 {% block content %}
+<!-- Untuk menampilkan pesan sukses dan error -->
 <div id="messages">
     <p id="message-success" class="message"></p>
     <p id="message-error" class="message"></p>
@@ -17,79 +21,210 @@
 
 
 <div id="content">
-    <h1>Inventori</h1>
-    <h2>Rekomendasi Resep</h2>
-    <div id="bahan-grid">
-        <table id="bahan-table">
+    <div class="inventori-col">
+        <h1>Inventori</h1>
+        <!-- Tempat menampung data bahan -->
+        <div id="bahan-grid">
+            <table id="bahan-table">
 
-        </table>
+            </table>
+        </div>
+
+        <!-- Tempat meletakkan tombol + dan Update Inventori -->
+        <div class="buttons">
+            <button type="button"
+                    id="add-button"
+                    class="button"
+                    popovertarget="tambah-bahan-modal">
+                <span aria-hidden="true">+</span>    
+            </button>
+            <a href="{% url 'update_inventori' %}" class="href-button">Update Inventori</a>
+        </div>
     </div>
 
-    <div id="recipe-grid">
-        <p>Coming Soon</p>
-    </div>
-    <div class="buttons">
-        <button type="button"
-                id="add-button"
-                class="button"
-                popovertarget="tambah-bahan-modal">
-            <span aria-hidden="true">+</span>    
-        </button>
-        <a href="{% url 'update_inventori' %}" class="href-button">Edit Inventori</a>
-    </div>
+    <!-- Tempat menampung rekomendasi resep -->
+    <section class="recipe-grid-section">
+        <div class="recipe-grid-container">
+            <h2 class="recipe-grid-main-title">Rekomendasi Resep</h2>
+            <p class="recipe-grid-subtitle">
+                Pilih resep untuk melihat detail, bahan, langkah memasak, dan nutrisi yang tersedia.
+            </p>
+
+            <p id="recipeSearchStatus" class="recipe-search-status" role="status" aria-live="polite" hidden></p>
+            <button type="button" id="recipeSearchLoadMore" class="recipe-search-load-more" hidden>
+                Muat Lebih Banyak
+            </button>
+
+            <div id="recipe-grid-inventori" class="recipe-grid">
+                    
+                
+                    
+            </div>
+        </div>
+    </section>
 </div>
 
-<div class="blur-backdrop" id="backdrop"></div>
+<!-- Komponen popup tambah bahan dan backdrop blur -->
+<div class="blur-backdrop" id="backdrop"></div> 
 {% include "components/tambah_bahan_modal.html" %}
+{% include "components/recipe_detail_modal.html" %}
+
+<script src="{% static 'voting/voting.js' %}"></script>
+<script src="{% static 'JS/recipe.js' %}" defer></script>
 
 <script>
+    // Setup awal (hide backdrop blur dan pesan error serta sukses)
     document.getElementById('backdrop').hidden = true;
     document.getElementById('messages').style.display = 'none';
 
-    function buildBahanCard(bahan) {
+    // Membuat elemen <tr> untuk suatu objek Bahan
+    function buildBahanRow(bahan) {
         const elem = document.createElement('tr');
         elem.className = "bahan-card";
         elem.innerHTML = '';
 
         elem.innerHTML = `
-            <td>${bahan.nama}</td>
+            <td class="nama-bahan">${bahan.nama}</td>
             <td>${bahan.stok}</td>
         `;
         return elem;
     }
 
+    // Mengambil data bahan dalam bentuk json, kemudian
+    // menyisipkan datanya ke dalam tabel bahan pada halaman html.
     async function fetchBahan() {
         const bahanGrid = document.getElementById('bahan-table');
+        const recipeGrid = document.getElementById('recipe-grid-inventori');
+
+        // Fetch data Bahan
         const url = "{% url 'get_bahan_json' %}";
         const response = await fetch(url, {
             headers: {'Accept': 'application/json'},
         });
 
+        // Parsing respons JSON jadi array Bahan
         const bahanData = await response.json();
+
         bahanGrid.innerHTML = '';
-        if (bahanData.length === 0) {
+        if (bahanData.length === 0) { // Tidak ada bahan dalam inventori
             bahanGrid.innerHTML = '<p>Tidak ada bahan dalam inventori</p>';
-        } else {
+            recipeGrid.innerHTML = `
+            <div class="recipe-empty-state">
+                <p>Belum ada resep yang tersedia.</p>
+            </div>
+            `;
+        } else { // Ada bahan dalam inventori
+            // Tampilkan table head
             bahanGrid.innerHTML = `
             <tr>
                 <th>Nama Bahan</th>
                 <th>Stok</th>
             </tr>
             `;
+            // Buat dan append table row untuk setiap objek Bahan
             bahanData.forEach(bahan => {
-                bahanGrid.appendChild(buildBahanCard(bahan));
+                bahanGrid.appendChild(buildBahanRow(bahan));
+            });
+            searchRecipesFromInventory();
+        }
+    }
+
+    const INVENTORY_SEARCH_URL = "{% url 'api_recipe_search' %}";
+    // Fetch Rekomendasi Resep
+    async function searchRecipesFromInventory() {
+        const recipeGrid = document.getElementById('recipe-grid-inventori');
+        // 1. Get ingredient names from your DOM/Inventory state
+        // e.g., ["telur", "bawang putih", "nasi"]
+        const bahan2 = Array.from(document.querySelectorAll('.nama-bahan'))
+                                    .map(el => el.textContent.trim());
+
+        if (bahan2.length === 0) return;
+
+        // 2. Format into comma-separated string: "telur,bawang putih,nasi"
+        const queryString = encodeURIComponent(bahan2.join(','));
+
+        // 3. Call teammate's endpoint passing the ingredients in 'q'
+        const response = await fetch(`${INVENTORY_SEARCH_URL}?q=${queryString}`);
+        const data = await response.json();
+
+        if (data.results) {
+            recipeGrid.innerHTML = '';
+            data.results.forEach(resep => {
+                recipeGrid.appendChild(buildResepCard(resep));
             });
         }
     }
 
+    function buildResepCard(resep) {
+        const elem = document.createElement('article');
+        elem.className = "recipe-card";
+        elem.innerHTML = '';
+        const resepId = resep.pk || resep.id;
+
+        const dataDetailUrl = "{% url 'recipe:api_spoonacular_detail' 999999 %}"
+            .replace('999999', resepId);
+
+        const imgSrcHtml = resep.card_image_url 
+            ? `<img src="${resep.card_image_url}" alt="${resep.title}" class="recipe-img">`
+            : '';
+        const recipeImgPlaceholderHidden = resep.card_image_url 
+            ? 'hidden' : '';
+
+        const prepTime = resep.preparation_time ? `Persiapan ${resep.preparation_time} menit` : '';
+        var cookingTime = '';
+        if (resep.cooking_time){
+            if (resep.preparation_time){
+                cookingTime = ` • Masak ${resep.cooking_time} menit`;
+            } else {
+                cookingTime = `Masak ${resep.cooking_time} menit`;
+            }
+        }
+        const servings = resep.servings ? ` • ${resep.servings} porsi` : '';
+        var recipeProtein = '';
+        if (resep.protein != null) {
+            if (resep.cooking_time) {
+                recipeProtein = ` • ${resep.protein} g protein`;
+            } else {
+                recipeProtein = `${resep.protein} g protein`;
+            }
+        }
+
+        elem.innerHTML = `
+            <button
+                type="button"
+                class="recipe-card-open"
+                aria-haspopup="dialog"
+                data-recipe-id="${resepId}"
+                data-detail-url="${dataDetailUrl}"
+            >
+                <div class="recipe-card-media">
+                    ${imgSrcHtml}
+                    <div class="recipe-img-placeholder" aria-hidden="true" ${recipeImgPlaceholderHidden}>
+                        Foto belum tersedia
+                    </div>
+                </div>
+
+                <div class="recipe-card-content">
+                    <h3 class="recipe-card-title">${resep.title}</h3>
+                    <p class="recipe-card-meta">
+                        ${prepTime}
+                        ${cookingTime}
+                        ${servings}
+                        ${recipeProtein}
+                    </p>
+                </div>
+            </button>
+        `;
+        return elem;
+    }
+
+    // Menutup popup Tambah Bahan
     function closeBahanModal() {
         document.getElementById("tambah-bahan-modal").hidePopover();
         document.getElementById('backdrop').hidden = true;
     }
 
-    const TAMBAH_BAHAN_ENDPOINT = "{% url 'add_bahan' %}";
-    const bahanForm = document.getElementById('tambah-bahan-form');
-
+    // Fungsi untuk membantu mengambil token csrf pada cookie
     function getCookie(name) {
         let cookieValue = null;
         if (document.cookie && document.cookie !== '') {
@@ -105,6 +240,11 @@
         return cookieValue;
     }
 
+    // Mendefinisikan url dan elemen popup untuk tambah bahan
+    const TAMBAH_BAHAN_ENDPOINT = "{% url 'add_bahan' %}";
+    const bahanForm = document.getElementById('tambah-bahan-form');
+
+    // Implementasi penambahan bahan tanpa page reload
     async function addBahan(event) {
         event.preventDefault();
 
@@ -112,6 +252,7 @@
         submitButton.disabled = true;
 
         try {
+            // Kirim POST request
             const response = await fetch(TAMBAH_BAHAN_ENDPOINT, {
                 method: 'POST',
                 headers: { 'X-CSRFToken': getCookie('csrftoken') },
@@ -119,13 +260,13 @@
             });
             const result = await response.json().catch(() => ({}));
 
-            if (response.ok) {
-                bahanForm.reset();
-                closeBahanModal();
-                fetchBahan();
-                showMessage('message-success', 'message-error');
-            } else {
-                showMessage('message-error', 'message-success');
+            if (response.ok) { // Bahan berhasil ditambahkan
+                bahanForm.reset(); // Kosongkan form tambah bahan
+                closeBahanModal(); // Tutup popup tambah bahan
+                fetchBahan(); // Ambil serta load kembali data bahan
+                showMessage('message-success', 'message-error', 'Bahan berhasil ditambahkan!');
+            } else { // Bahan gagal ditambahkan
+                showMessage('message-error', 'message-success', 'Gagal menambahkan bahan. Pastikan stok tidak kurang dari 1.');
             }
         } catch (error) {
             console.error('Error menambahkan bahan:', error);
@@ -134,21 +275,23 @@
         }
     }
 
-    function showMessage(toShow, toHide) {
+    // Fungsi untuk toggle visibility pesan
+    function showMessage(toShow, toHide, message) {
         document.getElementById('messages').style.display = 'flex';
         document.getElementById(toHide).hidden = true;
-        document.getElementById(toShow).innerHTML = 'Gagal menambahkan bahan. Pastikan stok tidak 0.';
+        document.getElementById(toShow).innerHTML = message;
         setTimeout(() => {
             document.getElementById('messages').style.display = 'none';
             document.getElementById(toHide).hidden = false;
-        }, 5000);
+        }, 3000);
     }
 
-
+    // Mendeteksi pengumpulan form tambah bahan
     if (bahanForm) {
         bahanForm.addEventListener('submit', addBahan);
     }
 
+    // Fungsi untuk toggle visibility popup tambah bahan serta backdropnya
     function showPopup() {
         document.getElementById('backdrop').hidden = false;
         document.getElementById('tambah-bahan-modal').hidden = false;
@@ -159,14 +302,17 @@
         document.getElementById('tambah-bahan-modal').hidden = true;
     }
     
+    // Munculkan popup saat tombol + diklik
     document.getElementById('add-button').addEventListener('click', () => {
         showPopup();
     });
 
+    // Tutup popup ketika backdrop diklik
     document.getElementById('backdrop').addEventListener('click', () => {
         hidePopup();
     });
 
+    // Fetch dan load data Bahan ke halaman saat pertama kali dibuka
     fetchBahan();
 
 </script>
