@@ -1,26 +1,46 @@
+
 from django.contrib import admin
 from django.conf import settings
 from django.urls import path, include
 from django.shortcuts import redirect
 from django.conf.urls.static import static
 
+
+def home_redirect(request):
+    if request.user.is_authenticated:
+        return redirect("recipe:home")
+
+    return redirect("authentication:login")
+
+
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    path("admin/", admin.site.urls),
 
-    path('accounts/', include('allauth.urls')),
+    # Django Allauth
+    path("accounts/", include("allauth.urls")),
 
-    path('voting/', include('voting.urls')),
+    # Halaman pertama website
+    path("", home_redirect, name="home"),
 
-    path('tracker/', include('tracker.urls')),
-    # Ubah LoginView bawaan jadi redirect langsung ke tracker untuk testing lokal:
-    path('accounts/login/', lambda request: redirect('/tracker/'), name='login'),
-    path('', lambda request: redirect('/tracker/')),
-    # Path untuk modul Inventori
-    path('inventori/', include("inventori.urls")),
-    # Path Recipe
-    path('recipe/', include('recipe.urls')),
-    path('', include('authentication.urls')),
+    # Modul Authentication
+    path("", include("authentication.urls")),
+
+    # Modul Recipe
+    path("recipe/", include("recipe.urls")),
+
+    # Modul Tracker
+    path("tracker/", include("tracker.urls")),
+
+    # Modul Inventori
+    path("inventori/", include("inventori.urls")),
+
+    # Modul Voting / Bookmark
+    path("voting/", include("voting.urls")),
 ]
 
+
 if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    urlpatterns += static(
+        settings.MEDIA_URL,
+        document_root=settings.MEDIA_ROOT
+    )

@@ -57,12 +57,12 @@
             
             <div class="olahrasa-nav-links" id="olahrasa-nav-links">
 
-                <a 
-                    href="/dashboard/"
-                    class="{% if request.path == '/dashboard/' %}active{% endif %}"
-                    {% if request.path == '/dashboard/' %}aria-current="page"{% endif %}
+                 <a 
+                    href="/recipe/"
+                    class="{% if request.path == '/recipe/' %}active{% endif %}"
+                    {% if request.path == '/recipe/' %}aria-current="page"{% endif %}
                 >
-                    Home
+                    Recipe
                 </a>
 
                 <a 
@@ -73,12 +73,13 @@
                     Inventory
                 </a>
 
-                <a 
-                    href="/recipe/"
-                    class="{% if request.path == '/recipe/' %}active{% endif %}"
-                    {% if request.path == '/recipe/' %}aria-current="page"{% endif %}
+              
+                <a
+                    href="{% url 'voting:bookmark_list' %}"
+                    class="{% if request.resolver_match.view_name == 'voting:bookmark_list' %}active{% endif %}"
+                    {% if request.resolver_match.view_name == 'voting:bookmark_list' %}aria-current="page"{% endif %}
                 >
-                    Recipe
+                    Bookmark
                 </a>
 
                 <a

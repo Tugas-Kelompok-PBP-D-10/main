@@ -41,7 +41,7 @@ SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 
 # Application definition
-
+LOGIN_REDIRECT_URL = "recipe:home"
 
 INSTALLED_APPS = [
     'django.contrib.admin',
