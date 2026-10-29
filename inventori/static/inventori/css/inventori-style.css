@@ -10,7 +10,8 @@ body {
 
 /* Pengaturan halaman Update Inventori */ 
 #bahan-form-grid {
-    background-color: #f9e58b;
+    background: #03695E;
+    border: 1px solid #ECE7E2;
     display: flex;
     justify-content: center;
     align-items: flex-start;
@@ -28,6 +29,7 @@ body {
 }
 
 .form-title {
+    color: white;
     white-space: pre-wrap;
     margin-top: 0.5rem;
     margin-bottom: 0.5rem;
@@ -74,9 +76,11 @@ h1 { /* Judul Inventori dan Update Inventori*/
 
 #bahan-grid{
     grid-area: inventori;
-    background-color: #f9e58b;
     padding: 2rem;
     padding-top: 0.7rem;
+    background: #FFFEFE;
+    border: 1px solid #ECE7E2;
+    border-bottom: none;
     border-top-left-radius: 2rem;
     border-top-right-radius: 2rem;
 }
@@ -87,7 +91,9 @@ h1 { /* Judul Inventori dan Update Inventori*/
     place-items: center;
     align-content: center;
     gap: 0.5rem;
-    background-color: #f9e58b;
+    background: #FFFEFE;
+    border: 1px solid #ECE7E2;
+    border-top: none;
     padding-bottom: 2rem;
     border-bottom-left-radius: 2rem;
     border-bottom-right-radius: 2rem;
@@ -113,8 +119,8 @@ h2 { /* Judul Rekomendasi Resep */
 
 /* Pengaturan tabel bahan */
 td {
-    background-color: white;
-    border: 0.3rem solid #f9e58b;
+    background-color: #D9D9D9;
+    border: 0.3rem solid #FFFEFE;
     border-radius: 0.5rem;
 }
 
