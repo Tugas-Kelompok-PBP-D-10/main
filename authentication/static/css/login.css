@@ -1,9 +1,16 @@
-
+@import url("./austen-font.css");
 /* OLAHRASA AUTH - BOOTSTRAP 5.3 */
 
 :root {
+    /* Figma color palette */
+    --ol-cream: #F4D5A9;
+    --ol-yellow: #F9E58B;
+    --ol-sage: #80B088;
+    --ol-orange: #EE8252;
+
+    /* Warna tambahan untuk kebutuhan UI */
     --or-green: #2f7469;
-    --or-orange: #e98659;
+    --or-orange: var(--ol-orange);
     --or-input: #f1f4f8;
     --or-muted: #7d8290;
 }

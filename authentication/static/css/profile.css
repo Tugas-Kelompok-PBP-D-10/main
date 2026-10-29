@@ -1,6 +1,8 @@
+@import url("./austen-font.css");
+
 .profile-page,
 .account-manage {
-    font-family: "Montserrat", Arial, sans-serif;
+    font-family: "Austen", Arial, sans-serif;
     color: #263c37;
 }
 
@@ -9,7 +11,7 @@
 }
 
 .profile-hero {
-    background: #2d685d;
+    background: #2f7469;
     color: white;
     border-radius: 14px;
     padding: 28px;
@@ -23,7 +25,7 @@
     width: 72px;
     height: 72px;
     border-radius: 50%;
-    background: #c7dc7d;
+    background: #F9E58B;
     color: #285e51;
     font-size: 32px;
     font-weight: 800;
@@ -87,7 +89,7 @@
 .profile-actions a {
     color: #28675c;
     background: #f6f9f7;
-    border: 1px solid #e3ebe7;
+    border: 1px solid #80B088;
     padding: 15px;
     border-radius: 8px;
     text-decoration: none;
@@ -98,7 +100,7 @@
 }
 
 .profile-actions a:hover {
-    background: #e8f1ed;
+    background: #F4D5A9;
 }
 
 .profile-logout {
@@ -106,7 +108,7 @@
 }
 
 .profile-logout button {
-    background: #e68454;
+    background: #EE8252;
     color: white;
     border: none;
     border-radius: 7px;
@@ -164,7 +166,7 @@
 }
 
 .account-form-card button[type="submit"] {
-    background: #e68454;
+    background: #EE8252;
     color: white;
     border: 0;
     border-radius: 7px;
