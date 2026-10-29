@@ -42,4 +42,9 @@ urlpatterns = [
         views.complete_recipe,
         name="api_complete",
     ),
+    path(
+    "api/spoonacular/recipes/<int:spoonacular_id>/complete/",
+    views.complete_spoonacular_recipe,
+    name="api_spoonacular_complete",
+),
 ]

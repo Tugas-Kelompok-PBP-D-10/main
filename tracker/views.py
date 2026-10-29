@@ -4,6 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.db.models import Sum
 from django.shortcuts import render
 from django.utils import timezone
+from django.urls import reverse
 from django.contrib.auth.models import User
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST, require_http_methods
@@ -318,6 +319,7 @@ def tracker_dashboard_api(request):
 
 
 @login_required
+@login_required
 def cooking_history_api(request):
     logs = CookingLog.objects.filter(
         user=request.user
@@ -338,5 +340,5 @@ def cooking_history_api(request):
 
     return JsonResponse({
         "success": True,
-        "history": history
+        "history": history,
     })

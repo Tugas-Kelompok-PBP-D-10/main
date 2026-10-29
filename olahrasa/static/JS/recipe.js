@@ -254,6 +254,7 @@
             button.dataset.recipeId = "spoonacular-" + recipeId;
             button.dataset.detailUrl = detailUrl.pathname + detailUrl.search;
             button.dataset.externalRecipe = "true";
+            button.dataset.completeUrl = detailUrl.pathname.replace(/\/$/, "") + "/complete/";
 
             const media = document.createElement("div");
             media.className = "recipe-card-media";
@@ -555,12 +556,6 @@
         }
 
         function renderInteraction(recipeId, interaction) {
-            if (activeCard && activeCard.dataset.externalRecipe === "true") {
-                completionPanel.hidden = true;
-                loginPrompt.hidden = true;
-                completionStatus.textContent = "";
-                return;
-            }
             const state = interaction || {};
             const isAuthenticated = Boolean(state.authenticated);
 

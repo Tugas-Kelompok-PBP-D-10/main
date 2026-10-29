@@ -345,7 +345,7 @@ def spoonacular_recipe_detail_api(request, spoonacular_id):
         )
     payload = result["data"]
     payload["interaction"] = {
-        "authenticated": False,
+        "authenticated":request.user.is_authenticated,
         "viewed": False,
         "completed": False,
         "viewed_at": None,
@@ -515,3 +515,152 @@ def complete_recipe(request, recipe_id):
         )
 
     return JsonResponse(response_data)
+
+
+@require_POST
+def complete_spoonacular_recipe(request, spoonacular_id):
+    authentication_error = _authentication_error(request)
+    if authentication_error:
+        return authentication_error
+
+    if request.content_type != "application/json":
+        return _json_error(
+            "invalid_confirmation",
+            "Konfirmasi harus dalam format JSON.",
+            400,
+        )
+
+    try:
+        payload = json.loads(request.body or b"{}")
+    except (TypeError, ValueError):
+        return _json_error(
+            "invalid_confirmation",
+            "Data konfirmasi tidak valid.",
+            400,
+        )
+
+    if not isinstance(payload, dict) or payload.get("confirmed") is not True:
+        return _json_error(
+            "confirmation_required",
+            "Konfirmasi bahwa resep sudah dimasak.",
+            400,
+        )
+
+    try:
+        request_id = uuid.UUID(str(payload.get("request_id")))
+    except (ValueError, TypeError, AttributeError):
+        return _json_error(
+            "invalid_request_id",
+            "Request ID harus berupa UUID valid.",
+            400,
+        )
+
+    from tracker.models import CookingLog
+
+    # Periksa request duplikat sebelum memanggil API.
+    existing = CookingLog.objects.filter(request_id=request_id).first()
+
+    if existing:
+        if existing.user_id != request.user.pk:
+            return _json_error(
+                "request_id_conflict",
+                "Request ID sudah digunakan akun lain.",
+                409,
+            )
+
+        return JsonResponse({
+            "authenticated": True,
+            "viewed": True,
+            "completed": True,
+            "cooking_count": CookingLog.objects.filter(
+                user=request.user,
+                recipe_name=existing.recipe_name,
+            ).count(),
+        })
+
+    # Ambil detail resep dari Spoonacular melalui backend.
+    result = get_spoonacular_recipe_detail(spoonacular_id)
+
+    if result.get("status") != "ok" or not result.get("data"):
+        return _json_error(
+            "spoonacular_unavailable",
+            result.get(
+                "message",
+                "Detail resep Spoonacular tidak dapat diambil."
+            ),
+            503,
+        )
+
+    data = result["data"]
+    recipe_data = data.get("recipe") or {}
+    nutrition_data = data.get("nutrition") or {}
+
+    # Ambil nilai nutrisi dari data yang sudah dinormalisasi.
+    def nutrient(name):
+        item = nutrition_data.get(name)
+
+        if not isinstance(item, dict):
+            raise ValueError(
+                f"Data nutrisi {name} belum tersedia."
+            )
+
+        value = item.get("value")
+
+        if value is None:
+            raise ValueError(
+                f"Data nutrisi {name} belum tersedia."
+            )
+
+        try:
+            number = Decimal(str(value))
+        except Exception as error:
+            raise ValueError(
+                f"Data nutrisi {name} tidak valid."
+            ) from error
+
+        if not number.is_finite() or number < 0:
+            raise ValueError(
+                f"Data nutrisi {name} tidak valid."
+            )
+
+        return int(
+            number.quantize(
+                Decimal("1"),
+                rounding=ROUND_HALF_UP,
+            )
+        )
+
+    try:
+        snapshot = RecipeSnapshot(
+            name=str(recipe_data.get("title") or "").strip(),
+            protein_g=nutrient("protein"),
+            carbs_g=nutrient("carbohydrates"),
+            fat_g=nutrient("fat"),
+            calories=nutrient("calories"),
+        )
+
+        # Validasi berlangsung di integrasi Tracker.
+        complete_recipe_cooking(
+            user=request.user,
+            recipe=snapshot,
+            request_id=request_id,
+        )
+
+    except (ValueError, TypeError, ArithmeticError) as error:
+        return _json_error(
+            "invalid_nutrition",
+            str(error),
+            422,
+        )
+
+    cooking_count = CookingLog.objects.filter(
+        user=request.user,
+        recipe_name=snapshot.name,
+    ).count()
+
+    return JsonResponse({
+        "authenticated": True,
+        "viewed": True,
+        "completed": True,
+        "cooking_count": cooking_count,
+    })
