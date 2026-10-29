@@ -4,8 +4,11 @@ from django.forms import modelformset_factory
 from .models import Bahan
 from .forms import BahanForm
 from django.http import JsonResponse
+import json
+from django.views.decorators.http import require_GET
 from django.contrib.auth.decorators import login_required
-
+from recipe.views import _voting_routes_available, _login_url
+from recipe.views import spoonacular_recipe_search_api
 
 def get_bahan_json(request):
     bahan2 = Bahan.objects.filter(inventory=request.user.inventori)
@@ -23,8 +26,25 @@ def show_inventori(request):
     context = {
         "inventori": request.user.inventori,
         "form": BahanForm(),
+        "recipe_login_url": _login_url(request),
+        "voting_routes_available": _voting_routes_available(),
     }
     return render(request, "inventori.html", context)
+
+@require_GET
+def inventory_recipe_search_api(request):
+    response = spoonacular_recipe_search_api(request)
+
+    if response.status_code != 200:
+        return response
+
+    data = json.loads(response.content.decode("utf-8"))
+    recipes = data.get("results", [])
+    
+    for recipe in recipes:
+        recipe["card_image_url"] = recipe.get("image") or recipe.get("image_url", "")
+
+    return JsonResponse(data)
 
 @login_required(login_url='/login/')
 def update_inventori(request):
