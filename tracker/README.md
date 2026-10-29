@@ -4,6 +4,8 @@
 Tracker merupakan modul pada aplikasi **OlahRasa** yang digunakan untuk memantau aktivitas memasak pengguna, perkembangan nutrisi mingguan, konsistensi memasak, serta pencapaian (*achievements*).
 Modul ini terintegrasi dengan Recipe dan Voting/Bookmark agar pengguna dapat melihat progres aktivitas memasak dan resep yang telah disimpan melalui satu dashboard.
 
+Tautan PWS : https://hafiza-nurul-olahrasa.pws.cs.ui.ac.id/
+
 ## AI DISCLOSURE 
 Dalam proses pengembangan modul Tracker pada proyek OlahRasa, pengembang menggunakan ChatGPT (OpenAI) sebagai alat bantu pembelajaran, diskusi teknis, dan penyelesaian masalah pemrograman.
 
@@ -20,14 +22,14 @@ Strategi penggunaan AI dilakukan secara bertahap dan kontekstual, meliputi:
 5. Documentation: Menggunakan AI untuk membantu menyusun README agar lebih terstruktur dan mudah dipahami.
 
 Tautan Riwayat Chat AI yang digunakan : 
-1. https://chatgpt.com/share/6ae1f8a8-e0c4-83ec-80e6-2506439bb2c2
+1. https://chatgpt.com/share/6ae36902-5794-83ec-a505-cf72dbebcd90
 2. https://claude.ai/share/18f45afb-de23-4595-af30-aa65d20b1806
 
 Purpose of AI Usage
 Penggunaan AI bertujuan untuk:
-Mendukung proses pembelajaran dan pemahaman teknis.
-Membantu mengidentifikasi serta menyelesaikan masalah selama pengembangan.
-Mempermudah proses integrasi antarmodul.
+1. Mendukung proses pembelajaran dan pemahaman teknis.
+2. Membantu mengidentifikasi serta menyelesaikan masalah selama pengembangan.
+3. Mempermudah proses integrasi antarmodul.
 Meningkatkan keterbacaan kode dan dokumentasi
 
 
