@@ -18,7 +18,9 @@ body {
     min-height: 100%;
     margin: 2rem auto;
     text-align: center;
-    width: 500px;
+    width: 50%;
+    min-width: 350px;
+    max-width: 500px;
     padding: 2rem;
     border-radius: 2rem;
 }
@@ -26,6 +28,7 @@ body {
 #kembali-button {
     display: inline-block;
     margin-top: 2rem;
+    font-size: small;
 }
 
 .form-title {
@@ -53,6 +56,10 @@ body {
 #save-button {
     display: block;
     margin: 2rem auto 0;
+}
+
+.empty-info {
+    color: white;
 }
 
 /* Pengaturan halaman Inventori */
@@ -135,7 +142,7 @@ table {
     /* Posisikan di tengah halaman */
     justify-content: center;
     align-items: flex-start;
-    height: 275px;
+    height: 300px;
     margin: 10rem auto;
     z-index: 1000;
     /* --------------------------- */
@@ -152,7 +159,6 @@ table {
     justify-content: space-between;
     gap: 1rem;
     align-items: center;
-    margin-bottom: 0.5rem;
 }
 
 .form-group-inventori {
@@ -162,6 +168,10 @@ table {
 .form-modal__actions {
     display: flex;
     justify-content: space-between;
+}
+
+.eng-info {
+    font-size: x-small;
 }
 
 /* Pengaturan blur di belakang popup */
@@ -200,4 +210,22 @@ table {
     padding: 12px; 
     margin-bottom: 15px; 
     border-radius: 4px;
+}
+
+/* Tablet Viewing */
+@media (max-width: 1100px) {
+    #content {
+        column-gap: 1rem;
+    }
+}
+
+/* Mobile Viewing */
+@media (max-width: 650px) {
+    #content {
+        grid-template-areas: 
+        "inventori"
+        "resep";
+        grid-template-columns: 1fr;
+        row-gap: 2rem;
+    }
 }

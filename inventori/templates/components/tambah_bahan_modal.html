@@ -18,6 +18,7 @@
               method="post"
               class="form">
             {% csrf_token %}
+            <p class="eng-info">Mohon masukkan nama bahan dalam Bahasa Inggris</p>
             {% for field in form %}
                 <div class="form-group-inventori">
                     <label for="{{ field.id_for_label }}">{{ field.label }}</label>
