@@ -67,7 +67,7 @@ def update_inventori(request):
 
 @login_required(login_url='/login/')
 def delete_bahan(request, bahan_id):
-    bahan = get_object_or_404(Bahan, pk=bahan_id)
+    bahan = get_object_or_404(Bahan, pk=bahan_id, inventory=request.user.inventori)
 
     if request.method == "POST":
         bahan.delete()
