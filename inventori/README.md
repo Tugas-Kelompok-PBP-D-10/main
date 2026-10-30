@@ -28,6 +28,10 @@ Beberapa potongan kode saya ambil langsung dari Tutorial yang terdapat pada web 
 # AI Disclosure
 Saya berdiskusi dengan Gemini AI ketika mengalami kesulitan atau menemukan eror. Saya memulai diskusi dengan memaparkan eror yang saya alami (pesan eror yang muncul jika ada, atau bagian yang tidak berfungsi sesuai ekspektasi saya), kemudian saya memaparkan usaha yang sudah saya lakukan tapi tidak berhasil untuk mengatasi masalah tersebut, lalu saya meminta solusi dari AI atas masalah tersebut.
 
+Berikut link percakapan saya dengan Gemini AI:
+
+https://gemini.google.com/share/d/19cVosbM4rfTu4AJncNX67j69oYtJCq75?usp=drive_link
+
 Saya menggunakan Gemini AI untuk men-generate kode pada beberapa bagian modul saya. Akan tetapi, saya tidak memberikan AI source code dari website saya. Oleh karena itu, kode yang di-generate oleh AI masih perlu dibaca dan dimodifikasi secara manual agar tidak menimbulkan masalah dan dapat bekerja pada source code saya. Berikut penggunaannya.
 
 ### Menghubungkan model Inventori dengan model User
