@@ -129,7 +129,7 @@ Link Chat AI per Anggota :
     
     b. https://claude.ai/share/18f45afb-de23-4595-af30-aa65d20b1806
 
-3. NAUFAL KHAIRIY ZULKARNAIN SORMIN =
+3. NAUFAL KHAIRIY ZULKARNAIN SORMIN = https://chatgpt.com/s/t_6ae4778544b48191b33c1eeeb76dadab
 
 4. VELICIA WILLY = 
     [Inventori AI Disclosure](inventori/README.md#ai-disclosure)
