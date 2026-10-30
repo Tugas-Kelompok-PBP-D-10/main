@@ -1,0 +1,71 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0">
+
+    <title>
+        {% block head_title %}Account{% endblock %}
+        | Olahrasa
+    </title>
+
+    <link rel="stylesheet"
+            href="{% static 'css/style.css' %}">
+
+    <link rel="stylesheet"
+            href="{% static 'css/profile.css' %}">
+
+    {% block extra_head %}{% endblock %}
+</head>
+
+<body>
+
+    <nav class="olahrasa-navbar">
+        <div class="olahrasa-navbar-inner">
+
+            <a href="{% url 'recipe:home' %}"
+                class="olahrasa-navbar-brand">
+                 <span class="olahrasa-brand-text">
+                    Olahrasa
+                 </span>    
+            </a>
+
+            {% if request.user.is_authenticated %}
+                <a class="account-nav-back"
+                    href="{% url 'authentication:profile' %}">
+                    Back to Profile
+                </a>
+            {% else %}
+                <a class="account-nav-back"
+                    href="{% url 'authentication:login' %}">
+                    Back to Login
+                </a>
+            {% endif %}
+        </div>
+    </nav>
+
+    <main class="account-manage">
+
+        <section class="profile-card account-form-card">
+
+            {% block body %}
+
+                {% if messages %}
+                    {% for message in messages %}
+                        <p>{{ message }}</p>
+                    {% endfor %}
+                {% endif %}
+
+                {% block content %}
+                {% endblock %}
+
+            {% endblock %}
+        </section>
+    </main>
+
+    {% block extra_body %}{% endblock %}
+</body>
+</html>

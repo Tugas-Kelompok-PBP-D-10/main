@@ -1,0 +1,37 @@
+<div class="vote-actions{% if size == 'lg' %} vote-actions--lg{% endif %}">
+    {% if is_authenticated %}
+    <div class="vote{% if summary.user_vote == 1 %} is-up{% elif summary.user_vote == -1 %} is-down{% endif %}"
+        title="{{ summary.upvotes }} upvote, {{ summary.downvotes }} downvote"
+        data-vote-url="{% url 'voting:vote' recipe.pk %}" data-list-url="{% url 'recipe:home' %}"
+        data-csrf="{{ csrf_token }}">
+        <button type="button" class="vote__btn vote__btn--up" data-value="1" aria-label="Upvote"
+            aria-pressed="{% if summary.user_vote == 1 %}true{% else %}false{% endif %}">
+            <svg class="vote-icon" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M9 18v-6H5l7-7 7 7h-4v6H9z" />
+            </svg>
+        </button>
+        <span class="vote__count" aria-live="polite">{{ summary.score }}</span>
+        <button type="button" class="vote__btn vote__btn--down" data-value="-1" aria-label="Downvote"
+            aria-pressed="{% if summary.user_vote == -1 %}true{% else %}false{% endif %}">
+            <svg class="vote-icon" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M15 6v6h4l-7 7-7-7h4V6h6z" />
+            </svg>
+        </button>
+    </div>
+
+    <button type="button" class="bookmark{% if bookmarked %} is-saved{% endif %}"
+        data-url="{% url 'voting:toggle_bookmark' recipe.pk %}" data-csrf="{{ csrf_token }}" aria-label="Simpan resep"
+        aria-pressed="{% if bookmarked %}true{% else %}false{% endif %}">
+        <svg class="vote-icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z" />
+        </svg>
+    </button>
+
+    <span class="sr-only" data-status role="status" aria-live="polite"></span>
+    {% else %}
+    <div class="vote vote--readonly" title="Skor resep">
+        <span class="vote__count" aria-label="Skor">{{ summary.score }}</span>
+    </div>
+    <a class="vote-login" href="{{ login_url }}">Masuk untuk vote &amp; simpan</a>
+    {% endif %}
+</div>

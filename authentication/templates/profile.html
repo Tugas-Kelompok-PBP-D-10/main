@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Profile | Olahrasa {% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/profile.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<main class="profile-page">
+
+    <header class="profile-hero">
+        <div class="profile-avatar">
+            {{ request.user.username|first|upper }}
+        </div>
+
+        <div>
+            <h1>My Profile</h1>
+            <p>Welcome back, {{ request.user.username }}!</p>
+        </div>
+    </header>
+
+    <div class="profile-grid">
+        <section class="profile-card">
+            <h2>Account Information</h2>
+
+            <p class="profile-label">Username</p>
+            <p class="profile-value">
+                {{ request.user.username }}
+            </p>
+
+            <p class="profile-label">Email</p>
+            <p class="profile-value">
+                {{ request.user.email|default:"Belum diisi" }}
+            </p>
+
+            <p class="profile-label">Email Status</p>
+            <p class="profile-value">
+                {% if email_verified %}
+                    <span class="profile-status">Verified</span>
+                {% else %}
+                    Belum diverifikasi
+                {% endif %}
+            </p>
+
+            <p class="profile-label">Google Account</p>
+            <p class="profile-value">
+                {% if google_connected %}
+                    Connected
+                {% else %}
+                    Not Connected
+                {% endif %}
+            </p>
+        </section>
+
+        <section class="profile-card">
+            <h2>Account Settings</h2>
+
+            <div class="profile-actions">
+
+                <a href="{% url 'account_email' %}">
+                    Kelola Email
+                    <span>›</span>
+                </a>
+
+                {% if request.user.has_usable_password %}
+                    <a href="{% url 'account_change_password' %}">
+                        Change Password
+                        <span>›</span>
+                    </a>
+                {% else %}
+                    <a href="{% url 'account_set_password' %}">
+                        Set Password
+                        <span>›</span>
+                    </a>
+                {% endif %}
+
+                <a href="{% url 'socialaccount_connections' %}">
+                    Connected Accounts
+                    <span>›</span>
+                </a>
+            </div>
+
+            <form method="POST"
+                    action="{% url 'authentication:logout' %}"
+                    class="profile-logout">
+                {% csrf_token %}
+                <button type="submit">
+                    Logout
+                </button>
+            </form>
+        </section>
+    </div>
+</main>
+{% endblock %}

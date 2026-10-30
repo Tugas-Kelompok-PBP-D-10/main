@@ -1,0 +1,112 @@
+<!-- Kode html di bawah ini langsung saya salin dari kode pembuat modul Recipe -->
+<div
+    id="nutritionModal"
+    class="recipe-modal-overlay"
+    aria-hidden="true"
+    hidden
+    >
+        <section
+            class="recipe-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="modalTitle"
+            tabindex="-1"
+        >
+            <div class="recipe-modal-header">
+                <h2 id="modalTitle" class="recipe-modal-title"></h2>
+                <button
+                    type="button"
+                    class="recipe-modal-close"
+                    id="btnCloseModal"
+                    aria-label="Tutup detail resep"
+                >
+                    &times;
+                </button>
+            </div>
+
+            <p id="recipeModalStatus" class="recipe-modal-status" role="status" aria-live="polite">
+                Memuat detail resep…
+            </p>
+            <p id="recipeModalError" class="recipe-modal-error" role="alert" hidden></p>
+
+            <div id="recipeModalDetails" class="recipe-modal-body" hidden>
+                <img id="modalImage" class="recipe-modal-image" alt="" hidden>
+                <div id="modalImagePlaceholder" class="recipe-img-placeholder recipe-modal-image-placeholder" aria-hidden="true">
+                    Foto belum tersedia
+                </div>
+                <p id="modalDescription" class="recipe-modal-description" hidden></p>
+                <p id="modalSource" class="recipe-modal-source" hidden></p>
+                <p id="modalPreparationTime" class="recipe-modal-cooking-time" hidden></p>
+                <p id="modalCookingTime" class="recipe-modal-cooking-time" hidden></p>
+
+                <section class="recipe-modal-section" aria-labelledby="nutritionHeading">
+                    <h3 id="nutritionHeading" class="recipe-modal-heading">Informasi nutrisi</h3>
+                    <p id="nutritionBasisLabel" class="recipe-nutrition-basis"></p>
+                    <dl class="recipe-nutrition-list">
+                        <div id="nutritionCaloriesRow" class="recipe-nutrition-row" hidden>
+                            <dt>Kalori</dt>
+                            <dd id="nutritionCaloriesValue"></dd>
+                        </div>
+                        <div id="nutritionProteinRow" class="recipe-nutrition-row" hidden>
+                            <dt>Protein</dt>
+                            <dd id="nutritionProteinValue"></dd>
+                        </div>
+                        <div id="nutritionCarbsRow" class="recipe-nutrition-row" hidden>
+                            <dt>Karbohidrat</dt>
+                            <dd id="nutritionCarbsValue"></dd>
+                        </div>
+                        <div id="nutritionFatRow" class="recipe-nutrition-row" hidden>
+                            <dt>Lemak</dt>
+                            <dd id="nutritionFatValue"></dd>
+                        </div>
+                    </dl>
+                    <ul id="nutritionAdditional" class="recipe-nutrition-additional" hidden></ul>
+                    <div id="nutritionTotalsSection" class="recipe-nutrition-totals" hidden>
+                        <h4 id="nutritionTotalsHeading"></h4>
+                        <dl id="nutritionTotals" class="recipe-nutrition-list"></dl>
+                    </div>
+                    <p id="nutritionEmpty" class="recipe-section-empty" hidden>
+                        Informasi nutrisi belum tersedia.
+                    </p>
+                </section>
+
+                <section id="ingredientsSection" class="recipe-modal-section" hidden>
+                    <h3 class="recipe-modal-heading">Bahan</h3>
+                    <div id="servingCalculator" class="recipe-serving-calculator" hidden>
+                        <label for="recipeServings">Sesuaikan jumlah porsi</label>
+                        <input id="recipeServings" type="number" min="1" step="1" inputmode="numeric">
+                        <span id="originalServingsLabel" class="recipe-serving-note"></span>
+                    </div>
+                    <ul id="modalIngredients" class="recipe-detail-list"></ul>
+                </section>
+
+                <section id="instructionsSection" class="recipe-modal-section" hidden>
+                    <h3 class="recipe-modal-heading">Cara memasak</h3>
+                    <ol id="modalInstructions" class="recipe-detail-list recipe-instructions"></ol>
+                    <p id="instructionsEmpty" class="recipe-section-empty" hidden>
+                        Langkah memasak belum tersedia untuk resep ini.
+                    </p>
+                </section>
+
+                <section id="recipeCompletionPanel" class="recipe-completion-panel" hidden>
+                    <label class="recipe-completion-confirm">
+                        <input type="checkbox" id="recipeCompletionConfirm">
+                        Saya mengonfirmasi sudah memasak resep ini.
+                    </label>
+                    <button
+                        type="button"
+                        id="recipeCompletionButton"
+                        class="recipe-completion-button"
+                        disabled
+                    >
+                        Tandai sudah dimasak
+                    </button>
+                    <p id="recipeCompletionStatus" role="status" aria-live="polite"></p>
+                </section>
+                <p id="recipeLoginPrompt" class="recipe-login-prompt" hidden>
+                    Masuk untuk menyimpan status resep yang dilihat atau menandai resep telah dimasak.
+                    <a id="recipeLoginLink" href="{{ recipe_login_url }}">Masuk</a>
+                </p>
+            </div>
+        </section>
+    </div>

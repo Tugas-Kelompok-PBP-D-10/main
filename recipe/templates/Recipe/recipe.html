@@ -1,0 +1,394 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load voting_tags %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/recipe.css' %}">
+<link rel="stylesheet" href="{% static 'voting/voting.css' %}">
+
+<section class="recipe-hero-section">
+    <h1 class="recipe-hero-title">Welcome to OlahRasa</h1>
+    <p class="recipe-hero-subtitle">
+        Temukan inspirasi masak dan bagikan menu favoritmu bersama komunitas.
+    </p>
+</section>
+
+<section class="recipe-submission-section" aria-labelledby="recipeSubmissionInviteTitle">
+    <div class="recipe-submission-invite">
+        <h2 id="recipeSubmissionInviteTitle">Punya rekomendasi menu?</h2>
+        <p>Yuk, bagikan resep favoritmu! Siapa tahu bisa jadi inspirasi masak buat yang lain.</p>
+    </div>
+    {% if request.user.is_authenticated %}
+        <button type="button" id="openRecipeSubmission" class="recipe-submission-open">
+            + Tambah Menu
+        </button>
+    {% else %}
+        <a href="{{ recipe_login_url }}" class="recipe-submission-open">
+            + Tambah Menu
+        </a>
+    {% endif %}
+</section>
+
+<section class="recipe-search-section" aria-label="Cari resep dari Spoonacular">
+    <form
+        id="recipeSearchForm"
+        class="recipe-search-form"
+        data-search-url="{{ recipe_search_url }}"
+        role="search"
+    >
+        <label for="recipeSearchInput">Cari Menu</label>
+        <div class="recipe-search-controls">
+            <input
+                type="search"
+                id="recipeSearchInput"
+                class="recipe-input-field"
+                name="q"
+                minlength="2"
+                maxlength="100"
+                autocomplete="off"
+                placeholder="Contoh: ayam, tofu, atau sup tomat"
+            >
+            <button type="submit" class="recipe-search-submit">Cari</button>
+        </div>
+        <p class="recipe-search-note">
+            Kata masakan Indonesia yang umum dinormalisasi untuk pencarian. Resep Spoonacular dapat tetap tampil dalam bahasa sumber.
+        </p>
+    </form>
+</section>
+
+<section class="recipe-grid-section">
+    <div class="recipe-grid-container">
+        <h2 class="recipe-grid-main-title">Daftar Resep</h2>
+        <p class="recipe-grid-subtitle">
+            Pilih resep untuk melihat detail, bahan, langkah memasak, dan nutrisi yang tersedia.
+        </p>
+
+        <p id="recipeSearchStatus" class="recipe-search-status" role="status" aria-live="polite" hidden></p>
+        <button type="button" id="recipeSearchLoadMore" class="recipe-search-load-more" hidden>
+            Muat Lebih Banyak
+        </button>
+
+        <div class="recipe-grid">
+            {% for recipe in recipes %}
+                <article class="recipe-card">
+                    <button
+                        type="button"
+                        class="recipe-card-open"
+                        aria-haspopup="dialog"
+                        data-recipe-id="{{ recipe.pk }}"
+                        data-detail-url="{% url 'recipe:api_detail' recipe.pk %}"
+                        data-interactions-url="{% url 'recipe:api_interactions' recipe.pk %}"
+                        data-view-url="{% url 'recipe:api_record_view' recipe.pk %}"
+                        data-complete-url="{% url 'recipe:api_complete' recipe.pk %}"
+                    >
+                        <div class="recipe-card-media">
+                            {% if recipe.card_image_url %}
+                                <img src="{{ recipe.card_image_url }}" alt="{{ recipe.title }}" class="recipe-img">
+                            {% endif %}
+                            <div class="recipe-img-placeholder" aria-hidden="true" {% if recipe.card_image_url %}hidden{% endif %}>
+                                Foto belum tersedia
+                            </div>
+                        </div>
+
+                        <div class="recipe-card-content">
+                            <h3 class="recipe-card-title">{{ recipe.title }}</h3>
+                            <p class="recipe-card-meta">
+                                {% if recipe.preparation_time %}Persiapan {{ recipe.preparation_time }} menit{% endif %}
+                                {% if recipe.cooking_time %}{% if recipe.preparation_time %} • {% endif %}Masak {{ recipe.cooking_time }} menit{% endif %}
+                                {% if recipe.servings %} • {{ recipe.servings }} porsi{% endif %}
+                                {% if recipe.protein is not None %}
+                                    {% if recipe.cooking_time %} • {% endif %}{{ recipe.protein }} g protein
+                                {% endif %}
+                            </p>
+                            <span class="recipe-card-status recipe-status-viewed" {% if not recipe.interaction_viewed %}hidden{% endif %}>
+                                ✓ Dilihat
+                            </span>
+                            <span class="recipe-card-status recipe-status-completed" {% if not recipe.interaction_completed %}hidden{% endif %}>
+                                ✓ Sudah dimasak {{ recipe.cooking_count }} kali
+                            </span>
+                        </div>
+                    </button>
+
+                    <div class="recipe-card-actions" data-login-url="{{ recipe_login_url }}">
+                        {% if request.user.is_authenticated and not voting_routes_available %}
+                            <p class="recipe-voting-unavailable" role="status">
+                                Vote dan simpan belum tersedia sampai URL aplikasi voting terhubung.
+                            </p>
+                        {% else %}
+                            {% recipe_actions recipe %}
+                        {% endif %}
+                    </div>
+                </article>
+            {% empty %}
+                <div class="recipe-empty-state">
+                    <p>Belum ada resep yang tersedia.</p>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<div
+    id="recipeSubmissionOverlay"
+    class="recipe-modal-overlay"
+    aria-hidden="true"
+    hidden
+>
+    <section
+        class="recipe-modal recipe-submission-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="recipeSubmissionTitle"
+        tabindex="-1"
+    >
+        <div class="recipe-modal-header">
+            <h2 id="recipeSubmissionTitle" class="recipe-modal-title">Bagikan resep</h2>
+            <button
+                type="button"
+                id="closeRecipeSubmission"
+                class="recipe-modal-close"
+                aria-label="Tutup formulir resep"
+            >
+                &times;
+            </button>
+        </div>
+        <p id="recipeSubmissionStatus" class="recipe-modal-status" role="status" aria-live="polite">
+            Isi resepnya, nanti langsung muncul di katalog setelah dikirim.
+        </p>
+        <div id="recipeSubmissionErrors" class="recipe-modal-error" role="alert" hidden></div>
+
+        <form
+            id="recipeSubmissionForm"
+            method="post"
+            enctype="multipart/form-data"
+            data-submit-url="{{ recipe_submission_url }}"
+            novalidate
+        >
+            {% csrf_token %}
+            <input type="hidden" name="submission_id" id="recipeSubmissionId">
+            <input type="hidden" name="ingredients" id="recipeSubmissionIngredients">
+            <input type="hidden" name="instructions" id="recipeSubmissionInstructions">
+
+            <label class="recipe-form-field">
+                <span>Nama Resep <span aria-hidden="true">*</span></span>
+                <input
+                    type="text"
+                    name="title"
+                    id="submissionTitle"
+                    maxlength="255"
+                    placeholder="Contoh: Sate Ayam"
+                    required
+                >
+            </label>
+            <label class="recipe-form-field">
+                <span>Deskripsi</span>
+                <textarea
+                    name="description"
+                    id="submissionDescription"
+                    rows="3"
+                    placeholder="Ceritakan sedikit tentang resep ini."
+                ></textarea>
+            </label>
+            <div class="recipe-form-field">
+                <label for="submissionImage">Foto Menu</label>
+                <input
+                    type="file"
+                    name="image"
+                    id="submissionImage"
+                    accept="image/*"
+                    aria-describedby="submissionImageHint"
+                >
+                <span id="submissionImageHint" class="recipe-form-hint">Format gambar, maksimal 5 MB.</span>
+                <img id="submissionImagePreview" class="recipe-submission-preview" alt="Pratinjau foto resep" hidden>
+            </div>
+            <label class="recipe-form-field recipe-servings-field">
+                <span>Jumlah Porsi <span aria-hidden="true">*</span></span>
+                <input
+                    type="number"
+                    name="servings"
+                    id="submissionServings"
+                    min="1"
+                    max="32767"
+                    step="1"
+                    inputmode="numeric"
+                    value="2"
+                    required
+                >
+            </label>
+
+            <fieldset class="recipe-dynamic-fieldset">
+                <legend>Bahan Makanan <span aria-hidden="true">*</span></legend>
+                <div id="recipeIngredientRows" class="recipe-dynamic-rows">
+                    <div class="recipe-ingredient-row" data-ingredient-row>
+                        <label>
+                            <span>Nama Bahan</span>
+                            <input type="text" data-ingredient-name maxlength="100" placeholder="Contoh: daging ayam" required>
+                        </label>
+                        <label>
+                            <span>Jumlah</span>
+                            <input type="number" data-ingredient-amount min="0.000001" step="any" inputmode="decimal" placeholder="500" required>
+                        </label>
+                        <label>
+                            <span>Satuan</span>
+                            <select data-ingredient-unit required>
+                                <option value="">Pilih satuan</option>
+                                <option value="gram">gram</option>
+                                <option value="kg">kg</option>
+                                <option value="ml">ml</option>
+                                <option value="liter">liter</option>
+                                <option value="sdm">sdm</option>
+                                <option value="sdt">sdt</option>
+                                <option value="butir">butir</option>
+                                <option value="siung">siung</option>
+                                <option value="buah">buah</option>
+                                <option value="pcs">pcs</option>
+                                <option value="lainnya">Lainnya</option>
+                            </select>
+                            <input type="text" data-ingredient-unit-other placeholder="Tulis satuan" hidden>
+                        </label>
+                        <button type="button" class="recipe-remove-row" data-remove-ingredient aria-label="Hapus bahan">Hapus</button>
+                    </div>
+                </div>
+                <button type="button" id="addRecipeIngredient" class="recipe-add-row">+ Tambah Bahan</button>
+            </fieldset>
+
+            <fieldset class="recipe-dynamic-fieldset">
+                <legend>Langkah Memasak <span aria-hidden="true">*</span></legend>
+                <div id="recipeCookingSteps" class="recipe-dynamic-rows">
+                    <div class="recipe-step-row" data-step-row>
+                        <span class="recipe-step-number" aria-hidden="true">1.</span>
+                        <label>
+                            <span class="visually-hidden">Langkah 1</span>
+                            <textarea data-cooking-step rows="2" placeholder="Tulis langkah pertama" required></textarea>
+                        </label>
+                        <button type="button" class="recipe-remove-row" data-remove-step aria-label="Hapus langkah">Hapus</button>
+                    </div>
+                </div>
+                <button type="button" id="addRecipeStep" class="recipe-add-row">+ Tambah Langkah</button>
+            </fieldset>
+
+            <div class="recipe-submission-actions">
+                <button type="button" id="cancelRecipeSubmission" class="recipe-submission-cancel">Batal</button>
+                <button type="submit" id="submitRecipeButton" class="recipe-submission-submit">Kirim Resep!</button>
+            </div>
+        </form>
+    </section>
+</div>
+
+<div
+    id="nutritionModal"
+    class="recipe-modal-overlay"
+    aria-hidden="true"
+    hidden
+>
+    <section
+        class="recipe-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="modalTitle"
+        tabindex="-1"
+    >
+        <div class="recipe-modal-header">
+            <h2 id="modalTitle" class="recipe-modal-title"></h2>
+            <button
+                type="button"
+                class="recipe-modal-close"
+                id="btnCloseModal"
+                aria-label="Tutup detail resep"
+            >
+                &times;
+            </button>
+        </div>
+
+        <p id="recipeModalStatus" class="recipe-modal-status" role="status" aria-live="polite">
+            Memuat detail resep…
+        </p>
+        <p id="recipeModalError" class="recipe-modal-error" role="alert" hidden></p>
+
+        <div id="recipeModalDetails" class="recipe-modal-body" hidden>
+            <img id="modalImage" class="recipe-modal-image" alt="" hidden>
+            <div id="modalImagePlaceholder" class="recipe-img-placeholder recipe-modal-image-placeholder" aria-hidden="true">
+                Foto belum tersedia
+            </div>
+            <p id="modalDescription" class="recipe-modal-description" hidden></p>
+            <p id="modalSource" class="recipe-modal-source" hidden></p>
+            <p id="modalPreparationTime" class="recipe-modal-cooking-time" hidden></p>
+            <p id="modalCookingTime" class="recipe-modal-cooking-time" hidden></p>
+
+            <section class="recipe-modal-section" aria-labelledby="nutritionHeading">
+                <h3 id="nutritionHeading" class="recipe-modal-heading">Informasi nutrisi</h3>
+                <p id="nutritionBasisLabel" class="recipe-nutrition-basis"></p>
+                <dl class="recipe-nutrition-list">
+                    <div id="nutritionCaloriesRow" class="recipe-nutrition-row" hidden>
+                        <dt>Kalori</dt>
+                        <dd id="nutritionCaloriesValue"></dd>
+                    </div>
+                    <div id="nutritionProteinRow" class="recipe-nutrition-row" hidden>
+                        <dt>Protein</dt>
+                        <dd id="nutritionProteinValue"></dd>
+                    </div>
+                    <div id="nutritionCarbsRow" class="recipe-nutrition-row" hidden>
+                        <dt>Karbohidrat</dt>
+                        <dd id="nutritionCarbsValue"></dd>
+                    </div>
+                    <div id="nutritionFatRow" class="recipe-nutrition-row" hidden>
+                        <dt>Lemak</dt>
+                        <dd id="nutritionFatValue"></dd>
+                    </div>
+                </dl>
+                <ul id="nutritionAdditional" class="recipe-nutrition-additional" hidden></ul>
+                <div id="nutritionTotalsSection" class="recipe-nutrition-totals" hidden>
+                    <h4 id="nutritionTotalsHeading"></h4>
+                    <dl id="nutritionTotals" class="recipe-nutrition-list"></dl>
+                </div>
+                <p id="nutritionEmpty" class="recipe-section-empty" hidden>
+                    Informasi nutrisi belum tersedia.
+                </p>
+            </section>
+
+            <section id="ingredientsSection" class="recipe-modal-section" hidden>
+                <h3 class="recipe-modal-heading">Bahan</h3>
+                <div id="servingCalculator" class="recipe-serving-calculator" hidden>
+                    <label for="recipeServings">Sesuaikan jumlah porsi</label>
+                    <input id="recipeServings" type="number" min="1" step="1" inputmode="numeric">
+                    <span id="originalServingsLabel" class="recipe-serving-note"></span>
+                </div>
+                <ul id="modalIngredients" class="recipe-detail-list"></ul>
+            </section>
+
+            <section id="instructionsSection" class="recipe-modal-section" hidden>
+                <h3 class="recipe-modal-heading">Cara memasak</h3>
+                <ol id="modalInstructions" class="recipe-detail-list recipe-instructions"></ol>
+                <p id="instructionsEmpty" class="recipe-section-empty" hidden>
+                    Langkah memasak belum tersedia untuk resep ini.
+                </p>
+            </section>
+
+            <section id="recipeCompletionPanel" class="recipe-completion-panel" hidden>
+                <label class="recipe-completion-confirm">
+                    <input type="checkbox" id="recipeCompletionConfirm">
+                    Saya mengonfirmasi sudah memasak resep ini.
+                </label>
+                <button
+                    type="button"
+                    id="recipeCompletionButton"
+                    class="recipe-completion-button"
+                    disabled
+                >
+                    Tandai sudah dimasak
+                </button>
+                <p id="recipeCompletionStatus" role="status" aria-live="polite"></p>
+            </section>
+            <p id="recipeLoginPrompt" class="recipe-login-prompt" hidden>
+                Masuk untuk menyimpan status resep yang dilihat atau menandai resep telah dimasak.
+                <a id="recipeLoginLink" href="{{ recipe_login_url }}">Masuk</a>
+            </p>
+        </div>
+    </section>
+</div>
+
+<div id="recipeToastRegion" class="recipe-toast-region" role="status" aria-live="polite" aria-atomic="true"></div>
+
+<script src="{% static 'voting/voting.js' %}"></script>
+<script src="{% static 'JS/recipe.js' %}" defer></script>
+{% endblock %}
