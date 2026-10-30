@@ -25,13 +25,13 @@ body {
     border-radius: 2rem;
 }
 
-#kembali-button {
+#kembali-button { /* Tombol link ke halaman Inventori*/
     display: inline-block;
     margin-top: 2rem;
     font-size: small;
 }
 
-.form-title {
+.form-title { /* Header Nama Bahan dan Stok */
     color: white;
     white-space: pre-wrap;
     margin-top: 0.5rem;
@@ -39,26 +39,26 @@ body {
     font-weight: bold;
 }
 
-.bahan-form {
+.bahan-form { /* Untuk setiap form */
     display: flex;
     justify-content: space-between;
     margin-bottom: 0.3rem;
     gap: 1rem;
 }
 
-.form-box {
+.form-box { /* Untuk widget input (berlaku juga di tambah_bahan_modal.html) */
     border: 0px none;
     padding: 0.3rem;
     border-radius: 0.3rem;
     margin-top: 0.3rem;
 }
 
-#save-button {
+#save-button { /* Tombol Simpan Perubahan */
     display: block;
     margin: 2rem auto 0;
 }
 
-.empty-info {
+.empty-info { /* Pesan tidak ada bahan dalam inventori */
     color: white;
 }
 
@@ -110,7 +110,7 @@ h1 { /* Judul Inventori dan Update Inventori*/
 }
 
 /* Pengaturan untuk semua tombol pada 
-   halaman Inventori dan Update Inventori*/
+   halaman Inventori dan Update Inventori */
 .button, .href-button {
     padding: 0.5rem 1rem 0.5rem 1rem;
     border-radius: 2rem;
@@ -154,23 +154,23 @@ table {
     width: 300px;
 }
 
-.modal-title {
+.modal-title { /* Judul Tambah Bahan dan tombol x */
     display: flex;
     justify-content: space-between;
     gap: 1rem;
     align-items: center;
 }
 
-.form-group-inventori {
+.form-group-inventori { /* Isi form */
     margin-bottom: 1rem;
 }
 
-.form-modal__actions {
+.form-modal__actions { /* Tombol Batal dan Tambah */
     display: flex;
     justify-content: space-between;
 }
 
-.eng-info {
+.eng-info { /* Pesan wajib memasukkan nama bahan dalam Bahasa Inggris */
     font-size: x-small;
 }
 
@@ -212,14 +212,14 @@ table {
     border-radius: 4px;
 }
 
-/* Tablet Viewing */
+/* Tampilan Tablet */
 @media (max-width: 1100px) {
     #content {
         column-gap: 1rem;
     }
 }
 
-/* Mobile Viewing */
+/* Tampilan Mobile */
 @media (max-width: 650px) {
     #content {
         grid-template-areas: 
