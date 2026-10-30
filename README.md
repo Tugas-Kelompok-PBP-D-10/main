@@ -122,6 +122,8 @@ Penjelasan lebih spesifik mengenai penggunaan AI, termasuk fitur yang dibantu, b
 
 Link Chat AI per Anggota : 
 1. MOHAMMAD ZAKY PRASTIO = 
+    a. https://share.gemini.google/KnF45eFBRR53
+    b. https://share.gemini.google/7x0YzQnAjK7V
 
 
 2. Hafiza Nurul Hidayah = 
