@@ -1,3 +1,10 @@
+## Daftar Isi
+[1. Penjelasan singkat modul inventori](#modul-inventori)
+
+[2. Penggunaan Kode dari Tutorial](#penggunaan-kode-dari-tutorial)
+
+[3. AI Disclosure](#ai-disclosure)
+
 # Modul Inventori
 Modul ini dikerjakan oleh Velicia Willy - 2506657384
 
@@ -253,5 +260,118 @@ CSS yang saya terima dari AI dan aplikasikan sesuai kebutuhan:
   left: 50%;
   transform: translate(-50%, -50%);
   z-index: 1000; /* Keeps the popup above the blurred backdrop */
+}
+```
+
+### Fungsi views untuk mem-fetch resep
+Prompt exact: "My teammate has already implemented a search function. How can I use it in my views.py? And how would calling this function on JavaScript look like?" 
+Selain itu, saya juga memberikan fungsi-fungsi views serta services dari modul Recipe yang relevan.
+
+Kode yang saya terima dari AI dan aplikasikan sesuai kebutuhan:
+```
+# inventory/views.py
+import json
+from django.http import JsonResponse
+from django.views.decorators.http import require_GET
+from django.db.models import Count
+
+# 1. Import your teammate's view function directly
+from recipe_app.views import spoonacular_recipe_search_api 
+from .models import RecipeInteraction, RecipeCookingEvent
+
+@require_GET
+def inventory_recipe_search_api(request):
+    # 2. Call their view function using the incoming request
+    teammate_response = spoonacular_recipe_search_api(request)
+
+    # 3. If their view returned an error (e.g., 400 or 503), pass it straight to the browser
+    if teammate_response.status_code != 200:
+        return teammate_response
+
+    # 4. Extract and decode the JSON dictionary from their response
+    data = json.loads(teammate_response.content.decode("utf-8"))
+    recipes = data.get("results", [])
+    recipe_ids = [r["id"] for r in recipes if "id" in r]
+
+    # 5. Fetch user interaction stats for these recipes
+    statuses = {}
+    cooking_counts = {}
+
+    if request.user.is_authenticated and recipe_ids:
+        statuses = {
+            row["recipe_id"]: row
+            for row in RecipeInteraction.objects.filter(
+                user=request.user,
+                recipe_id__in=recipe_ids,
+            ).values("recipe_id", "viewed_at", "completed_at")
+        }
+
+        cooking_counts = dict(
+            RecipeCookingEvent.objects.filter(
+                user=request.user,
+                recipe_id__in=recipe_ids,
+            )
+            .values("recipe_id")
+            .annotate(total=Count("pk"))
+            .values_list("recipe_id", "total")
+        )
+
+        for recipe_id, status in statuses.items():
+            if status.get("completed_at"):
+                cooking_counts[recipe_id] = max(1, cooking_counts.get(recipe_id, 0))
+
+    # 6. Attach your custom attributes to each item in the results array
+    for recipe in recipes:
+        r_id = recipe.get("id")
+        status = statuses.get(r_id, {})
+        c_count = cooking_counts.get(r_id, 0)
+
+        recipe["interaction_viewed"] = bool(status.get("viewed_at"))
+        recipe["cooking_count"] = c_count
+        recipe["interaction_completed"] = c_count > 0 or bool(status.get("completed_at"))
+        recipe["card_image_url"] = recipe.get("image") or recipe.get("image_url", "")
+
+    # 7. Return the enriched JSON to JavaScript
+    return JsonResponse(data)
+```
+```
+async function searchInventoryRecipes() {
+    const recipeGrid = document.getElementById('recipe-grid');
+    
+    // 1. Gather inventory items from DOM
+    const inventoryItems = Array.from(document.querySelectorAll('.inventory-item-name'))
+        .map(el => el.textContent.trim())
+        .filter(Boolean);
+
+    if (inventoryItems.length === 0) {
+        recipeGrid.innerHTML = '<p>Tidak ada bahan di inventori.</p>';
+        return;
+    }
+
+    const query = inventoryItems.join(',');
+
+    try {
+        // 2. Fetch enriched data from your wrapper endpoint
+        const response = await fetch(`${INVENTORY_SEARCH_URL}?q=${encodeURIComponent(query)}`);
+        
+        if (!response.ok) throw new Error('Gagal mengambil resep');
+
+        const data = await response.json();
+        recipeGrid.innerHTML = ''; // Clear previous content
+
+        // 3. Check data.results array
+        if (data.results && data.results.length > 0) {
+            data.results.forEach(resep => {
+                // Pass each enriched recipe object to buildResepCard
+                recipeGrid.appendChild(buildResepCard(resep));
+            });
+        } else {
+            recipeGrid.innerHTML = '<p>Tidak ada resep yang cocok ditemukan.</p>';
+        }
+
+    } catch (error) {
+        console.error('Error fetching recipes:', error);
+        recipeGrid.innerHTML = '<p>Terjadi kesalahan saat memuat resep.</p>';
+    }
 }
 ```

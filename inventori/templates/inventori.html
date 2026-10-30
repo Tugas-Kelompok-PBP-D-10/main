@@ -67,8 +67,11 @@
 <!-- Komponen popup tambah bahan dan backdrop blur -->
 <div class="blur-backdrop" id="backdrop"></div> 
 {% include "components/tambah_bahan_modal.html" %}
+
+<!-- Komponen popup detail resep -->
 {% include "components/recipe_detail_modal.html" %}
 
+<!-- Extra script -->
 <script src="{% static 'voting/voting.js' %}"></script>
 <script src="{% static 'JS/recipe.js' %}" defer></script>
 
@@ -125,28 +128,30 @@
             bahanData.forEach(bahan => {
                 bahanGrid.appendChild(buildBahanRow(bahan));
             });
+            // Setelah fetch Bahan, tampilkan rekomendasi resep
             searchRecipesFromInventory();
         }
     }
 
+    // Fetch Rekomendasi Resep, kemudian tampilkan pada halaman
     const INVENTORY_SEARCH_URL = "{% url 'api_recipe_search' %}";
-    // Fetch Rekomendasi Resep
     async function searchRecipesFromInventory() {
         const recipeGrid = document.getElementById('recipe-grid-inventori');
-        // 1. Get ingredient names from your DOM/Inventory state
-        // e.g., ["telur", "bawang putih", "nasi"]
+        
+        // Ambil semua nama bahan
         const bahan2 = Array.from(document.querySelectorAll('.nama-bahan'))
                                     .map(el => el.textContent.trim());
 
         if (bahan2.length === 0) return;
 
-        // 2. Format into comma-separated string: "telur,bawang putih,nasi"
+        // Buat string query
         const queryString = encodeURIComponent(bahan2.join(','));
 
-        // 3. Call teammate's endpoint passing the ingredients in 'q'
+        // Masukkan query ke url fetching resep
         const response = await fetch(`${INVENTORY_SEARCH_URL}?q=${queryString}`);
         const data = await response.json();
 
+        // Jika ada resep, isi grid dengan recipe card
         if (data.results) {
             recipeGrid.innerHTML = '';
             data.results.forEach(resep => {
@@ -155,6 +160,7 @@
         }
     }
 
+    // Membuat recipe card untuk suatu objek resep
     function buildResepCard(resep) {
         const elem = document.createElement('article');
         elem.className = "recipe-card";
