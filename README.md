@@ -131,7 +131,7 @@ Link Chat AI per Anggota :
 
 
 4. VELICIA WILLY = 
-
+    [Inventori AI Disclosure](inventori/README.md#ai-disclosure)
 
 5. NARENDRA RAMA PRAWIRA = 
 
