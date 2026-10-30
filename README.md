@@ -35,12 +35,15 @@ Beberapa Fitur Utama :
 - Unggah Resep: Memfasilitasi pengguna untuk membagikan resep kreasi mandiri ke dalam database aplikasi.
 - Validasi & Kalkulasi Nutrisi Otomatis: Menghubungkan bahan dari resep buatan pengguna ke Spoonacular API untuk mengalkulasi total kandungan gizi (terutama protein) secara otomatis.
 
-4. Modul Like and Dislike Recipe 
-Deskripsi: Modul ini mengelola sistem kurasi berbasis forum komunitas untuk menjaga kualitas konten resep serta mengukur tingkat popularitasnya.
+4. Modul Like and Dislike & Bookmark Recipe 
+Deskripsi: Modul ini mengelola sistem kurasi berbasis forum komunitas untuk menjaga kualitas konten resep serta mengukur tingkat popularitasnya, sekaligus memungkinkan pengguna menyimpan resep favorit melalui fitur bookmark.
 Beberapa Fitur Utama :
 - Sistem Voting (Upvote & Downvote): Fitur apresiasi dan kurasi interaktif (+1 atau -1) bagi pengguna terautentikasi untuk setiap resep komunitas.
 - Skor Popularitas: Kalkulasi skor reputasi otomatis untuk menaikkan resep-resep terbaik ke posisi teratas halaman rekomendasi.
 - Auto-Delete Moderation: Mekanisme pembersihan otomatis yang menghapus resep fiktif atau troll secara permanen jika terakumulasi mencapai 100 downvote.
+- Bookmark Recipe: Fitur bagi pengguna terautentikasi untuk menyimpan resep favorit dengan satu klik pada kartu atau detail resep. Klik sekali lagi untuk melepas bookmark, dan jumlah bookmark pada navbar ikut diperbarui tanpa reload halaman.
+- Bookmark Page: Halaman khusus yang menampilkan seluruh resep yang disimpan pengguna dalam bentuk kartu, lengkap dengan skor vote, penanda resep yang sudah dimasak, serta akses langsung ke detail resep, vote, dan pelepasan bookmark.
+- Pencarian, Urutan & Filter Bookmark: Pengguna dapat mencari bookmark berdasarkan judul, mengurutkan (terbaru, terlama, judul A-Z), dan menyaring berdasarkan sumber resep, vote pribadi, serta skor minimal, dengan pagination dan opsi hapus semua bookmark.
 
 5. Modul Pelacak Aktivitas (Tracker & Achievement)
 Deskripsi: Modul ini berfungsi untuk merekam riwayat memasak pengguna, mengukur dampak pengurangan pemborosan makanan (food waste reduction), serta meningkatkan motivasi pengguna melalui fitur achievement.
@@ -68,7 +71,7 @@ Pembagian Tugas Modul per masing - masing anggota :
 1. Modul Autentikasi Pengguna & Admin (NAUFAL KHAIRIY ZULKARNAIN SORMIN)
 2. Modul Inventaris & Stok Bahan Pengguna (VELICIA WILLY)
 3. Modul Katalog Resep & Nutrisi (MOHAMMAD ZAKY PRASTIO)
-4. Modul Like and Dislike Recipe (NARENDRA RAMA PRAWIRA)
+4. Modul Like and Dislike & Bookmark Recipe (NARENDRA RAMA PRAWIRA)
 5. Modul Pelacak Aktivitas (Tracker & Achievement) (HAFIZA NURUL HIDAYAH)
 
 Pembagian Peran Utama Masing - Masing Anggota :
@@ -128,12 +131,9 @@ Link Chat AI per Anggota :
 
 3. NAUFAL KHAIRIY ZULKARNAIN SORMIN =
 
-
-
 4. VELICIA WILLY = 
     [Inventori AI Disclosure](inventori/README.md#ai-disclosure)
 
-5. NARENDRA RAMA PRAWIRA = 
-
-
-
+5. NARENDRA RAMA PRAWIRA =
+    1. https://claude.ai/share/ea49ac92-1b77-4a45-857c-cb72f80ff9e3
+    2. https://claude.ai/share/612a4fa9-d3ab-4f4d-8938-b56bf9c65d98
