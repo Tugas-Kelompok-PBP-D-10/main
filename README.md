@@ -1,6 +1,7 @@
 CP 1
 
 OlahRasa (Olah Bahan Sisa, Jadi Suatu Rasa)
+
 Deskripsi Produk :
 OlahRasa dirancang untuk mengatasi masalah pemborosan makanan (*food waste*) sekaligus menjadi asisten dapur andalan. Sehingga kamu tidak perlu lagi belanja bahan baru untuk mengikuti resep, sistem kami yang akan mencarikan resep sesuai dengan bahan makanan yang kamu miliki saat ini.
 
@@ -94,4 +95,45 @@ Design system OlahRasa mencakup beberapa komponen utama yang digunakan secara be
 - **Navbar** — navigasi utama yang digunakan untuk mengakses berbagai modul dalam website.
 - **Layout** — struktur dan spacing halaman yang digunakan sebagai dasar tampilan setiap modul.
 - **Button & UI Components** — komponen antarmuka yang digunakan secara konsisten pada berbagai halaman.
+
+FINAL SUBMISSION
+## Dokumentasi Modul
+
+Untuk penjelasan teknis dan implementasi setiap modul, ai disclosure secara spesifik per anggota
+silakan membaca dokumentasi berikut:
+
+- [Authentication](authentication/README.md)
+- [Recipe](recipe/README.md)
+- [Tracker](tracker/README.md)
+- [Inventori](inventori/README.md)
+- [Voting & Bookmark](voting/README.md)
+
+## AI Usage Disclosure
+Dalam pengembangan aplikasi OlahRasa, anggota kelompok menggunakan bantuan AI sebagai alat pendukung pada beberapa tahap pengembangan, seperti memahami konsep pemrograman, membantu proses debugging, menyusun alternatif solusi, serta mendukung pembuatan dokumentasi.
+
+Penggunaan AI tidak menggantikan tanggung jawab anggota kelompok dalam memahami, memeriksa, mengimplementasikan, dan menguji kode yang digunakan.
+
+Penjelasan lebih spesifik mengenai penggunaan AI, termasuk fitur yang dibantu, bentuk bantuan, dan proses verifikasi hasilnya, dicantumkan pada README masing-masing modul.
+
+**Catatan:** Rincian penggunaan AI pada setiap modul disesuaikan dengan penggunaan yang benar-benar dilakukan oleh anggota yang bertanggung jawab.
+
+Link Chat AI per Anggota : 
+1. MOHAMMAD ZAKY PRASTIO = 
+
+
+2. Hafiza Nurul Hidayah = 
+    a. https://chatgpt.com/share/6ae36902-5794-83ec-a505-cf72dbebcd90
+    
+    b. https://claude.ai/share/18f45afb-de23-4595-af30-aa65d20b1806
+
+3. NAUFAL KHAIRIY ZULKARNAIN SORMIN =
+
+
+
+4. VELICIA WILLY = 
+
+
+5. NARENDRA RAMA PRAWIRA = 
+
+
 
