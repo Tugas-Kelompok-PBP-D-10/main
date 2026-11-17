@@ -22,3 +22,25 @@ def bahan_list(request):
     serializer.is_valid(raise_exception=True)
     serializer.save(inventory=request.user.inventori)
     return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+@api_view(["GET", "HEAD", "PUT", "PATCH", "DELETE"])
+@authentication_classes([SessionAuthentication])
+def bahan_detail(request, bahan_id):
+    bahan = get_object_or_404(
+        Bahan.objects.filter(inventory__user=request.user), pk=bahan_id,
+    )
+    if request.method in ("GET", "HEAD"):
+        serializer = BahanSerializer(bahan, context={"request": request})
+        return Response(serializer.data)
+
+    if request.method == "DELETE":
+        bahan.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    serializer = BahanSerializer(
+        bahan, data=request.data, partial=request.method == "PATCH",
+        context={"request": request},
+    )
+    serializer.is_valid(raise_exception=True)
+    serializer.save()
+    return Response(serializer.data)
