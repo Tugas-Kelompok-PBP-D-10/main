@@ -65,6 +65,8 @@ INSTALLED_APPS = [
     'allauth.socialaccount',
     'allauth.socialaccount.providers.google',
 
+    # Django REST Framework
+    "rest_framework",
 ]
 
 
