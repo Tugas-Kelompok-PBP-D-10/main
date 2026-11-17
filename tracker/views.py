@@ -13,6 +13,16 @@ from .models import Badge, CookingLog, CookingStreak, UserBadge, NutritionTarget
 from voting.models import Bookmark
 import uuid, json
 
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework import status
+
+from .serializers import (
+    CookingHistorySerializer,
+    NutritionTargetSerializer,
+)
+
 # Target nutrisi mingguan (sesuaikan dengan kebutuhan)
 WEEKLY_TARGET = {"protein": 120, "carbs": 120, "fat": 70}
 DAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
@@ -81,82 +91,61 @@ def _nutrients(user, monday):
     return result
 
 
-@login_required
-@require_http_methods(["GET", "POST", "DELETE"])
+@api_view(["GET", "POST", "DELETE"])
+@permission_classes([IsAuthenticated])
 def nutrition_target_api(request):
-
-    if request.method == "DELETE":
-        deleted_count, _ = NutritionTarget.objects.filter(user=request.user).delete()
-
-        return JsonResponse({
-            "success": True,
-            "message": "Nutrition Target berhasil dihapus.",
-            "deleted": deleted_count > 0
-        })
 
     if request.method == "GET":
         target = NutritionTarget.objects.filter(
             user=request.user
         ).first()
 
-        return JsonResponse({
+        return Response({
             "success": True,
             "has_target": target is not None,
-            "target": {
-                "protein_g": target.protein_g,
-                "carbs_g": target.carbs_g,
-                "fat_g": target.fat_g,
-            } if target else None,
+            "target": (
+                NutritionTargetSerializer(target).data
+                if target else None
+            ),
         })
 
-    try:    
-        data = json.loads(request.body)
-    except (json.JSONDecodeError, UnicodeDecodeError):
-        return JsonResponse({
-            "success": False,
-            "message": "Format JSON tidak valid.",
-        }, status=400)
+    if request.method == "DELETE":
+        deleted_count, _ = NutritionTarget.objects.filter(
+            user=request.user
+        ).delete()
 
-    if not isinstance(data, dict):
-        return JsonResponse({
-            "success": False,
-            "message": "Data target harus berupa objek JSON.",
-        }, status=400)
+        return Response({
+            "success": True,
+            "message": "Nutrition Target berhasil dihapus.",
+            "deleted": deleted_count > 0,
+        })
 
-    values = {}
+    serializer = NutritionTargetSerializer(data=request.data)
 
-    for field in ("protein_g", "carbs_g", "fat_g"):
-        value = data.get(field)
-
-        if type(value) is not int or not (1 <= value <= 10000):
-            return JsonResponse({
+    if not serializer.is_valid():
+        return Response(
+            {
                 "success": False,
-                "message": (
-                    f"{field} harus berupa bilangan bulat "
-                    "antara 1 sampai 10000."
-                ),
-            }, status=400)
-
-        values[field] = value
+                "errors": serializer.errors,
+            },
+            status=status.HTTP_400_BAD_REQUEST,
+        )
 
     target, created = NutritionTarget.objects.update_or_create(
         user=request.user,
-        defaults=values,
+        defaults=serializer.validated_data,
     )
 
-    return JsonResponse({
+    return Response({
         "success": True,
         "message": (
             "Nutrition target berhasil disimpan."
             if created
             else "Nutrition target berhasil diperbarui."
         ),
-        "target": {
-            "protein_g": target.protein_g,
-            "carbs_g": target.carbs_g,
-            "fat_g": target.fat_g,
-        },
+        "target": NutritionTargetSerializer(target).data,
     })
+
 
 def _badges(user, streak):
     total = CookingLog.objects.filter(
@@ -222,12 +211,12 @@ def tracker_view(request):
     current = streak.active_streak
     badges = _badges(user, streak)
 
-    # Mengambil 5 bookmark terbaru milik pengguna yang login
+    # Mengambil 3 bookmark terbaru milik pengguna yang login
     bookmarks = (
         Bookmark.objects
         .filter(user=user)
         .select_related("recipe")
-        .order_by("-created_at")[:3]
+        .order_by("-created_at")[:5]
     )
 
     context = {
@@ -285,15 +274,10 @@ def complete_cooking(request):
     })
 
 
-@login_required
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
 def tracker_dashboard_api(request):
     user = request.user
-
-    print(
-    "TRACKER LOGIN:",
-    "user_id =", user.id,
-    "username =", user.username
-    )
 
     today = timezone.localdate()
     monday = today - timedelta(days=today.weekday())
@@ -304,7 +288,7 @@ def tracker_dashboard_api(request):
 
     badges = _badges(user, streak)
 
-    return JsonResponse({
+    return Response({
         "streak": {
             "current": streak.active_streak,
             "longest": streak.longest_streak,
@@ -319,26 +303,19 @@ def tracker_dashboard_api(request):
 
 
 @login_required
-@login_required
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
 def cooking_history_api(request):
     logs = CookingLog.objects.filter(
         user=request.user
-    ).order_by("-cooked_on", "-id")[:3]
+    ).order_by("-cooked_on", "-id")[:5]
 
-    history = []
+    serializer = CookingHistorySerializer(
+        logs,
+        many=True,
+    )
 
-    for log in logs:
-        history.append({
-            "id": log.id,
-            "recipe_name": log.recipe_name,
-            "cooked_on": log.cooked_on.isoformat(),
-            "protein": log.protein_g,
-            "carbs": log.carbs_g,
-            "fat": log.fat_g,
-            "calories": log.calories,
-        })
-
-    return JsonResponse({
+    return Response({
         "success": True,
-        "history": history,
+        "history": serializer.data,
     })
