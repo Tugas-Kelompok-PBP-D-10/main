@@ -16,6 +16,8 @@ def home_redirect(request):
 urlpatterns = [
     path("admin/", admin.site.urls),
 
+    path("api-auth/", include("rest_framework.urls")),
+
     # Django Allauth
     path("accounts/", include("allauth.urls")),
 
@@ -33,6 +35,7 @@ urlpatterns = [
 
     # Modul Inventori
     path("inventori/", include("inventori.urls")),
+    path("api-inventori/v1/", include("inventori.api_urls")),
 
     # Modul Voting / Bookmark
     path("voting/", include("voting.urls")),
