@@ -1,4 +1,4 @@
-from django.urls import path
+from django.urls import path, include
 from . import views
 
 app_name = 'authentication'
@@ -10,4 +10,8 @@ urlpatterns = [
     path("dashboard/", views.dashboard, name="dashboard"),
     path("logout/", views.logout_page, name="logout"),
     path("profile/", views.profile_page, name="profile"),
+    path(
+        "api-authentication/v1/",
+        include("authentication.api_urls")
+    ),
 ]
