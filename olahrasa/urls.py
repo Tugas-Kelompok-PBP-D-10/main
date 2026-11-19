@@ -39,6 +39,7 @@ urlpatterns = [
 
     # Modul Voting / Bookmark
     path("voting/", include("voting.urls")),
+    path("api-voting/v1/", include("voting.api_urls")),
 ]
 
 
