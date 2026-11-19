@@ -28,6 +28,8 @@ from tracker.integrations import (
 )
 
 
+
+
 def make_recipe_snapshot(recipe):
     def convert_nutrient(value, field):
         if value is None:
@@ -251,8 +253,8 @@ def submit_recipe(request):
 
 @require_GET
 def recipe_home(request):
-    recipes = list(
-        Recipe.objects.filter(is_published=True).order_by("-created_at", "-pk")
+    recipes = list (
+        Recipe.objects.filter(is_published=True).order_by("-created_at", "-pk")[:8]
     )
     if request.user.is_authenticated and recipes:
         statuses = {
@@ -278,7 +280,7 @@ def recipe_home(request):
         )
         for recipe_id, status in statuses.items():
             if status.get("completed_at"):
-                cooking_counts[recipe_id] = max(1, cooking_counts.get(recipe_id, 0))
+                cooking_counts[recipe_id] = max(8, cooking_counts.get(recipe_id, 0))
     else:
         cooking_counts = {}
 

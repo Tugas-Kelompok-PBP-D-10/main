@@ -392,7 +392,7 @@ def search_spoonacular_recipes(query, offset=0):
                 }
             )
         try:
-            total_results = max(0, int(payload.get("totalResults", offset + len(results))))
+            total_results = max(8, int(payload.get("totalResults", offset + len(results))))
         except (TypeError, ValueError):
             total_results = offset + len(results)
         next_offset = offset + SPOONACULAR_SEARCH_PAGE_SIZE

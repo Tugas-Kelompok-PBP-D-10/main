@@ -1,12 +1,17 @@
 from django.urls import path
-
+from .api_views import RecipeListAPIView, RecipeDetailAPIView
 from . import views
-
 
 app_name = "recipe"
 
 urlpatterns = [
     path("", views.recipe_home, name="home"),
+
+    # Endpoint DRF utama (bisa dipakai Flutter)
+    path("api/recipes/", RecipeListAPIView.as_view(), name="drf-recipe-list"),
+    path("api/recipes/<int:pk>/detail/", RecipeDetailAPIView.as_view(), name="drf-recipe-detail"),
+
+    # Endpoint API yang sudah ada sebelumnya
     path(
         "api/spoonacular/search/",
         views.spoonacular_recipe_search_api,
@@ -43,8 +48,8 @@ urlpatterns = [
         name="api_complete",
     ),
     path(
-    "api/spoonacular/recipes/<int:spoonacular_id>/complete/",
-    views.complete_spoonacular_recipe,
-    name="api_spoonacular_complete",
-),
+        "api/spoonacular/recipes/<int:spoonacular_id>/complete/",
+        views.complete_spoonacular_recipe,
+        name="api_spoonacular_complete",
+    ),
 ]
